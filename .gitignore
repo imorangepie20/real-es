@@ -1,0 +1,28 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# deps / build
+node_modules/
+dist/
+build/
+out/
+.next/
+.vite/
+.turbo/
+coverage/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# misc
+*.tsbuildinfo
+tmp/
+temp/
+logs/
+*.log
+.worktrees/
