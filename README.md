@@ -9,20 +9,37 @@
 ```
 real-es/
 ├── CLAUDE.md             # 개발 행동 가이드라인 (프로젝트 공통)
+├── AGENTS.md             # Next.js 16 주의 규칙 (템플릿 인입)
 ├── README.md             # 이 문서 — 루트 개요 + 현재 반영 상태
-├── .gitignore
+├── package.json          # Next.js 16 + React 19 + Tailwind v4 + shadcn/ui
+├── src/
+│   ├── app/              # (dashboard)·(auth) 라우트 그룹
+│   ├── components/       # ui/ 프리미티브 + layout/ + dashboards/ 등
+│   ├── lib/              # nav.ts(메뉴 단일 소스)·data.ts(mock)·utils.ts
+│   └── hooks/
+├── e2e/                  # Playwright 스모크 테스트
 ├── .claude/              # Claude Code 하네스 (settings, Stop hook, plugins)
 └── docs/
-    └── PROJECT_GUIDE.md  # 새 세션이 먼저 읽는 가이드
+    ├── PROJECT_GUIDE.md  # 새 세션이 먼저 읽는 가이드
+    └── project_structure.md  # 제품 스펙
 ```
 
 (실제 소스 구조는 스택이 정해지면 갱신한다.)
 
 ## 선정 스택
 
-> TBD
+`/opt/design-template/SDTPL_ADM`(shadcn UI Kit 클론)을 베이스로 채택:
+
+- **Next.js 16 (App Router) + React 19**
+- **TypeScript / Tailwind v4**
+- **shadcn/ui (Base UI 기반)** — 데이터 테이블·차트·캘린더·칸반·⌘K 팔레트 내장
+- **pnpm** 패키지 매니저
+- (예정) PostgreSQL + Prisma 백엔드, 네이버 매물 수집기, Tauri 데스크탑
+
+배포 도메인: `https://resm.approid.team` (Cloudflare 터널)
 
 ## 현재 반영 상태
 
 - 개발 하네스 초기 셋업: `CLAUDE.md`, `.claude/`(Stop hook + 플러그인), `README.md`·`docs/PROJECT_GUIDE.md` 컨벤션 골격, `.gitignore` 구성 (my-forever-music 룰 기준)
+- 디자인 템플릿(SDTPL_ADM) 베이스 인입: 템플릿 소스(`src/`·설정·`e2e/`) 복사 → `pnpm install` → 프로덕션 빌드·서버 기동 검증 통과. real-es 자체 하네스(`CLAUDE.md`·`.claude/`·`docs/`)는 보존, 템플릿 secret(`SDTPL.txt`)은 제외. 전 라우트 정상(`/dashboard/real-estate`·`/login` 200).
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)

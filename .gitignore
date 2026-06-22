@@ -26,3 +26,13 @@ temp/
 logs/
 *.log
 .worktrees/
+
+# next.js / tooling
+next-env.d.ts
+.vercel
+/playwright-report/
+/test-results/
+.pnp.*
+
+# secret (template registry token — never commit)
+SDTPL.txt
