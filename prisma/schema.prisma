@@ -34,3 +34,20 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+// 법정동(시도/시군구/읍면동) — VWorld 적재. 동 선택 → naverCode로 네이버 complex/region 조회.
+model LegalDivision {
+  code        String  @id          // VWorld 코드 (시도 2 / 시군구 5 / 읍면동 8자리)
+  level       String               // SIDO | SIGUNGU | EMD
+  name        String               // 레벨 명칭 (경기도 / 수원시 장안구 / 정자동)
+  fullName    String               // 전체 명칭 (경기도 수원시 장안구 정자동)
+  sidoCode    String               // 상위 시도 코드 (2)
+  sigunguCode String?              // 상위 시군구 코드 (5) — EMD만
+  naverCode   String? @unique      // EMD: emd_cd + "00" (10) = 네이버 eupLegalDivisionNumber
+  lng         Float?               // 대표 좌표(중심점)
+  lat         Float?
+
+  @@index([level])
+  @@index([sidoCode])
+  @@index([sigunguCode])
+}
