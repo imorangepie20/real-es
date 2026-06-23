@@ -48,4 +48,5 @@ real-es/
 - 매물 수집 단계 3(UI): `/dashboard/naver` — 동 선택→단지 목록→단지 선택→카카오지도+매물 그리드→엑셀 다운로드(exceljs). 캐시 우선 수집, KAKAO_MAP_KEY(서버→prop).
 - 터널 운영(prod)·거래유형 UI: 터널(`resm.approid.team`) 접속은 **production 모드**로 띄운다(`bash scripts/run-prod.sh`) — dev는 cross-origin 서버액션이 막혀 동 드릴다운이 안 됨. `next.config.ts`에 터널 origin 허용. 거래유형 선택을 **지역 선택 위 라디오 단일선택**(매매/전세/월세)으로 옮기고, 거래유형 코드·라벨을 단일 소스(`src/lib/naver/trade-types.ts`)로 통합.
 - 매물유형 전체 수집 단계 4: 거래유형(매매/전세/월세/**단기임대**) + **매물유형 14종**(아파트/오피스텔/빌라/상가/토지 등) 선택. 매물유형에 따라 **단지형**(아파트·오피스텔·재건축 → 단지목록→매물)과 **비단지형**(나머지 → 동별 매물 직접) 자동 분기. 네이버 bounded API(`boundedComplexes`/`boundedArticles`), 박스=동 중심 ±0.3°(법정동 코드가 실필터). 거래·매물유형 단일 소스(`trade-types`/`property-types`). 라이브 검증(영통동: 오피스텔 9단지 / 상가 208매물).
+- 매물유형 표시 수정: 매물유형 셀렉트가 코드(A01)를 그대로 노출하던 것을 라벨(아파트)로 표시 — Base UI `SelectValue`는 value를 렌더하므로 `PROPERTY_LABEL` 매핑을 children으로 전달.
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)

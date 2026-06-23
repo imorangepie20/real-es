@@ -104,7 +104,8 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
         <span className="text-sm font-medium">매물유형</span>
         <Select value={property} onValueChange={(v) => { if (v != null) changeProperty(v) }}>
           <SelectTrigger>
-            <SelectValue />
+            {/* Base UI SelectValue는 value(코드)를 렌더 → 라벨로 매핑해 children으로 전달 */}
+            <SelectValue>{PROPERTY_LABEL[property] ?? property}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {PROPERTY_OPTIONS.map((p) => (
