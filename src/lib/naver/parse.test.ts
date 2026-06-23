@@ -1,56 +1,60 @@
 import { describe, expect, it } from "vitest";
 
-import { parseRegionComplexes, parseArticles } from "./parse";
-import regionFixture from "./__fixtures__/region.json";
+import { parseBoundedComplexes, parseArticles } from "./parse";
+import boundedComplexesFixture from "./__fixtures__/boundedComplexes.json";
+import boundedArticlesFixture from "./__fixtures__/boundedArticles.json";
 import articlesFixture from "./__fixtures__/articles.json";
 
-describe("parseRegionComplexes", () => {
-  const { complexes, hasNextPage, totalCount } = parseRegionComplexes(regionFixture);
+describe("parseBoundedComplexes", () => {
+  const { complexes, hasNextPage, totalCount, lastInfo } = parseBoundedComplexes(boundedComplexesFixture);
 
-  it("maps complex basic info", () => {
-    expect(complexes).toHaveLength(2);
+  it("maps complex basic info + 좌표", () => {
     expect(complexes[0]).toEqual({
-      complexNumber: "102614",
-      name: "수원SK스카이뷰",
+      complexNumber: "12045",
+      name: "벽적골8단지두산,우성,한신",
       type: "A01",
-      totalHouseholds: 3498,
-      approvalDate: "20130527",
-      dealCount: 113,
-      leaseDepositCount: 7,
-      leaseMonthlyCount: 3,
-    });
-  });
-
-  it("carries pagination", () => {
-    expect(hasNextPage).toBe(true);
-    expect(totalCount).toBe(72);
-  });
-});
-
-describe("parseArticles", () => {
-  const { articles, lastInfo, hasNextPage, totalCount } = parseArticles(articlesFixture, "2712");
-
-  it("maps article basic info (매매 = dealPrice)", () => {
-    expect(articles).toHaveLength(2);
-    expect(articles[0]).toEqual({
-      articleNumber: "2633772224",
-      complexNumber: "2712",
-      tradeType: "A1",
-      price: 690000000,
-      rentPrice: 0,
-      areaExclusive: 84.77,
-      areaSupply: 109.23,
-      floor: "2/23",
-      realtorName: "아파트뱅크공인중개사사무소",
-      dong: "142",
-      lng: 127.00909,
-      lat: 37.305275,
+      totalHouseholds: 1842,
+      approvalDate: "19971216",
+      dealCount: 118,
+      leaseDepositCount: 2,
+      leaseMonthlyCount: 14,
+      lat: 37.2477,
+      lng: 127.059237,
     });
   });
 
   it("carries pagination cursor", () => {
     expect(hasNextPage).toBe(true);
-    expect(totalCount).toBe(179);
-    expect(lastInfo).toEqual([1, 1040.5181508521755, "2633442294"]);
+    expect(totalCount).toBe(40);
+    expect(lastInfo).toEqual([1, "1812"]);
+  });
+});
+
+describe("parseArticles", () => {
+  it("단지형(complex/article/list)에서 realEstateType 추출", () => {
+    const { articles } = parseArticles(articlesFixture, "2712");
+    expect(articles[0].realEstateType).toBe("A01");
+    expect(articles[0].complexNumber).toBe("2712");
+    expect(articles[0].price).toBe(690000000);
+  });
+
+  it("비단지형(boundedArticles)도 같은 파서로 처리(realEstateType=D02)", () => {
+    const { articles, totalCount } = parseArticles(boundedArticlesFixture, "");
+    expect(articles[0]).toEqual({
+      articleNumber: "2633824750",
+      complexNumber: "",
+      realEstateType: "D02",
+      tradeType: "A1",
+      price: 890000000,
+      rentPrice: 0,
+      areaExclusive: 54,
+      areaSupply: 100,
+      floor: "1/10",
+      realtorName: "영통역IPARK부동산중개사무소",
+      dong: null,
+      lng: 127.0750347,
+      lat: 37.2544778,
+    });
+    expect(totalCount).toBe(184);
   });
 });

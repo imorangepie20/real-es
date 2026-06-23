@@ -1,0 +1,44 @@
+{
+  "isSuccess": true,
+  "detailCode": "success",
+  "message": "",
+  "result": {
+    "seed": "m_q4QQIQdmlsbGFfY29tcGxleF92MRZJcHJLOTJmUlJZSzBaazlELUxjOEZBABZZOG93QUQxMlE2Q1dSMk93WTRIR1BBAAAAAADl4dCkFjd1OEtGd1l3UmVXTmdEcGVzMTgzQUEKY29tcGxleF92MRY4cWM5VUJWcFE3dVk4YTR2eGw4aE5nABZHMTZ4VldOWVFvLXEzSW1NNFJmbURBAAAAAABfXFIHFmQ4eDdQdGg3VFR5eGFiVkxoeC1LMEECFjhxYzlVQlZwUTd1WThhNHZ4bDhoTmcAABZJcHJLOTJmUlJZSzBaazlELUxjOEZBAAA=",
+    "lastInfo": [1, "1812"],
+    "hasNextPage": true,
+    "totalCount": 40,
+    "list": [
+      {
+        "type": "COMPLEX",
+        "complex": {
+          "complexInfo": {
+            "complexNumber": 12045,
+            "name": "벽적골8단지두산,우성,한신",
+            "type": "A01",
+            "buildingCount": 18,
+            "totalHouseholdNumber": 1842,
+            "address": {
+              "city": "경기도",
+              "division": "수원시 영통구",
+              "sector": "경기도 수원시 영통구 영통동",
+              "jibun": "973-3",
+              "roadName": "영통로 232",
+              "coordinates": {
+                "xCoordinate": 127.059237,
+                "yCoordinate": 37.2477
+              }
+            },
+            "useApprovalDate": "19971216",
+            "approvalElapsedYear": 29
+          },
+          "articleCountInfoDto": {
+            "dealCount": 118,
+            "leaseDepositCount": 2,
+            "leaseMonthlyCount": 14,
+            "leaseShortTerm": 3
+          }
+        }
+      }
+    ]
+  }
+}

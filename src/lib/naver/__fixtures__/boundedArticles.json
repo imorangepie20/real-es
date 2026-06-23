@@ -1,0 +1,54 @@
+{
+  "isSuccess": true,
+  "detailCode": "success",
+  "message": "",
+  "result": {
+    "seed": "cdbe8f77-5364-4549-ac17-7a4b98ad3df1",
+    "lastInfo": [1, 920.6334302063394, "2632698513"],
+    "hasNextPage": true,
+    "totalCount": 184,
+    "list": [
+      {
+        "representativeArticleInfo": {
+          "articleNumber": "2633824750",
+          "articleName": "복합상가",
+          "buildingType": "D0204",
+          "tradeType": "A1",
+          "realEstateType": "D02",
+          "spaceInfo": {
+            "supplySpace": 100,
+            "exclusiveSpace": 54,
+            "landSpace": 0,
+            "floorSpace": 0,
+            "exclusiveSpaceName": "54"
+          },
+          "brokerInfo": {
+            "cpId": "SERVE",
+            "brokerageName": "영통역IPARK부동산중개사무소",
+            "brokerName": "부동산써브",
+            "cpOutLinkType": "CP_NAME"
+          },
+          "articleDetail": {
+            "direction": "WW",
+            "directTrade": false,
+            "floorInfo": "1/10"
+          },
+          "address": {
+            "city": "경기도",
+            "division": "수원시 영통구",
+            "sector": "영통동",
+            "coordinates": {
+              "xCoordinate": 127.0750347,
+              "yCoordinate": 37.2544778
+            }
+          },
+          "priceInfo": {
+            "dealPrice": 890000000,
+            "warrantyPrice": 0,
+            "rentPrice": 0
+          }
+        }
+      }
+    ]
+  }
+}

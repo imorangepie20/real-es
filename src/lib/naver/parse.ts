@@ -9,38 +9,39 @@ import type {
 const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
 
-/** complex/region 응답 → 단지 목록 (동 드릴다운) */
-export function parseRegionComplexes(json: unknown): RegionComplexesResult {
+/** complex/boundedComplexes 응답 → 단지 목록 (동 + realEstateType 필터) */
+export function parseBoundedComplexes(json: unknown): RegionComplexesResult {
   const result = (json as { result?: Record<string, unknown> })?.result ?? {};
   const list = (result.list as unknown[]) ?? [];
 
   const complexes: NaverComplex[] = list.map((row) => {
-    const r = row as {
-      complexInfo: Record<string, unknown>;
-      articleCountInfo?: Record<string, unknown>;
-    };
-    const ci = r.complexInfo;
-    const ac = r.articleCountInfo ?? {};
+    const c = (row as { complex?: Record<string, unknown> }).complex ?? {};
+    const ci = (c.complexInfo as Record<string, unknown>) ?? {};
+    const ac = (c.articleCountInfoDto as Record<string, unknown>) ?? {};
+    const coords = ((ci.address as Record<string, unknown>)?.coordinates as Record<string, unknown>) ?? {};
     return {
       complexNumber: String(ci.complexNumber),
       name: String(ci.name),
       type: String(ci.type),
       totalHouseholds: num(ci.totalHouseholdNumber),
       approvalDate: ci.useApprovalDate ? String(ci.useApprovalDate) : null,
-      dealCount: (num(ac.dealCount) ?? 0),
-      leaseDepositCount: (num(ac.leaseDepositCount) ?? 0),
-      leaseMonthlyCount: (num(ac.leaseMonthlyCount) ?? 0),
+      dealCount: num(ac.dealCount) ?? 0,
+      leaseDepositCount: num(ac.leaseDepositCount) ?? 0,
+      leaseMonthlyCount: num(ac.leaseMonthlyCount) ?? 0,
+      lat: num(coords.yCoordinate),
+      lng: num(coords.xCoordinate),
     };
   });
 
   return {
     complexes,
+    lastInfo: (result.lastInfo as unknown[]) ?? [],
     hasNextPage: Boolean(result.hasNextPage),
-    totalCount: (num(result.totalCount) ?? complexes.length),
+    totalCount: num(result.totalCount) ?? complexes.length,
   };
 }
 
-/** article/list 응답 → 매물 목록 (대표 매물 기준, 기본 정보만) */
+/** article/list · article/boundedArticles 응답 → 매물 목록 (대표 매물 기준, 기본 정보만) */
 export function parseArticles(json: unknown, complexNumber: string): ArticlesResult {
   const result = (json as { result?: Record<string, unknown> })?.result ?? {};
   const list = (result.list as unknown[]) ?? [];
@@ -59,8 +60,8 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
     return {
       articleNumber: String(a.articleNumber),
       complexNumber,
+      realEstateType: String(a.realEstateType),
       tradeType: String(a.tradeType),
-      // 매매가(dealPrice) 우선, 없으면 보증금(warrantyPrice)
       price: deal || warranty || null,
       rentPrice: num(price.rentPrice),
       areaExclusive: num(space.exclusiveSpace),
@@ -77,6 +78,6 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
     articles,
     lastInfo: (result.lastInfo as unknown[]) ?? [],
     hasNextPage: Boolean(result.hasNextPage),
-    totalCount: (num(result.totalCount) ?? articles.length),
+    totalCount: num(result.totalCount) ?? articles.length,
   };
 }

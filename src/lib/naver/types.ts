@@ -9,11 +9,14 @@ export type NaverComplex = {
   dealCount: number; // 매매 매물 수
   leaseDepositCount: number; // 전세
   leaseMonthlyCount: number; // 월세
+  lat: number | null;
+  lng: number | null;
 };
 
 export type NaverArticle = {
   articleNumber: string;
   complexNumber: string;
+  realEstateType: string;
   tradeType: string;
   price: number | null; // 거래금액(원): 매매가 또는 보증금
   rentPrice: number | null; // 월세
@@ -28,6 +31,7 @@ export type NaverArticle = {
 
 export type RegionComplexesResult = {
   complexes: NaverComplex[];
+  lastInfo: unknown[];
   hasNextPage: boolean;
   totalCount: number;
 };
