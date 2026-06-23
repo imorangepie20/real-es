@@ -11,4 +11,26 @@ model Agency {
   id        String   @id @default(cuid())
   name      String
   createdAt DateTime @default(now())
+  users     User[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  agencyId     String
+  agency       Agency    @relation(fields: [agencyId], references: [id])
+  email        String    @unique
+  passwordHash String
+  name         String?
+  role         String    @default("member")
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
