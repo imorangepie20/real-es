@@ -5,6 +5,7 @@ import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { DEFAULT_TRADE, TRADE_OPTIONS } from "@/lib/naver/trade-types"
+import { DEFAULT_PROPERTY } from "@/lib/naver/property-types"
 import { loadArticles, loadComplexes, type ArticleRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
@@ -25,12 +26,12 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
 
   async function pick(code: string) {
     setError(null); setNaverCode(code); setSelected(null); setLoadingC(true)
-    try { setComplexes(await loadComplexes(code)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
+    try { setComplexes(await loadComplexes(code, DEFAULT_PROPERTY, trade)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
   }
   async function refreshC() {
     if (!naverCode) return
     setError(null); setLoadingC(true)
-    try { setComplexes(await loadComplexes(naverCode, true)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
+    try { setComplexes(await loadComplexes(naverCode, DEFAULT_PROPERTY, trade, true)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
   }
   async function selectComplex(c: ComplexRow, refresh = false, t = trade) {
     setError(null); setSelected(c); setLoadingA(true)
