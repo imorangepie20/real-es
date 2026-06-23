@@ -65,14 +65,61 @@ async function request(label: string, doReq: () => Promise<APIResponse>, retries
   }
 }
 
-/** 동(법정동 코드) → 단지 목록 원본 JSON */
-export function fetchRegionComplexes(
+/** 동 중심좌표 → boundingBox (±0.3°면 동을 덮음; legalDivisionNumbers가 실제 필터) */
+export function boxAround(center: { lat: number; lng: number }, d = 0.3) {
+  const r = (n: number) => Math.round(n * 1e4) / 1e4;
+  return { left: r(center.lng - d), right: r(center.lng + d), top: r(center.lat + d), bottom: r(center.lat - d) };
+}
+
+const COMMON_FILTER = {
+  roomCount: [], bathRoomCount: [], optionTypes: [], oneRoomShapeTypes: [], moveInTypes: [],
+  filtersExclusiveSpace: false, floorTypes: [], directionTypes: [], hasArticlePhoto: false,
+  isAuthorizedByOwner: false, parkingTypes: [], entranceTypes: [], hasArticle: true,
+};
+
+type BoundedOpts = {
+  realEstateTypes: string[];
+  tradeTypes?: string[];
+  center: { lat: number; lng: number };
+  lastInfo?: unknown[];
+};
+
+/** 동 + 매물유형 → 단지 목록 원본 JSON (POST boundedComplexes) */
+export function fetchBoundedComplexes(
   ctx: BrowserContext,
-  eupLegalDivisionNumber: string,
-  { page = 0, size = 30 }: { page?: number; size?: number } = {},
+  naverCode: string,
+  { realEstateTypes, tradeTypes = [DEFAULT_TRADE], center, lastInfo = [] }: BoundedOpts,
 ): Promise<unknown> {
-  const url = `${BASE}/complex/region?eupLegalDivisionNumber=${eupLegalDivisionNumber}&size=${size}&sortType=HOUSEHOLD&page=${page}`;
-  return request("complex/region", () => ctx.request.get(url, { headers: BROWSER_HEADERS }));
+  return request("complex/boundedComplexes", () =>
+    ctx.request.post(`${BASE}/complex/boundedComplexes`, {
+      headers: { ...BROWSER_HEADERS, "content-type": "application/json" },
+      data: {
+        filter: { tradeTypes, realEstateTypes, ...COMMON_FILTER, legalDivisionNumbers: [naverCode], legalDivisionType: "EUP" },
+        boundingBox: boxAround(center),
+        precision: 14, userChannelType: "PC",
+        complexPagingRequest: { size: 30, complexSortType: "POPULARITY_DESC", lastInfo },
+      },
+    }),
+  );
+}
+
+/** 동 + 매물유형 → 매물 목록 원본 JSON (POST boundedArticles, 비단지형) */
+export function fetchBoundedArticles(
+  ctx: BrowserContext,
+  naverCode: string,
+  { realEstateTypes, tradeTypes = [DEFAULT_TRADE], center, lastInfo = [] }: BoundedOpts,
+): Promise<unknown> {
+  return request("article/boundedArticles", () =>
+    ctx.request.post(`${BASE}/article/boundedArticles`, {
+      headers: { ...BROWSER_HEADERS, "content-type": "application/json" },
+      data: {
+        filter: { tradeTypes, realEstateTypes, ...COMMON_FILTER, legalDivisionNumbers: [naverCode], legalDivisionType: "EUP" },
+        boundingBox: boxAround(center),
+        precision: 14, userChannelType: "PC",
+        articlePagingRequest: { size: 30, articleSortType: "RANKING_DESC", lastInfo },
+      },
+    }),
+  );
 }
 
 /** 단지번호 → 매물 목록 원본 JSON (POST) */
