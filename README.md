@@ -42,4 +42,5 @@ real-es/
 
 - 개발 하네스 초기 셋업: `CLAUDE.md`, `.claude/`(Stop hook + 플러그인), `README.md`·`docs/PROJECT_GUIDE.md` 컨벤션 골격, `.gitignore` 구성 (my-forever-music 룰 기준)
 - 디자인 템플릿(SDTPL_ADM) 베이스 인입: 템플릿 소스(`src/`·설정·`e2e/`) 복사 → `pnpm install` → 프로덕션 빌드·서버 기동 검증 통과. real-es 자체 하네스(`CLAUDE.md`·`.claude/`·`docs/`)는 보존, 템플릿 secret(`SDTPL.txt`)은 제외. 전 라우트 정상(`/dashboard/real-estate`·`/login` 200).
+- 백엔드 단계 0(DB 연결): 앱 포트 3001(3000은 my-forever-music 점유). 새 컨테이너 없이 기존 `mrms-pg`(pg16, 호스트 5433)에 `real_es` DB 추가. Prisma 6으로 `Agency` 모델 + 첫 마이그레이션, `src/lib/db.ts` 싱글톤 클라이언트. `GET /api/health`가 DB ping으로 연결을 검증(e2e `e2e/health.spec.ts` 통과) → **DB에 연결되는 앱** 확보.
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)
