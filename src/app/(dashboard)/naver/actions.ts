@@ -21,17 +21,20 @@ export async function getEmds(sigunguCode: string): Promise<Region[]> {
 }
 
 export async function loadComplexes(naverCode: string, refresh = false): Promise<ComplexRow[]> {
+  const readFromDb = async (): Promise<ComplexRow[]> => {
+    const rows = await db.complex.findMany({ where: { regionCode: naverCode }, orderBy: { totalHouseholds: "desc" } });
+    return rows.map((c) => {
+      const raw = (c.raw ?? {}) as { dealCount?: number; leaseDepositCount?: number; leaseMonthlyCount?: number };
+      return { complexNumber: c.complexNumber, name: c.name, totalHouseholds: c.totalHouseholds, dealCount: raw.dealCount ?? 0, leaseDepositCount: raw.leaseDepositCount ?? 0, leaseMonthlyCount: raw.leaseMonthlyCount ?? 0 };
+    });
+  };
+
   if (!refresh) {
-    const cached = await db.complex.findMany({ where: { regionCode: naverCode }, orderBy: { totalHouseholds: "desc" } });
-    if (cached.length) {
-      return cached.map((c) => {
-        const raw = (c.raw ?? {}) as { dealCount?: number; leaseDepositCount?: number; leaseMonthlyCount?: number };
-        return { complexNumber: c.complexNumber, name: c.name, totalHouseholds: c.totalHouseholds, dealCount: raw.dealCount ?? 0, leaseDepositCount: raw.leaseDepositCount ?? 0, leaseMonthlyCount: raw.leaseMonthlyCount ?? 0 };
-      });
-    }
+    const cached = await readFromDb();
+    if (cached.length) return cached;
   }
-  const list = await listComplexesByRegion(naverCode);
-  return list.map((c) => ({ complexNumber: c.complexNumber, name: c.name, totalHouseholds: c.totalHouseholds, dealCount: c.dealCount, leaseDepositCount: c.leaseDepositCount, leaseMonthlyCount: c.leaseMonthlyCount }));
+  await listComplexesByRegion(naverCode);
+  return readFromDb();
 }
 
 export async function loadArticles(complexNumber: string, tradeTypes: string[], refresh = false): Promise<{ articles: ArticleRow[]; lat: number | null; lng: number | null }> {
