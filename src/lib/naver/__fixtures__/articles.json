@@ -1,0 +1,38 @@
+{
+  "isSuccess": true,
+  "detailCode": "success",
+  "result": {
+    "seed": "584617e3-4f72-441d-adb1-0cfc012fdacb",
+    "lastInfo": [1, 1040.5181508521755, "2633442294"],
+    "hasNextPage": true,
+    "totalCount": 179,
+    "list": [
+      {
+        "representativeArticleInfo": {
+          "complexName": "수원한일타운",
+          "articleNumber": "2633772224",
+          "dongName": "142",
+          "tradeType": "A1",
+          "realEstateType": "A01",
+          "spaceInfo": { "supplySpace": 109.23, "exclusiveSpace": 84.77, "supplySpaceName": "109", "exclusiveSpaceName": "84" },
+          "articleDetail": { "floorInfo": "2/23" },
+          "brokerInfo": { "brokerageName": "아파트뱅크공인중개사사무소", "brokerName": "부동산써브" },
+          "priceInfo": { "dealPrice": 690000000, "warrantyPrice": 0, "rentPrice": 0 }
+        }
+      },
+      {
+        "representativeArticleInfo": {
+          "complexName": "수원한일타운",
+          "articleNumber": "2633824408",
+          "dongName": "118",
+          "tradeType": "A1",
+          "realEstateType": "A01",
+          "spaceInfo": { "supplySpace": 81.98, "exclusiveSpace": 59.96, "supplySpaceName": "81A", "exclusiveSpaceName": "59A" },
+          "articleDetail": { "floorInfo": "1/22" },
+          "brokerInfo": { "brokerageName": "금성부동산공인중개사사무소", "brokerName": "부동산뱅크" },
+          "priceInfo": { "dealPrice": 460000000, "warrantyPrice": 0, "rentPrice": 0 }
+        }
+      }
+    ]
+  }
+}
