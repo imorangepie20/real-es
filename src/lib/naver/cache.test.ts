@@ -50,6 +50,10 @@ describe("cache", () => {
     expect(saved?.tradeType).toBe("A1");
     expect(saved?.price).toBe(BigInt(690000000));
     expect(saved?.areaExclusive).toBe(84.77);
+
+    const cx = await db.complex.findUnique({ where: { complexNumber: CN } });
+    expect(cx?.lat).toBe(37.305275);
+    expect(cx?.lng).toBe(127.00909);
   });
 
   it("is idempotent on re-run", async () => {

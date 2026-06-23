@@ -18,27 +18,29 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
   const [coord, setCoord] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null })
   const [trade, setTrade] = useState("")
   const [loadingA, setLoadingA] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function pick(code: string) {
-    setNaverCode(code); setSelected(null); setLoadingC(true)
-    try { setComplexes(await loadComplexes(code)) } finally { setLoadingC(false) }
+    setError(null); setNaverCode(code); setSelected(null); setLoadingC(true)
+    try { setComplexes(await loadComplexes(code)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
   }
   async function refreshC() {
     if (!naverCode) return
-    setLoadingC(true)
-    try { setComplexes(await loadComplexes(naverCode, true)) } finally { setLoadingC(false) }
+    setError(null); setLoadingC(true)
+    try { setComplexes(await loadComplexes(naverCode, true)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
   }
   async function selectComplex(c: ComplexRow, refresh = false, t = trade) {
-    setSelected(c); setLoadingA(true)
+    setError(null); setSelected(c); setLoadingA(true)
     try {
       const types = t ? [t] : []
       const res = await loadArticles(c.complexNumber, types, refresh)
       setArticles(res.articles); setCoord({ lat: res.lat, lng: res.lng })
-    } finally { setLoadingA(false) }
+    } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <RegionPicker sidos={sidos} onPick={(code) => pick(code)} />
       {naverCode && <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshC} onSelect={(c) => selectComplex(c)} />}
       {selected && (

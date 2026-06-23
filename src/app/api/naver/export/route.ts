@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { articlesToWorkbook, type ExcelRow } from "@/lib/naver/excel";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  if (!(await getCurrentUser())) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
   const complexNumber = new URL(req.url).searchParams.get("complexNumber");
   if (!complexNumber) return NextResponse.json({ error: "complexNumber 필요" }, { status: 400 });
 

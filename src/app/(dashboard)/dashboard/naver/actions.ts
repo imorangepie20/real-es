@@ -1,5 +1,6 @@
 "use server";
 
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { getComplexArticles, listComplexesByRegion } from "@/lib/naver";
 
@@ -7,20 +8,30 @@ export type Region = { code: string; name: string; naverCode: string | null };
 export type ComplexRow = { complexNumber: string; name: string; totalHouseholds: number | null; dealCount: number; leaseDepositCount: number; leaseMonthlyCount: number };
 export type ArticleRow = { articleNumber: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null };
 
+async function requireUser() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("인증이 필요합니다");
+  return user;
+}
+
 export async function getSidos(): Promise<Region[]> {
+  await requireUser();
   const rows = await db.legalDivision.findMany({ where: { level: "SIDO" }, orderBy: { code: "asc" } });
   return rows.map((r) => ({ code: r.code, name: r.name, naverCode: null }));
 }
 export async function getSigungus(sidoCode: string): Promise<Region[]> {
+  await requireUser();
   const rows = await db.legalDivision.findMany({ where: { level: "SIGUNGU", sidoCode }, orderBy: { name: "asc" } });
   return rows.map((r) => ({ code: r.code, name: r.name, naverCode: null }));
 }
 export async function getEmds(sigunguCode: string): Promise<Region[]> {
+  await requireUser();
   const rows = await db.legalDivision.findMany({ where: { level: "EMD", sigunguCode }, orderBy: { name: "asc" } });
   return rows.map((r) => ({ code: r.code, name: r.name, naverCode: r.naverCode }));
 }
 
 export async function loadComplexes(naverCode: string, refresh = false): Promise<ComplexRow[]> {
+  await requireUser();
   const readFromDb = async (): Promise<ComplexRow[]> => {
     const rows = await db.complex.findMany({ where: { regionCode: naverCode }, orderBy: { totalHouseholds: "desc" } });
     return rows.map((c) => {
@@ -38,6 +49,7 @@ export async function loadComplexes(naverCode: string, refresh = false): Promise
 }
 
 export async function loadArticles(complexNumber: string, tradeTypes: string[], refresh = false): Promise<{ articles: ArticleRow[]; lat: number | null; lng: number | null }> {
+  await requireUser();
   const toRow = (a: { articleNumber: string; tradeType: string; price: bigint | null; rentPrice: bigint | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; realtorName: string | null; raw: unknown }): ArticleRow => {
     const raw = (a.raw ?? {}) as { dong?: string };
     return { articleNumber: a.articleNumber, tradeType: a.tradeType, price: a.price?.toString() ?? null, rentPrice: a.rentPrice?.toString() ?? null, areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong: raw.dong ?? null, realtorName: a.realtorName };
