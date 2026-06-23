@@ -61,6 +61,8 @@ model Complex {
   totalHouseholds Int?
   approvalDate    String? // 사용승인일 YYYYMMDD
   regionCode      String? // 수집된 동 코드 (naverCode)
+  lat             Float?
+  lng             Float?
   raw             Json?
   fetchedAt       DateTime  @default(now())
   articles        Article[]

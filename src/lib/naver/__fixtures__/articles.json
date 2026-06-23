@@ -17,7 +17,8 @@
           "spaceInfo": { "supplySpace": 109.23, "exclusiveSpace": 84.77, "supplySpaceName": "109", "exclusiveSpaceName": "84" },
           "articleDetail": { "floorInfo": "2/23" },
           "brokerInfo": { "brokerageName": "아파트뱅크공인중개사사무소", "brokerName": "부동산써브" },
-          "priceInfo": { "dealPrice": 690000000, "warrantyPrice": 0, "rentPrice": 0 }
+          "priceInfo": { "dealPrice": 690000000, "warrantyPrice": 0, "rentPrice": 0 },
+          "address": { "coordinates": { "xCoordinate": 127.00909, "yCoordinate": 37.305275 } }
         }
       },
       {

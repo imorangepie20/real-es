@@ -28,6 +28,11 @@ export async function upsertArticles(complexNumber: string, articles: NaverArtic
     (await db.complex.findUnique({ where: { complexNumber } })) ??
     (await db.complex.create({ data: { complexNumber, name: `단지 ${complexNumber}` } }));
 
+  const coord = articles.find((a) => a.lat != null && a.lng != null);
+  if (coord) {
+    await db.complex.update({ where: { id: complex.id }, data: { lat: coord.lat, lng: coord.lng } });
+  }
+
   for (const a of articles) {
     const data = {
       tradeType: a.tradeType,

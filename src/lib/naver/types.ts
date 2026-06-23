@@ -24,6 +24,8 @@ export type NaverArticle = {
   floor: string | null; // "2/23"
   realtorName: string | null;
   dong: string | null;
+  lng: number | null;
+  lat: number | null;
 };
 
 export type RegionComplexesResult = {

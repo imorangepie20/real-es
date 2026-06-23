@@ -24,7 +24,7 @@ export async function listComplexesByRegion(
 /** 단지번호 → 매물 목록 수집 + 캐시 (커서 페이지네이션, 보수적 페이싱) */
 export async function getComplexArticles(
   complexNumber: string,
-  { tradeTypes = ["A1"], size = 30, maxPages = 5 }: { tradeTypes?: string[]; size?: number; maxPages?: number } = {},
+  { tradeTypes = [], size = 30, maxPages = 5 }: { tradeTypes?: string[]; size?: number; maxPages?: number } = {},
 ): Promise<NaverArticle[]> {
   return withNaverSession(async (ctx) => {
     const all: NaverArticle[] = [];

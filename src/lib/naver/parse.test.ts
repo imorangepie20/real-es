@@ -43,6 +43,8 @@ describe("parseArticles", () => {
       floor: "2/23",
       realtorName: "아파트뱅크공인중개사사무소",
       dong: "142",
+      lng: 127.00909,
+      lat: 37.305275,
     });
   });
 

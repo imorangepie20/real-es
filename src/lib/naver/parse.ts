@@ -55,6 +55,7 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
 
     const deal = num(price.dealPrice);
     const warranty = num(price.warrantyPrice);
+    const coords = ((a.address as Record<string, unknown>)?.coordinates as Record<string, unknown>) ?? {};
     return {
       articleNumber: String(a.articleNumber),
       complexNumber,
@@ -67,6 +68,8 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
       floor: detail.floorInfo ? String(detail.floorInfo) : null,
       realtorName: broker.brokerageName ? String(broker.brokerageName) : null,
       dong: a.dongName ? String(a.dongName) : null,
+      lng: num(coords.xCoordinate),
+      lat: num(coords.yCoordinate),
     };
   });
 
