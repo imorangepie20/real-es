@@ -32,6 +32,7 @@ next-env.d.ts
 .vercel
 /playwright-report/
 /test-results/
+/playwright/.auth/
 .pnp.*
 
 # secret (template registry token — never commit)
