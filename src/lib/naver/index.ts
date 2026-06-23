@@ -20,14 +20,17 @@ export async function listComplexesByRegion(
   return withNaverSession(async (ctx) => {
     const all: NaverComplex[] = [];
     let lastInfo: unknown[] = [];
+    let hasNext = false;
     for (let p = 0; p < maxPages; p++) {
       const json = await fetchBoundedComplexes(ctx, naverCode, { realEstateTypes, tradeTypes, center, lastInfo });
       const { complexes, lastInfo: next, hasNextPage } = parseBoundedComplexes(json);
+      hasNext = hasNextPage;
       all.push(...complexes);
       if (!hasNextPage || !next.length) break;
       lastInfo = next;
       await sleep(2500);
     }
+    if (hasNext) console.warn(`[naver] boundedComplexes ${naverCode}: maxPages(${maxPages}) 도달 — 더 있을 수 있음(잘림 가능)`);
     await upsertComplexes(all, naverCode);
     return all;
   });
@@ -42,14 +45,17 @@ export async function getRegionArticles(
   return withNaverSession(async (ctx) => {
     const all: NaverArticle[] = [];
     let lastInfo: unknown[] = [];
+    let hasNext = false;
     for (let p = 0; p < maxPages; p++) {
       const json = await fetchBoundedArticles(ctx, naverCode, { realEstateTypes, tradeTypes, center, lastInfo });
       const { articles, lastInfo: next, hasNextPage } = parseArticles(json, "");
+      hasNext = hasNextPage;
       all.push(...articles);
       if (!hasNextPage || !next.length) break;
       lastInfo = next;
       await sleep(2500);
     }
+    if (hasNext) console.warn(`[naver] boundedArticles ${naverCode}: maxPages(${maxPages}) 도달 — 더 있을 수 있음(잘림 가능)`);
     await upsertRegionArticles(naverCode, all);
     return all;
   });
@@ -63,14 +69,17 @@ export async function getComplexArticles(
   return withNaverSession(async (ctx) => {
     const all: NaverArticle[] = [];
     let lastInfo: unknown[] = [];
+    let hasNext = false;
     for (let p = 0; p < maxPages; p++) {
       const json = await fetchArticles(ctx, complexNumber, { tradeTypes, size, lastInfo });
       const { articles, lastInfo: next, hasNextPage } = parseArticles(json, complexNumber);
+      hasNext = hasNextPage;
       all.push(...articles);
       if (!hasNextPage || !next.length) break;
       lastInfo = next;
       await sleep(2500);
     }
+    if (hasNext) console.warn(`[naver] article/list ${complexNumber}: maxPages(${maxPages}) 도달 — 더 있을 수 있음(잘림 가능)`);
     await upsertComplexArticles(complexNumber, all);
     return all;
   });

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DEFAULT_TRADE, TRADE_OPTIONS } from "@/lib/naver/trade-types"
-import { DEFAULT_PROPERTY, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
+import { DEFAULT_PROPERTY, PROPERTY_LABEL, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
 import { loadArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
@@ -51,10 +51,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       try {
         const res = await loadRegionArticles(code, property, trade)
         setArticles(res.articles)
-        const first = res.articles.find((a) => {
-          const r = a as ArticleRow & { lat?: number | null; lng?: number | null }
-          return r.lat != null && r.lng != null
-        }) as (ArticleRow & { lat?: number | null; lng?: number | null }) | undefined
+        const first = res.articles.find((a) => a.lat != null && a.lng != null)
         setCoord({ lat: first?.lat ?? null, lng: first?.lng ?? null })
       } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
     }
@@ -71,10 +68,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       try {
         const res = await loadRegionArticles(naverCode, property, trade, true)
         setArticles(res.articles)
-        const first = res.articles.find((a) => {
-          const r = a as ArticleRow & { lat?: number | null; lng?: number | null }
-          return r.lat != null && r.lng != null
-        }) as (ArticleRow & { lat?: number | null; lng?: number | null }) | undefined
+        const first = res.articles.find((a) => a.lat != null && a.lng != null)
         setCoord({ lat: first?.lat ?? null, lng: first?.lng ?? null })
       } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
     }
@@ -140,17 +134,24 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
 
       {/* 비단지형: 동 선택 후 매물 그리드 직접 표시 */}
       {mode === "article" && naverCode && (
-        <div className="flex flex-col gap-4">
-          {(coord.lat != null && coord.lng != null) && (
-            <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name="" />
-          )}
+        coord.lat != null && coord.lng != null ? (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={PROPERTY_LABEL[property] ?? ""} />
+            <ArticlesGrid
+              exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
+              articles={articles}
+              loading={loadingA}
+              onRefresh={refreshRegion}
+            />
+          </div>
+        ) : (
           <ArticlesGrid
             exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
             articles={articles}
             loading={loadingA}
             onRefresh={refreshRegion}
           />
-        </div>
+        )
       )}
     </div>
   )
