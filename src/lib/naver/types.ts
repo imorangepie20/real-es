@@ -11,8 +11,6 @@ export type NaverComplex = {
   leaseMonthlyCount: number; // 월세
 };
 
-export type TradeType = "A1" | "B1" | "B2"; // 매매 / 전세 / 월세
-
 export type NaverArticle = {
   articleNumber: string;
   complexNumber: string;

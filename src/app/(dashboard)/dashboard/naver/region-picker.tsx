@@ -5,7 +5,7 @@ import { useState } from "react"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { getEmds, getSigungus, type Region } from "./actions"
 
-export function RegionPicker({ sidos, onPick }: { sidos: Region[]; onPick: (naverCode: string, name: string) => void }) {
+export function RegionPicker({ sidos, onPick }: { sidos: Region[]; onPick: (naverCode: string) => void }) {
   const [sigungus, setSigungus] = useState<Region[]>([])
   const [emds, setEmds] = useState<Region[]>([])
 
@@ -21,7 +21,7 @@ export function RegionPicker({ sidos, onPick }: { sidos: Region[]; onPick: (nave
         {sigungus.map((s) => <NativeSelectOption key={s.code} value={s.code}>{s.name}</NativeSelectOption>)}
       </NativeSelect>
 
-      <NativeSelect defaultValue="" disabled={!emds.length} onChange={(e) => { const emd = emds.find((x) => x.code === e.target.value); if (emd?.naverCode) onPick(emd.naverCode, emd.name) }}>
+      <NativeSelect defaultValue="" disabled={!emds.length} onChange={(e) => { const emd = emds.find((x) => x.code === e.target.value); if (emd?.naverCode) onPick(emd.naverCode) }}>
         <NativeSelectOption value="">읍/면/동</NativeSelectOption>
         {emds.map((s) => <NativeSelectOption key={s.code} value={s.code}>{s.name}</NativeSelectOption>)}
       </NativeSelect>
