@@ -1,5 +1,7 @@
 import ExcelJS from "exceljs";
 
+import { TRADE_LABEL } from "./trade-types";
+
 export type ExcelRow = {
   complexName: string;
   tradeType: string;
@@ -11,8 +13,6 @@ export type ExcelRow = {
   dong: string | null;
   realtorName: string | null;
 };
-
-const TRADE: Record<string, string> = { A1: "매매", B1: "전세", B2: "월세", B3: "단기임대" };
 
 export function articlesToWorkbook(rows: ExcelRow[]): ExcelJS.Workbook {
   const wb = new ExcelJS.Workbook();
@@ -32,7 +32,7 @@ export function articlesToWorkbook(rows: ExcelRow[]): ExcelJS.Workbook {
   for (const r of rows) {
     ws.addRow({
       complexName: r.complexName,
-      tradeType: TRADE[r.tradeType] ?? r.tradeType,
+      tradeType: TRADE_LABEL[r.tradeType] ?? r.tradeType,
       price: r.price != null ? Number(r.price) : null,
       rentPrice: r.rentPrice != null ? Number(r.rentPrice) : null,
       areaExclusive: r.areaExclusive,

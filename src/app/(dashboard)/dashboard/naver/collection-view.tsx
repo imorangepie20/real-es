@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { DEFAULT_TRADE, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { loadArticles, loadComplexes, type ArticleRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
@@ -16,7 +19,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
   const [selected, setSelected] = useState<ComplexRow | null>(null)
   const [articles, setArticles] = useState<ArticleRow[]>([])
   const [coord, setCoord] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null })
-  const [trade, setTrade] = useState("")
+  const [trade, setTrade] = useState(DEFAULT_TRADE)
   const [loadingA, setLoadingA] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,15 +35,32 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
   async function selectComplex(c: ComplexRow, refresh = false, t = trade) {
     setError(null); setSelected(c); setLoadingA(true)
     try {
-      const types = t ? [t] : []
-      const res = await loadArticles(c.complexNumber, types, refresh)
+      const res = await loadArticles(c.complexNumber, [t], refresh)
       setArticles(res.articles); setCoord({ lat: res.lat, lng: res.lng })
     } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
+  }
+  function changeTrade(t: string) {
+    setTrade(t)
+    if (selected) selectComplex(selected, false, t)
   }
 
   return (
     <div className="flex flex-col gap-4">
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {/* 거래유형 단일선택 (지역 선택 이전) */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium">거래유형</span>
+        <RadioGroup value={trade} onValueChange={(v) => { if (v != null) changeTrade(v) }} className="flex flex-row gap-4">
+          {TRADE_OPTIONS.map((t) => (
+            <div key={t.value} className="flex items-center gap-1.5">
+              <RadioGroupItem value={t.value} id={`trade-${t.value}`} />
+              <Label htmlFor={`trade-${t.value}`} className="font-normal cursor-pointer">{t.label}</Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </div>
+
       <RegionPicker sidos={sidos} onPick={(code) => pick(code)} />
       {naverCode && <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshC} onSelect={(c) => selectComplex(c)} />}
       {selected && (
@@ -50,8 +70,6 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
             complexNumber={selected.complexNumber}
             articles={articles}
             loading={loadingA}
-            trade={trade}
-            onTrade={(t) => { setTrade(t); selectComplex(selected, false, t) }}
             onRefresh={() => selectComplex(selected, true)}
           />
         </div>

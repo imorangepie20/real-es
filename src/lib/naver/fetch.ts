@@ -2,6 +2,8 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { chromium, type APIResponse, type BrowserContext } from "playwright";
 
+import { DEFAULT_TRADE } from "./trade-types";
+
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36";
 const BASE = "https://fin.land.naver.com/front-api/v1";
@@ -77,7 +79,7 @@ export function fetchRegionComplexes(
 export function fetchArticles(
   ctx: BrowserContext,
   complexNumber: string,
-  { tradeTypes = ["A1"], size = 30, lastInfo = [] as unknown[] }: { tradeTypes?: string[]; size?: number; lastInfo?: unknown[] } = {},
+  { tradeTypes = [DEFAULT_TRADE], size = 30, lastInfo = [] as unknown[] }: { tradeTypes?: string[]; size?: number; lastInfo?: unknown[] } = {},
 ): Promise<unknown> {
   return request("article/list", () =>
     ctx.request.post(`${BASE}/complex/article/list`, {

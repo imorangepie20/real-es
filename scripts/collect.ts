@@ -5,11 +5,12 @@
 import "dotenv/config";
 
 import { getComplexArticles, listComplexesByRegion } from "@/lib/naver";
+import { DEFAULT_TRADE } from "@/lib/naver/trade-types";
 
 const won = (v: number | null) => (v == null ? "-" : v.toLocaleString("ko-KR"));
 
 async function main() {
-  const [, , regionCode, complexNumber, tradeType = "A1"] = process.argv;
+  const [, , regionCode, complexNumber, tradeType = DEFAULT_TRADE] = process.argv;
   if (!regionCode) {
     console.error("사용: pnpm collect <eupLegalDivisionNumber> [complexNumber] [tradeType=A1]");
     process.exit(1);
