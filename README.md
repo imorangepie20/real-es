@@ -13,18 +13,18 @@ real-es/
 ├── README.md             # 이 문서 — 루트 개요 + 현재 반영 상태
 ├── package.json          # Next.js 16 + React 19 + Tailwind v4 + shadcn/ui
 ├── src/
-│   ├── app/              # (dashboard)·(auth) 라우트 그룹
-│   ├── components/       # ui/ 프리미티브 + layout/ + dashboards/ 등
-│   ├── lib/              # nav.ts(메뉴 단일 소스)·data.ts(mock)·utils.ts
+│   ├── app/              # (dashboard)·(auth) 라우트 그룹 + api/(health·naver export)
+│   ├── components/       # ui/ 프리미티브 + layout/ + dashboards/·pages/·apps/ 패턴
+│   ├── lib/              # nav.ts(메뉴)·auth/·db.ts(Prisma)·naver/(수집)·data.ts(템플릿 mock)
 │   └── hooks/
+├── prisma/               # schema + 마이그레이션 (Agency·User·Session·LegalDivision·Complex·Article)
+├── scripts/              # seed-legal-divisions·collect·run-prod 등 러너
 ├── e2e/                  # Playwright 스모크 테스트
 ├── .claude/              # Claude Code 하네스 (settings, Stop hook, plugins)
 └── docs/
     ├── PROJECT_GUIDE.md  # 새 세션이 먼저 읽는 가이드
     └── project_structure.md  # 제품 스펙
 ```
-
-(실제 소스 구조는 스택이 정해지면 갱신한다.)
 
 ## 선정 스택
 
@@ -34,7 +34,7 @@ real-es/
 - **TypeScript / Tailwind v4**
 - **shadcn/ui (Base UI 기반)** — 데이터 테이블·차트·캘린더·칸반·⌘K 팔레트 내장
 - **pnpm** 패키지 매니저
-- (예정) PostgreSQL + Prisma 백엔드, 네이버 매물 수집기, Tauri 데스크탑
+- PostgreSQL + Prisma 백엔드·네이버 매물 수집기 적용 완료(단계 0~3), Tauri 데스크탑은 예정
 
 배포 도메인: `https://resm.approid.team` (Cloudflare 터널)
 
@@ -46,4 +46,5 @@ real-es/
 - 인증 단계 1(로그인되는 앱): `User`/`Session` 모델 + `init_auth` 마이그레이션. 셀프서비스 회원가입(Agency+admin 동시 생성)·로그인·로그아웃, opaque 토큰 세션(httpOnly 쿠키·DB tokenHash). `(dashboard)` 서버 사이드 가드로 보호, 기존 템플릿 e2e는 storageState 인증 픽스처로 통과. 인증 코어는 `src/lib/auth/`(bcryptjs·zod). 단위(vitest)·E2E(`e2e/auth.spec.ts`) 통과.
 - 네이버 수집 단계 2(진행): 진입을 **동(법정동) 드릴다운**으로 확정(단지명 키워드 검색 폐기). 법정동(시도/시군구/읍면동 5067개 + 좌표)을 VWorld로 `LegalDivision`에 적재(`scripts/seed-legal-divisions.mjs`). 수집 파서·캐시(`Complex`/`Article`, 픽스처 결정적 테스트) + 스크래퍼 모듈 `src/lib/naver/`(`listComplexesByRegion`·`getComplexArticles`). 라이브 수집 **검증 완료**(정자동→단지 30 + 매물 113건 캐시). 네이버는 브라우저 동일 헤더(sec-ch-ua·sec-fetch-*·accept-language)가 없으면 429로 거부 — IP 아님.
 - 매물 수집 단계 3(UI): `/dashboard/naver` — 동 선택→단지 목록→단지 선택→카카오지도+매물 그리드→엑셀 다운로드(exceljs). 캐시 우선 수집, KAKAO_MAP_KEY(서버→prop).
+- 터널 운영(prod)·거래유형 UI: 터널(`resm.approid.team`) 접속은 **production 모드**로 띄운다(`bash scripts/run-prod.sh`) — dev는 cross-origin 서버액션이 막혀 동 드릴다운이 안 됨. `next.config.ts`에 터널 origin 허용. 거래유형 선택을 **지역 선택 위 라디오 단일선택**(매매/전세/월세)으로 옮기고, 거래유형 코드·라벨을 단일 소스(`src/lib/naver/trade-types.ts`)로 통합.
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)
