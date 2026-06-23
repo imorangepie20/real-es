@@ -5,6 +5,7 @@ import { CommandPalette } from "@/components/layout/command-palette";
 import { Notifications } from "@/components/layout/notifications";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 export function AppHeader() {
   return (
@@ -19,6 +20,7 @@ export function AppHeader() {
         <Avatar className="size-8">
           <AvatarFallback>TB</AvatarFallback>
         </Avatar>
+        <LogoutButton />
       </div>
     </header>
   );

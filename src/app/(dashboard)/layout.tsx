@@ -1,8 +1,14 @@
+import { redirect } from "next/navigation";
+
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppHeader } from "@/components/layout/app-header";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
   return (
     <SidebarProvider>
       <AppSidebar />

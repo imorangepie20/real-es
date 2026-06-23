@@ -1,24 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useActionState, useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 
+import { loginAction, type AuthState } from "../actions"
 import { AuthCard } from "@/components/auth/auth-card"
 import { SocialButtons } from "@/components/auth/social-buttons"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
+const initialState: AuthState = { error: null }
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-  }
+  const [state, formAction, pending] = useActionState(loginAction, initialState)
 
   return (
     <AuthCard
@@ -32,16 +30,11 @@ export default function LoginPage() {
         </span>
       }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form action={formAction} className="flex flex-col gap-4">
         {/* Email */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="m@example.com"
-            autoComplete="email"
-          />
+          <Input id="email" name="email" type="email" placeholder="m@example.com" autoComplete="email" />
         </div>
 
         {/* Password */}
@@ -58,6 +51,7 @@ export default function LoginPage() {
           <div className="relative">
             <Input
               id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               className="pr-9"
@@ -73,20 +67,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Remember me */}
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="remember"
-            checked={rememberMe}
-            onCheckedChange={(checked) => setRememberMe(!!checked)}
-          />
-          <Label htmlFor="remember" className="font-normal cursor-pointer">
-            Remember me
-          </Label>
-        </div>
+        {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-        <Button type="submit" className="w-full mt-1">
-          Sign in
+        <Button type="submit" disabled={pending} className="w-full mt-1">
+          {pending ? "처리 중..." : "Sign in"}
         </Button>
 
         {/* Divider */}

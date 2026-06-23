@@ -1,22 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useActionState } from "react"
 import Link from "next/link"
 
+import { signupAction, type AuthState } from "../actions"
 import { AuthCard } from "@/components/auth/auth-card"
 import { SocialButtons } from "@/components/auth/social-buttons"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-export default function RegisterPage() {
-  const [agreed, setAgreed] = useState(false)
+const initialState: AuthState = { error: null }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-  }
+export default function RegisterPage() {
+  const [state, formAction, pending] = useActionState(signupAction, initialState)
 
   return (
     <AuthCard
@@ -30,47 +28,35 @@ export default function RegisterPage() {
         </span>
       }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Name */}
+      <form action={formAction} className="flex flex-col gap-4">
+        {/* 상호명 (Agency) */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" type="text" placeholder="John Doe" autoComplete="name" />
+          <Label htmlFor="agencyName">상호명</Label>
+          <Input id="agencyName" name="agencyName" type="text" placeholder="○○공인중개사" autoComplete="organization" />
+        </div>
+
+        {/* 이름 (선택) */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="name">이름 (선택)</Label>
+          <Input id="name" name="name" type="text" placeholder="홍길동" autoComplete="name" />
         </div>
 
         {/* Email */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" autoComplete="email" />
+          <Input id="email" name="email" type="email" placeholder="m@example.com" autoComplete="email" />
         </div>
 
         {/* Password */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" autoComplete="new-password" />
+          <Input id="password" name="password" type="password" autoComplete="new-password" />
         </div>
 
-        {/* Terms */}
-        <div className="flex items-start gap-2">
-          <Checkbox
-            id="terms"
-            checked={agreed}
-            onCheckedChange={(checked) => setAgreed(!!checked)}
-            className="mt-0.5"
-          />
-          <Label htmlFor="terms" className="font-normal cursor-pointer leading-snug">
-            I agree to the{" "}
-            <Link href="#" className="underline underline-offset-4 hover:text-foreground">
-              Terms
-            </Link>{" "}
-            &amp;{" "}
-            <Link href="#" className="underline underline-offset-4 hover:text-foreground">
-              Privacy
-            </Link>
-          </Label>
-        </div>
+        {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-        <Button type="submit" className="w-full mt-1">
-          Create account
+        <Button type="submit" disabled={pending} className="w-full mt-1">
+          {pending ? "처리 중..." : "Create account"}
         </Button>
 
         {/* Divider */}
