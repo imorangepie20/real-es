@@ -52,11 +52,12 @@ API 베이스: `https://fin.land.naver.com/front-api/v1`
 - `parse.ts` — 응답 → 정규화(순수 함수, 픽스처 단위테스트).
 - `cache.ts` — `Complex`/`Article` upsert(전역 공유 캐시, price BigInt).
 
-## 5. 수집 방식 / 운영 (스펙 §6)
+## 5. 수집 방식 / 운영 (스펙 §6) — **검증된 경로**
 
-- **직접 API 호출 불가** — 헤드리스 브라우저로 단지 페이지를 워밍해 Akamai 쿠키를 얻은 뒤, 그 컨텍스트의 `context.request`로 front-api 호출(검증된 유일 경로).
-- 단일 세션 재사용 · 요청 간 지연(2.5s) · 429/403 지수 백오프.
-- **운영 리스크(실측)**: 단일 서버 IP가 빠르게 레이트리밋(429)에 걸림. 보수적 페이싱·캐싱(TTL)으로 완화, 지속 차단 시 graceful degradation. 향후 프록시/데스크탑(사용자 IP) 전환 경로(상위 스펙 §9).
+- **워밍**: 헤드리스로 **홈페이지**를 열어 Akamai 쿠키 확보. 이때 **front-api 요청은 전부 `route.abort`** — 단지상세를 로드하면 front-api를 수십 개 쏴서 불필요한 호출이 생긴다. 수집당 실제 API 호출은 1콜(region) / N콜(article 페이지).
+- **요청은 브라우저 동일 헤더 필수**: `sec-ch-ua`·`sec-ch-ua-platform`·`sec-fetch-{dest,mode,site}`·`accept-language`·`priority`·`referer(/map)` + UA를 `sec-ch-ua`와 정렬. 이 헤더가 빠지면 네이버가 **`TOO_MANY_REQUESTS`(429)로 거부** — 이름과 달리 IP 레이트리밋이 아니라 "요청이 덜 브라우저스러움"이다(같은 IP에서 헤더 갖추면 200, bare curl은 429로 확인).
+- 그 뒤 워밍된 컨텍스트의 `context.request`로 front-api 호출. 단일 세션 재사용 · 요청 간 지연(2.5s) · 백오프.
+- **네이버는 민감(anti-bot)** — 보수적으로. 디버깅 시에도 브라우저 요청을 정확히 복제해 최소 호출로 확인할 것(과도한 probe 금지). 캐싱(TTL)으로 재수집 최소화.
 
 ## 6. 테스트
 
@@ -72,6 +73,6 @@ API 베이스: `https://fin.land.naver.com/front-api/v1`
 
 ## 8. 현재 상태 / 남은 일
 
-- ✅ 법정동 VWorld 적재, 파서+캐싱(결정적 테스트), 스크래퍼 모듈 골격.
-- ⏸ 라이브 end-to-end 수집 검증 — 이 서버 IP 레이트리밋 쿨다운 후. (fetch 접근법은 spike로 검증: 429=API 도달, 형식 OK)
-- ⬜ 콘솔 러너(동→단지→매물 1회 실행), 단계 3 매물 검색 UI.
+- ✅ 법정동 VWorld 적재, 파서+캐싱(결정적 테스트), 스크래퍼 모듈, 콘솔 러너(`pnpm collect`).
+- ✅ **라이브 end-to-end 검증 완료**: 정자동(4111113000) → 단지 30 + 단지 102614 매매 매물 113건 수집·정규화·캐시(`Complex`/`Article`). 브라우저 헤더 적용 후 200.
+- ⬜ 단계 3: 매물 검색 UI(동 선택 → 단지 → @tanstack data-table). 거래유형 B1/전세·B2/월세 실데이터 확인. 캐싱 TTL.
