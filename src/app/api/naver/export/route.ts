@@ -33,7 +33,7 @@ export async function GET(req: Request) {
   const wb = articlesToWorkbook(rows);
   const buf = await wb.xlsx.writeBuffer();
   const filename = encodeURIComponent(`${complex.name}_매물.xlsx`);
-  return new NextResponse(buf as ArrayBuffer, {
+  return new NextResponse(buf as unknown as BodyInit, {
     headers: {
       "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "content-disposition": `attachment; filename*=UTF-8''${filename}`,
