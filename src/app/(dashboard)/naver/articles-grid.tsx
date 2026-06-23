@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { ArticleRow } from "./actions"
@@ -20,11 +20,9 @@ export function ArticlesGrid({ complexNumber, articles, loading, trade, onTrade,
           <NativeSelectOption value="B1">전세</NativeSelectOption>
           <NativeSelectOption value="B2">월세</NativeSelectOption>
         </NativeSelect>
-        <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading}>{loading ? "수집 중..." : "갱신"}</Button>
+        <button className={buttonVariants({ size: "sm", variant: "outline" })} onClick={onRefresh} disabled={loading}>{loading ? "수집 중..." : "갱신"}</button>
         <span className="text-sm text-muted-foreground">매물 {articles.length}개</span>
-        <a className="ml-auto" href={`/api/naver/export?complexNumber=${complexNumber}`}>
-          <Button size="sm">엑셀 다운로드</Button>
-        </a>
+        <a className={buttonVariants({ size: "sm" }) + " ml-auto"} href={`/api/naver/export?complexNumber=${complexNumber}`}>엑셀 다운로드</a>
       </div>
       <div className="rounded-lg border">
         <Table>

@@ -18,7 +18,11 @@ export function KakaoMap({ appKey, lat, lng, name }: { appKey: string; lat: numb
     })
     if (window.kakao?.maps) { init(); return }
     const id = "kakao-maps-sdk"
-    if (document.getElementById(id)) { document.getElementById(id)!.addEventListener("load", init); return }
+    const existing = document.getElementById(id)
+    if (existing) {
+      existing.addEventListener("load", init)
+      return () => existing.removeEventListener("load", init)
+    }
     const s = document.createElement("script")
     s.id = id
     s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`
