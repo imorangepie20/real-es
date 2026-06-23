@@ -8,13 +8,13 @@ export const TRADE_OPTIONS: TradeOption[] = [
   { value: "A1", label: "매매" },
   { value: "B1", label: "전세" },
   { value: "B2", label: "월세" },
+  { value: "B3", label: "단기임대" },
 ];
 
-/** 표시용 코드→라벨 (수집 데이터에 나타날 수 있는 B3 단기임대 포함) */
-export const TRADE_LABEL: Record<string, string> = {
-  ...Object.fromEntries(TRADE_OPTIONS.map((o) => [o.value, o.label])),
-  B3: "단기임대",
-};
+/** 표시용 코드→라벨 */
+export const TRADE_LABEL: Record<string, string> = Object.fromEntries(
+  TRADE_OPTIONS.map((o) => [o.value, o.label]),
+);
 
 /** 기본 거래유형 (매매) */
 export const DEFAULT_TRADE = TRADE_OPTIONS[0].value;
