@@ -14,11 +14,11 @@ async function requireUser() {
   return user;
 }
 
-type DbArticle = { articleNumber: string; realEstateType: string | null; tradeType: string; price: bigint | null; rentPrice: bigint | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null };
+type DbArticle = { articleNumber: string; realEstateType: string | null; tradeType: string; price: bigint | null; rentPrice: bigint | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; raw: unknown };
 const toRow = (a: DbArticle): ArticleRow => ({
   articleNumber: a.articleNumber, realEstateType: a.realEstateType ?? "", tradeType: a.tradeType,
   price: a.price?.toString() ?? null, rentPrice: a.rentPrice?.toString() ?? null,
-  areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong: a.dong, realtorName: a.realtorName,
+  areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong: a.dong ?? (a.raw as { dong?: string } | null)?.dong ?? null, realtorName: a.realtorName,
 });
 
 export async function getSidos(): Promise<Region[]> {

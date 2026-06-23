@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { articlesToWorkbook, type ExcelRow } from "@/lib/naver/excel";
+import { PROPERTY_LABEL } from "@/lib/naver/property-types";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +59,7 @@ export async function GET(req: Request) {
       dong: a.dong,
       realtorName: a.realtorName,
     }));
-    filename = encodeURIComponent(`${regionCode}_${realEstateType}_매물.xlsx`);
+    filename = encodeURIComponent(`${regionCode}_${PROPERTY_LABEL[realEstateType] ?? realEstateType}_매물.xlsx`);
   } else {
     return NextResponse.json({ error: "complexNumber 또는 regionCode+realEstateType+tradeType 필요" }, { status: 400 });
   }
