@@ -22,6 +22,7 @@ export const navGroups: NavGroup[] = [
       { title: "Hotel", href: "/dashboard/hotel", icon: Hotel },
       { title: "Project Management", href: "/dashboard/project-management", icon: KanbanSquare },
       { title: "Real Estate", href: "/dashboard/real-estate", icon: Building2 },
+      { title: "매물 수집", href: "/dashboard/naver", icon: Building2 },
       { title: "Sales", href: "/dashboard/sales", icon: TrendingUp },
       { title: "CRM", href: "/dashboard/crm", icon: Users },
       { title: "Website Analytics", href: "/dashboard/analytics", icon: BarChart3 },
