@@ -51,3 +51,38 @@ model LegalDivision {
   @@index([sidoCode])
   @@index([sigunguCode])
 }
+
+// 단지 (네이버 수집 캐시, 전역 공유) — 기본 정보만
+model Complex {
+  id              String    @id @default(cuid())
+  complexNumber   String    @unique // 네이버 단지번호
+  name            String
+  type            String? // A01 아파트 / A02 주상복합
+  totalHouseholds Int?
+  approvalDate    String? // 사용승인일 YYYYMMDD
+  regionCode      String? // 수집된 동 코드 (naverCode)
+  raw             Json?
+  fetchedAt       DateTime  @default(now())
+  articles        Article[]
+
+  @@index([regionCode])
+}
+
+// 매물 (네이버 수집 캐시, 전역 공유) — 기본 정보만
+model Article {
+  id            String   @id @default(cuid())
+  articleNumber String   @unique
+  complexId     String
+  complex       Complex  @relation(fields: [complexId], references: [id], onDelete: Cascade)
+  tradeType     String // A1 매매 / B1 전세 / B2 월세
+  price         BigInt? // 거래금액(원): 매매가 또는 보증금
+  rentPrice     BigInt? // 월세
+  areaExclusive Float? // 전용면적
+  areaSupply    Float? // 공급면적
+  floor         String? // "2/23"
+  realtorName   String?
+  raw           Json?
+  fetchedAt     DateTime @default(now())
+
+  @@index([complexId])
+}
