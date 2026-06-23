@@ -4,6 +4,8 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+**응답 언어:** 사용자와의 모든 응답·커뮤니케이션은 **한국어**로 한다. 코드·식별자·로그·명령어 등 기술 토큰과 인용 원문은 그대로 둔다.
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
