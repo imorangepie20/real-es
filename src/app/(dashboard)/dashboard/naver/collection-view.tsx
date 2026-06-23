@@ -1,11 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { MapPin, Search } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DEFAULT_TRADE, TRADE_OPTIONS } from "@/lib/naver/trade-types"
+import { DEFAULT_TRADE, TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { DEFAULT_PROPERTY, PROPERTY_LABEL, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
 import { loadArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
@@ -17,6 +21,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
   const [trade, setTrade] = useState(DEFAULT_TRADE)
   const [property, setProperty] = useState(DEFAULT_PROPERTY)
   const [naverCode, setNaverCode] = useState<string | null>(null)
+  const [emdName, setEmdName] = useState<string | null>(null)
   const [complexes, setComplexes] = useState<ComplexRow[]>([])
   const [loadingC, setLoadingC] = useState(false)
   const [selected, setSelected] = useState<ComplexRow | null>(null)
@@ -26,26 +31,20 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
   const [error, setError] = useState<string | null>(null)
 
   const mode = propertyMode(property)
+  const fail = (e: unknown) => setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다")
 
   function resetRegionState() {
-    setNaverCode(null); setComplexes([]); setSelected(null); setArticles([]); setCoord({ lat: null, lng: null })
+    setNaverCode(null); setEmdName(null); setComplexes([]); setSelected(null); setArticles([]); setCoord({ lat: null, lng: null })
   }
 
-  function changeTrade(t: string) {
-    setTrade(t)
-    resetRegionState()
-  }
+  function changeTrade(t: string) { setTrade(t); resetRegionState() }
+  function changeProperty(p: string) { setProperty(p); resetRegionState() }
 
-  function changeProperty(p: string) {
-    setProperty(p)
-    resetRegionState()
-  }
-
-  async function pick(code: string) {
-    setError(null); setNaverCode(code); setSelected(null); setArticles([]); setCoord({ lat: null, lng: null })
+  async function pick(code: string, name: string) {
+    setError(null); setNaverCode(code); setEmdName(name); setSelected(null); setArticles([]); setCoord({ lat: null, lng: null })
     if (propertyMode(property) === "complex") {
       setLoadingC(true)
-      try { setComplexes(await loadComplexes(code, property, trade)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
+      try { setComplexes(await loadComplexes(code, property, trade)) } catch (e) { fail(e) } finally { setLoadingC(false) }
     } else {
       setComplexes([]); setLoadingA(true)
       try {
@@ -53,7 +52,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
         setArticles(res.articles)
         const first = res.articles.find((a) => a.lat != null && a.lng != null)
         setCoord({ lat: first?.lat ?? null, lng: first?.lng ?? null })
-      } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
+      } catch (e) { fail(e) } finally { setLoadingA(false) }
     }
   }
 
@@ -62,7 +61,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
     setError(null)
     if (mode === "complex") {
       setLoadingC(true)
-      try { setComplexes(await loadComplexes(naverCode, property, trade, true)) } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingC(false) }
+      try { setComplexes(await loadComplexes(naverCode, property, trade, true)) } catch (e) { fail(e) } finally { setLoadingC(false) }
     } else {
       setLoadingA(true)
       try {
@@ -70,7 +69,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
         setArticles(res.articles)
         const first = res.articles.find((a) => a.lat != null && a.lng != null)
         setCoord({ lat: first?.lat ?? null, lng: first?.lng ?? null })
-      } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
+      } catch (e) { fail(e) } finally { setLoadingA(false) }
     }
   }
 
@@ -79,80 +78,106 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
     try {
       const res = await loadArticles(c.complexNumber, [t], refresh)
       setArticles(res.articles); setCoord({ lat: res.lat, lng: res.lng })
-    } catch (e) { setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다") } finally { setLoadingA(false) }
+    } catch (e) { fail(e) } finally { setLoadingA(false) }
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {error && <p className="text-sm text-destructive">{error}</p>}
-
-      {/* 거래유형 단일선택 */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">거래유형</span>
-        <RadioGroup value={trade} onValueChange={(v) => { if (v != null) changeTrade(v) }} className="flex flex-row gap-4">
-          {TRADE_OPTIONS.map((t) => (
-            <div key={t.value} className="flex items-center gap-1.5">
-              <RadioGroupItem value={t.value} id={`trade-${t.value}`} />
-              <Label htmlFor={`trade-${t.value}`} className="font-normal cursor-pointer">{t.label}</Label>
+      {/* 검색 바 */}
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>검색 조건</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">거래유형</span>
+              <RadioGroup value={trade} onValueChange={(v) => { if (v != null) changeTrade(v) }} className="flex w-fit flex-row flex-wrap gap-x-4 gap-y-2">
+                {TRADE_OPTIONS.map((t) => (
+                  <div key={t.value} className="flex items-center gap-1.5">
+                    <RadioGroupItem value={t.value} id={`trade-${t.value}`} />
+                    <Label htmlFor={`trade-${t.value}`} className="font-normal cursor-pointer">{t.label}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
-          ))}
-        </RadioGroup>
-      </div>
-
-      {/* 매물유형 단일선택 */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">매물유형</span>
-        <Select value={property} onValueChange={(v) => { if (v != null) changeProperty(v) }}>
-          <SelectTrigger>
-            {/* Base UI SelectValue는 value(코드)를 렌더 → 라벨로 매핑해 children으로 전달 */}
-            <SelectValue>{PROPERTY_LABEL[property] ?? property}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {PROPERTY_OPTIONS.map((p) => (
-              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <RegionPicker sidos={sidos} onPick={(code) => pick(code)} />
-
-      {/* 단지형: 동 선택 후 ComplexList, 단지 선택 후 지도+매물 */}
-      {mode === "complex" && naverCode && (
-        <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshRegion} onSelect={(c) => selectComplex(c)} />
-      )}
-      {mode === "complex" && selected && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={selected.name} />
-          <ArticlesGrid
-            exportHref={`/api/naver/export?complexNumber=${selected.complexNumber}`}
-            articles={articles}
-            loading={loadingA}
-            onRefresh={() => selectComplex(selected, true)}
-          />
-        </div>
-      )}
-
-      {/* 비단지형: 동 선택 후 매물 그리드 직접 표시 */}
-      {mode === "article" && naverCode && (
-        coord.lat != null && coord.lng != null ? (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={PROPERTY_LABEL[property] ?? ""} />
-            <ArticlesGrid
-              exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
-              articles={articles}
-              loading={loadingA}
-              onRefresh={refreshRegion}
-            />
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">매물유형</span>
+              <Select value={property} onValueChange={(v) => { if (v != null) changeProperty(v) }}>
+                <SelectTrigger>
+                  {/* Base UI SelectValue는 value(코드)를 렌더 → 라벨로 매핑해 children으로 전달 */}
+                  <SelectValue>{PROPERTY_LABEL[property] ?? property}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {PROPERTY_OPTIONS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        ) : (
+
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium">지역</span>
+            <RegionPicker key={`${trade}-${property}`} sidos={sidos} onPick={pick} />
+          </div>
+
+          {naverCode && (
+            <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+              <span className="text-sm text-muted-foreground">선택</span>
+              <Badge variant="secondary">{TRADE_LABEL[trade] ?? trade}</Badge>
+              <Badge variant="secondary">{PROPERTY_LABEL[property] ?? property}</Badge>
+              {emdName && <Badge variant="outline"><MapPin className="size-3" />{emdName}</Badge>}
+              <span className="ml-auto text-sm text-muted-foreground">
+                {mode === "complex" ? `단지 ${complexes.length}개` : `매물 ${articles.length}개`}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
+      )}
+
+      {/* 결과 */}
+      {!naverCode ? (
+        <Card>
+          <CardContent className="py-4">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Search /></EmptyMedia>
+                <EmptyTitle>지역을 선택하세요</EmptyTitle>
+                <EmptyDescription>거래유형·매물유형을 고르고 시/도 → 시/군/구 → 읍/면/동을 선택하면 매물을 수집합니다.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </CardContent>
+        </Card>
+      ) : mode === "complex" ? (
+        <div className="flex flex-col gap-4">
+          <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshRegion} onSelect={(c) => selectComplex(c)} selectedNumber={selected?.complexNumber} />
+          {selected && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={selected.name} />
+              <ArticlesGrid
+                exportHref={`/api/naver/export?complexNumber=${selected.complexNumber}`}
+                articles={articles}
+                loading={loadingA}
+                onRefresh={() => selectComplex(selected, true)}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={PROPERTY_LABEL[property] ?? ""} />
           <ArticlesGrid
             exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
             articles={articles}
             loading={loadingA}
             onRefresh={refreshRegion}
           />
-        )
+        </div>
       )}
     </div>
   )
