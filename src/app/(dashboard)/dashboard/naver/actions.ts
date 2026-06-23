@@ -44,7 +44,7 @@ export async function loadComplexes(naverCode: string, refresh = false): Promise
     const cached = await readFromDb();
     if (cached.length) return cached;
   }
-  await listComplexesByRegion(naverCode);
+  await listComplexesByRegion(naverCode, { realEstateTypes: ["A01"] });
   return readFromDb();
 }
 
