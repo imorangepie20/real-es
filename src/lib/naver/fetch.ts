@@ -7,9 +7,13 @@ const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const BASE = "https://fin.land.naver.com/front-api/v1";
 const REFERER = "https://fin.land.naver.com/map";
-const WARM_URL = "https://fin.land.naver.com/complexes/102614";
+const WARM_URL = "https://fin.land.naver.com/";
 
-/** 헤드리스 브라우저를 띄워 Akamai 쿠키를 워밍한 뒤 컨텍스트로 작업 수행 (스펙 §6: 단일 세션 재사용) */
+/**
+ * 헤드리스 브라우저로 Akamai 쿠키만 워밍한 뒤 컨텍스트로 작업 수행 (스펙 §6: 단일 세션 재사용).
+ * 워밍 중 front-api 요청은 전부 abort — 단지상세 페이지를 로드하면 front-api를 수십 개 쏴서
+ * 레이트리밋(429)을 유발하므로, Akamai 쿠키(HTML·센서로 세팅)만 얻고 실제 수집 호출만 남긴다.
+ */
 export async function withNaverSession<T>(fn: (ctx: BrowserContext) => Promise<T>): Promise<T> {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -19,8 +23,10 @@ export async function withNaverSession<T>(fn: (ctx: BrowserContext) => Promise<T
       viewport: { width: 1440, height: 900 },
     });
     const page = await context.newPage();
-    await page.goto(WARM_URL, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => {});
+    await page.route("**/front-api/**", (route) => route.abort());
+    await page.goto(WARM_URL, { waitUntil: "domcontentloaded", timeout: 30_000 }).catch(() => {});
     await sleep(2000);
+    await page.unroute("**/front-api/**");
     return await fn(context);
   } finally {
     await browser.close();
