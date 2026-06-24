@@ -51,4 +51,5 @@ real-es/
 - 매물유형 표시 수정: 매물유형 셀렉트가 코드(A01)를 그대로 노출하던 것을 라벨(아파트)로 표시 — Base UI `SelectValue`는 value를 렌더하므로 `PROPERTY_LABEL` 매핑을 children으로 전달.
 - 매물 검색 페이지 단계 ①(레이아웃): 검색 바를 Card로 묶고 선택 요약 Badge(거래·매물·동)·결과 수 표시, 단지형은 단지목록(좁은 스크롤 패널)+지도 우측·매물 하단 풀너비, 로딩 Skeleton·빈 상태 Empty·클릭 단지 카드 button화(접근성). 템플릿 프리미티브 재사용(§6). 설계: [docs/superpowers/specs/2026-06-24-naver-search-page-design.md](docs/superpowers/specs/2026-06-24-naver-search-page-design.md).
 - 카카오 지도 키 정정: `page.tsx`가 존재하지 않는 `KAKAO_MAP_KEY`를 읽어 지도가 빈 화면이던 것을 `.env` 실제 변수명 `NEXT_PUBLIC_KAKAO_MAP_KEY`로 수정 — 지도 정상 로드.
+- 매물 목록 페이징: 매물 표를 20개씩 클라이언트 페이징(이전/다음 + 페이지 표시), 검색·갱신 시 1페이지로 리셋. (단계 ③ 표 기능의 일부)
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)

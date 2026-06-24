@@ -1,9 +1,10 @@
 "use client"
 
-import { Download, Inbox, ListFilter, RefreshCw } from "lucide-react"
+import { useState } from "react"
+import { ChevronLeft, ChevronRight, Download, Inbox, ListFilter, RefreshCw } from "lucide-react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -12,11 +13,21 @@ import { TRADE_LABEL } from "@/lib/naver/trade-types"
 import { PROPERTY_LABEL } from "@/lib/naver/property-types"
 import type { ArticleRow } from "./actions"
 
+const PAGE_SIZE = 20
 const won = (v: string | null) => (v == null ? "-" : Number(v).toLocaleString("ko-KR"))
 
 export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
   exportHref: string; articles: ArticleRow[]; loading: boolean; onRefresh: () => void
 }) {
+  const [page, setPage] = useState(0)
+  // 새 매물 셋(검색·갱신)이 들어오면 1페이지로 리셋 — effect 대신 렌더 중 prop 변화 감지(React 권장)
+  const [seen, setSeen] = useState(articles)
+  if (seen !== articles) { setSeen(articles); setPage(0) }
+
+  const pageCount = Math.max(1, Math.ceil(articles.length / PAGE_SIZE))
+  const current = Math.min(page, pageCount - 1)
+  const paged = articles.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE)
+
   return (
     <Card className="gap-0">
       <CardHeader className="border-b">
@@ -51,7 +62,7 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {articles.map((a) => (
+                {paged.map((a) => (
                   <TableRow key={a.articleNumber}>
                     <TableCell>{PROPERTY_LABEL[a.realEstateType] ?? a.realEstateType}</TableCell>
                     <TableCell>{TRADE_LABEL[a.tradeType] ?? a.tradeType}</TableCell>
@@ -69,6 +80,20 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
           </div>
         )}
       </CardContent>
+      {!loading && articles.length > 0 && (
+        <CardFooter className="justify-between">
+          <span className="text-sm text-muted-foreground">총 {articles.length}개</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setPage(current - 1)} disabled={current === 0}>
+              <ChevronLeft className="size-3.5" />이전
+            </Button>
+            <span className="text-sm tabular-nums text-muted-foreground">{current + 1} / {pageCount}</span>
+            <Button size="sm" variant="outline" onClick={() => setPage(current + 1)} disabled={current >= pageCount - 1}>
+              다음<ChevronRight className="size-3.5" />
+            </Button>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   )
 }
