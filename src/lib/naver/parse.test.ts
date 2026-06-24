@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { parseBoundedComplexes, parseArticles } from "./parse";
+import { parseArticleClusters, parseBoundedComplexes, parseArticles } from "./parse";
 import boundedComplexesFixture from "./__fixtures__/boundedComplexes.json";
 import boundedArticlesFixture from "./__fixtures__/boundedArticles.json";
 import articlesFixture from "./__fixtures__/articles.json";
+import articleClustersFixture from "./__fixtures__/articleClusters.json";
 
 describe("parseBoundedComplexes", () => {
   const { complexes, hasNextPage, totalCount, lastInfo } = parseBoundedComplexes(boundedComplexesFixture);
@@ -57,5 +58,19 @@ describe("parseArticles", () => {
       lat: 37.2544778,
     });
     expect(totalCount).toBe(184);
+  });
+});
+
+describe("parseArticleClusters", () => {
+  it("클러스터(원 안 숫자) + 좌표 매핑", () => {
+    const { clusters, totalCount } = parseArticleClusters(articleClustersFixture);
+    expect(totalCount).toBe(208);
+    expect(clusters).toHaveLength(3);
+    expect(clusters[0]).toEqual({
+      clusterId: "16/55901/25450",
+      lat: 37.25375158,
+      lng: 127.07511294,
+      count: 72,
+    });
   });
 });

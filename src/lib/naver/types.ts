@@ -43,3 +43,16 @@ export type ArticlesResult = {
   hasNextPage: boolean;
   totalCount: number;
 };
+
+// 비단지형 지도 클러스터 (article/map/articleClusters) — 원 안의 숫자 = 묶음 매물 수
+export type NaverCluster = {
+  clusterId: string;
+  lat: number | null;
+  lng: number | null;
+  count: number;
+};
+
+export type ArticleClustersResult = {
+  clusters: NaverCluster[];
+  totalCount: number;
+};

@@ -4,10 +4,10 @@
 //   getComplexArticles(complexNumber, opts) — 단지 → 매물 목록
 import { setTimeout as sleep } from "node:timers/promises";
 
-import { fetchArticles, fetchBoundedArticles, fetchBoundedComplexes, withNaverSession } from "./fetch";
-import { parseArticles, parseBoundedComplexes } from "./parse";
+import { fetchArticleClusters, fetchArticles, fetchBoundedArticles, fetchBoundedComplexes, fetchClusteredArticles, withNaverSession } from "./fetch";
+import { parseArticleClusters, parseArticles, parseBoundedComplexes } from "./parse";
 import { getRegionCenter, upsertComplexArticles, upsertComplexes, upsertRegionArticles } from "./cache";
-import type { NaverArticle, NaverComplex } from "./types";
+import type { NaverArticle, NaverCluster, NaverComplex } from "./types";
 
 type RegionOpts = { realEstateTypes: string[]; tradeTypes?: string[]; maxPages?: number };
 
@@ -85,4 +85,40 @@ export async function getComplexArticles(
   });
 }
 
-export type { NaverArticle, NaverComplex } from "./types";
+/** 동 + 매물유형 → 클러스터(원 안 숫자) — 지도 표시용 (비단지형, 단일 호출, 캐시 없음) */
+export async function getArticleClusters(
+  naverCode: string,
+  { realEstateTypes, tradeTypes = [] }: { realEstateTypes: string[]; tradeTypes?: string[] },
+): Promise<NaverCluster[]> {
+  const center = await getRegionCenter(naverCode);
+  return withNaverSession(async (ctx) => {
+    const json = await fetchArticleClusters(ctx, naverCode, { realEstateTypes, tradeTypes, center });
+    return parseArticleClusters(json).clusters;
+  });
+}
+
+/** 클러스터 → 하위 매물 수집 + 캐시 (regionCode 기준 저장) */
+export async function getClusteredArticles(
+  clusterId: string,
+  { realEstateTypes, tradeTypes = [], regionCode, maxPages = 10 }: { realEstateTypes: string[]; tradeTypes?: string[]; regionCode: string; maxPages?: number },
+): Promise<NaverArticle[]> {
+  return withNaverSession(async (ctx) => {
+    const all: NaverArticle[] = [];
+    let lastInfo: unknown[] = [];
+    let hasNext = false;
+    for (let p = 0; p < maxPages; p++) {
+      const json = await fetchClusteredArticles(ctx, clusterId, { realEstateTypes, tradeTypes, lastInfo });
+      const { articles, lastInfo: next, hasNextPage } = parseArticles(json, "");
+      hasNext = hasNextPage;
+      all.push(...articles);
+      if (!hasNextPage || !next.length) break;
+      lastInfo = next;
+      await sleep(2500);
+    }
+    if (hasNext) console.warn(`[naver] clusteredArticles ${clusterId}: maxPages(${maxPages}) 도달 — 더 있을 수 있음(잘림 가능)`);
+    await upsertRegionArticles(regionCode, all);
+    return all;
+  });
+}
+
+export type { NaverArticle, NaverCluster, NaverComplex } from "./types";

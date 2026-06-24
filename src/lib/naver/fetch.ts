@@ -122,6 +122,42 @@ export function fetchBoundedArticles(
   );
 }
 
+/** 동 + 매물유형 → 클러스터(원 안 숫자) 원본 JSON (POST article/map/articleClusters, 비단지형 지도) */
+export function fetchArticleClusters(
+  ctx: BrowserContext,
+  naverCode: string,
+  { realEstateTypes, tradeTypes = [DEFAULT_TRADE], center }: Omit<BoundedOpts, "lastInfo">,
+): Promise<unknown> {
+  return request("article/map/articleClusters", () =>
+    ctx.request.post(`${BASE}/article/map/articleClusters`, {
+      headers: { ...BROWSER_HEADERS, "content-type": "application/json" },
+      data: {
+        filter: { tradeTypes, realEstateTypes, ...COMMON_FILTER, legalDivisionNumbers: [naverCode], legalDivisionType: "EUP" },
+        boundingBox: boxAround(center),
+        precision: 14, userChannelType: "PC",
+      },
+    }),
+  );
+}
+
+/** 클러스터 → 하위 매물 원본 JSON (POST article/clusteredArticles) */
+export function fetchClusteredArticles(
+  ctx: BrowserContext,
+  clusterId: string,
+  { realEstateTypes, tradeTypes = [DEFAULT_TRADE], lastInfo = [] }: { realEstateTypes: string[]; tradeTypes?: string[]; lastInfo?: unknown[] },
+): Promise<unknown> {
+  return request("article/clusteredArticles", () =>
+    ctx.request.post(`${BASE}/article/clusteredArticles`, {
+      headers: { ...BROWSER_HEADERS, "content-type": "application/json" },
+      data: {
+        clusterId,
+        filter: { tradeTypes, realEstateTypes, ...COMMON_FILTER },
+        articlePagingRequest: { size: 30, userChannelType: "PC", articleSortType: "RANKING_DESC", lastInfo },
+      },
+    }),
+  );
+}
+
 /** 단지번호 → 매물 목록 원본 JSON (POST) */
 export function fetchArticles(
   ctx: BrowserContext,

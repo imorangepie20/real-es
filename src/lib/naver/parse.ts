@@ -1,7 +1,9 @@
 // 네이버 응답 → 정규화 (순수 함수, 픽스처 단위테스트 대상)
 import type {
+  ArticleClustersResult,
   ArticlesResult,
   NaverArticle,
+  NaverCluster,
   NaverComplex,
   RegionComplexesResult,
 } from "./types";
@@ -81,4 +83,23 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
     hasNextPage: Boolean(result.hasNextPage),
     totalCount: num(result.totalCount) ?? articles.length,
   };
+}
+
+/** article/map/articleClusters 응답 → 클러스터(원 안 숫자) 목록 (비단지형 지도) */
+export function parseArticleClusters(json: unknown): ArticleClustersResult {
+  const result = (json as { result?: Record<string, unknown> })?.result ?? {};
+  const list = (result.clusters as unknown[]) ?? [];
+
+  const clusters: NaverCluster[] = list.map((row) => {
+    const c = row as Record<string, unknown>;
+    const coords = (c.coordinates as Record<string, unknown>) ?? {};
+    return {
+      clusterId: String(c.clusterId),
+      lat: num(coords.yCoordinate),
+      lng: num(coords.xCoordinate),
+      count: num(c.articleCount) ?? 0,
+    };
+  });
+
+  return { clusters, totalCount: num(result.totalCount) ?? clusters.length };
 }

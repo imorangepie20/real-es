@@ -4,6 +4,7 @@ import { useState } from "react"
 import { MapPin, Search } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Label } from "@/components/ui/label"
@@ -11,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DEFAULT_TRADE, TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { DEFAULT_PROPERTY, PROPERTY_LABEL, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
-import { loadArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ComplexRow, type Region } from "./actions"
+import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
 import { KakaoMap } from "./kakao-map"
@@ -26,33 +27,35 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
   const [loadingC, setLoadingC] = useState(false)
   const [selected, setSelected] = useState<ComplexRow | null>(null)
   const [articles, setArticles] = useState<ArticleRow[]>([])
-  const [coord, setCoord] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null })
   const [loadingA, setLoadingA] = useState(false)
+  const [clusters, setClusters] = useState<ClusterRow[]>([])
+  const [loadingClusters, setLoadingClusters] = useState(false)
+  const [clusterDrill, setClusterDrill] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const mode = propertyMode(property)
   const fail = (e: unknown) => setError(e instanceof Error ? e.message : "수집 중 오류가 발생했습니다")
 
   function resetRegionState() {
-    setNaverCode(null); setEmdName(null); setComplexes([]); setSelected(null); setArticles([]); setCoord({ lat: null, lng: null })
+    setNaverCode(null); setEmdName(null); setComplexes([]); setSelected(null)
+    setArticles([]); setClusters([]); setClusterDrill(null)
   }
 
   function changeTrade(t: string) { setTrade(t); resetRegionState() }
   function changeProperty(p: string) { setProperty(p); resetRegionState() }
 
   async function pick(code: string, name: string) {
-    setError(null); setNaverCode(code); setEmdName(name); setSelected(null); setArticles([]); setCoord({ lat: null, lng: null })
+    setError(null); setNaverCode(code); setEmdName(name)
+    setSelected(null); setArticles([]); setClusters([]); setClusterDrill(null)
     if (propertyMode(property) === "complex") {
       setLoadingC(true)
       try { setComplexes(await loadComplexes(code, property, trade)) } catch (e) { fail(e) } finally { setLoadingC(false) }
     } else {
-      setComplexes([]); setLoadingA(true)
-      try {
-        const res = await loadRegionArticles(code, property, trade)
-        setArticles(res.articles)
-        const first = res.articles.find((a) => a.lat != null && a.lng != null)
-        setCoord({ lat: first?.lat ?? null, lng: first?.lng ?? null })
-      } catch (e) { fail(e) } finally { setLoadingA(false) }
+      setComplexes([])
+      setLoadingClusters(true)
+      try { setClusters(await loadArticleClusters(code, property, trade)) } catch (e) { fail(e) } finally { setLoadingClusters(false) }
+      setLoadingA(true)
+      try { setArticles((await loadRegionArticles(code, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
     }
   }
 
@@ -63,27 +66,34 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       setLoadingC(true)
       try { setComplexes(await loadComplexes(naverCode, property, trade, true)) } catch (e) { fail(e) } finally { setLoadingC(false) }
     } else {
+      setClusterDrill(null)
+      setLoadingClusters(true)
+      try { setClusters(await loadArticleClusters(naverCode, property, trade)) } catch (e) { fail(e) } finally { setLoadingClusters(false) }
       setLoadingA(true)
-      try {
-        const res = await loadRegionArticles(naverCode, property, trade, true)
-        setArticles(res.articles)
-        const first = res.articles.find((a) => a.lat != null && a.lng != null)
-        setCoord({ lat: first?.lat ?? null, lng: first?.lng ?? null })
-      } catch (e) { fail(e) } finally { setLoadingA(false) }
+      try { setArticles((await loadRegionArticles(naverCode, property, trade, true)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
     }
   }
 
   async function selectComplex(c: ComplexRow, refresh = false, t = trade) {
     setError(null); setSelected(c); setLoadingA(true)
-    try {
-      const res = await loadArticles(c.complexNumber, [t], refresh)
-      setArticles(res.articles); setCoord({ lat: res.lat, lng: res.lng })
-    } catch (e) { fail(e) } finally { setLoadingA(false) }
+    try { setArticles((await loadArticles(c.complexNumber, [t], refresh)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
+  }
+
+  async function drillCluster(clusterId: string) {
+    if (!naverCode) return
+    setError(null); setClusterDrill(clusterId); setLoadingA(true)
+    try { setArticles((await loadClusterArticles(clusterId, naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
+  }
+
+  async function showAllRegion() {
+    if (!naverCode) return
+    setError(null); setClusterDrill(null); setLoadingA(true)
+    try { setArticles((await loadRegionArticles(naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 검색 바 */}
+      {/* 검색 조건 */}
       <Card>
         <CardHeader className="border-b">
           <CardTitle>검색 조건</CardTitle>
@@ -154,6 +164,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
           </CardContent>
         </Card>
       ) : mode === "complex" ? (
+        // 단지형: 단지목록(좌) + 지도(우) → 매물(하단 풀너비)
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 lg:flex-row">
             <div className="lg:w-80 lg:shrink-0">
@@ -165,6 +176,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
                 markers={complexes.flatMap((c) => (c.lat != null && c.lng != null ? [{ key: c.complexNumber, lat: c.lat, lng: c.lng, name: c.name }] : []))}
                 selectedKey={selected?.complexNumber}
                 onSelect={(key) => { const c = complexes.find((x) => x.complexNumber === key); if (c) selectComplex(c) }}
+                loading={loadingC}
               />
             </div>
           </div>
@@ -178,11 +190,22 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
           )}
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <KakaoMap
-            appKey={kakaoKey}
-            markers={coord.lat != null && coord.lng != null ? [{ key: "region", lat: coord.lat, lng: coord.lng, name: PROPERTY_LABEL[property] ?? "" }] : []}
-          />
+        // 비단지형: 지도(위, 클러스터 원 안 숫자) → 매물(아래 풀너비)
+        <div className="flex flex-col gap-4">
+          <div className="h-80">
+            <KakaoMap
+              appKey={kakaoKey}
+              clusters={clusters.flatMap((c) => (c.lat != null && c.lng != null ? [{ clusterId: c.clusterId, lat: c.lat, lng: c.lng, count: c.count }] : []))}
+              loading={loadingClusters}
+              onClusterClick={drillCluster}
+            />
+          </div>
+          {clusterDrill && (
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <Badge variant="secondary">선택한 묶음 매물 {articles.length}개</Badge>
+              <Button size="sm" variant="outline" onClick={showAllRegion}>전체 매물 보기</Button>
+            </div>
+          )}
           <ArticlesGrid
             exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
             articles={articles}

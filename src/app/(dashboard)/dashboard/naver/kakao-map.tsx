@@ -6,38 +6,44 @@ import { useEffect, useRef } from "react"
 declare global { interface Window { kakao: any } }
 
 export type MapMarker = { key: string; lat: number; lng: number; name: string }
+export type MapCluster = { clusterId: string; lat: number; lng: number; count: number }
 
-export function KakaoMap({ appKey, markers, selectedKey, onSelect }: {
+export function KakaoMap({ appKey, markers = [], clusters = [], selectedKey, onSelect, onClusterClick, loading }: {
   appKey: string
-  markers: MapMarker[]
+  markers?: MapMarker[]
+  clusters?: MapCluster[]
   selectedKey?: string | null
   onSelect?: (key: string) => void
+  onClusterClick?: (clusterId: string) => void
+  loading?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
   const markerObjs = useRef<Map<string, any>>(new Map())
+  const overlayObjs = useRef<any[]>([])
 
-  // 마커가 바뀔 때만 다시 그림 (좌표 시그니처로 감지)
-  const sig = markers.map((m) => `${m.key}@${m.lat},${m.lng}`).join("|")
+  const sig =
+    markers.map((m) => `m:${m.key}@${m.lat},${m.lng}`).join("|") + "#" +
+    clusters.map((c) => `c:${c.clusterId}@${c.lat},${c.lng}:${c.count}`).join("|")
 
   useEffect(() => {
-    if (!appKey || markers.length === 0) return
+    if (!appKey || (markers.length === 0 && clusters.length === 0)) return
     let cancelled = false
 
     const draw = () => window.kakao.maps.load(() => {
       if (cancelled || !ref.current) return
       const kakao = window.kakao
+      const first = markers[0] ?? clusters[0]
+      if (!first) return
       if (!mapRef.current) {
-        mapRef.current = new kakao.maps.Map(ref.current, {
-          center: new kakao.maps.LatLng(markers[0].lat, markers[0].lng),
-          level: 6,
-        })
+        mapRef.current = new kakao.maps.Map(ref.current, { center: new kakao.maps.LatLng(first.lat, first.lng), level: 6 })
       }
       const map = mapRef.current
-      markerObjs.current.forEach((mk) => mk.setMap(null))
-      markerObjs.current.clear()
+      markerObjs.current.forEach((mk) => mk.setMap(null)); markerObjs.current.clear()
+      overlayObjs.current.forEach((ov) => ov.setMap(null)); overlayObjs.current = []
 
       const bounds = new kakao.maps.LatLngBounds()
+
       markers.forEach((m) => {
         const pos = new kakao.maps.LatLng(m.lat, m.lng)
         const marker = new kakao.maps.Marker({ position: pos, map, title: m.name })
@@ -45,8 +51,22 @@ export function KakaoMap({ appKey, markers, selectedKey, onSelect }: {
         markerObjs.current.set(m.key, marker)
         bounds.extend(pos)
       })
-      if (markers.length > 1) map.setBounds(bounds)
-      else map.setCenter(new kakao.maps.LatLng(markers[0].lat, markers[0].lng))
+
+      clusters.forEach((c) => {
+        const pos = new kakao.maps.LatLng(c.lat, c.lng)
+        const el = document.createElement("div")
+        const sizeCls = c.count >= 50 ? "size-14" : c.count >= 10 ? "size-11" : "size-9"
+        el.className = `flex cursor-pointer items-center justify-center rounded-full bg-primary/90 text-xs font-semibold text-primary-foreground shadow ring-2 ring-background ${sizeCls}`
+        el.textContent = String(c.count)
+        if (onClusterClick) el.onclick = () => onClusterClick(c.clusterId)
+        const overlay = new kakao.maps.CustomOverlay({ position: pos, content: el, xAnchor: 0.5, yAnchor: 0.5, zIndex: 3 })
+        overlay.setMap(map)
+        overlayObjs.current.push(overlay)
+        bounds.extend(pos)
+      })
+
+      if (markers.length + clusters.length > 1) map.setBounds(bounds)
+      else map.setCenter(new kakao.maps.LatLng(first.lat, first.lng))
     })
 
     if (window.kakao?.maps) {
@@ -79,12 +99,13 @@ export function KakaoMap({ appKey, markers, selectedKey, onSelect }: {
   if (!appKey) {
     return <div className="flex h-full min-h-72 items-center justify-center rounded-lg border text-sm text-muted-foreground">지도 키 없음</div>
   }
+  const empty = markers.length === 0 && clusters.length === 0
   return (
     <div className="relative h-full min-h-72 w-full">
       <div ref={ref} aria-label="지도" className="h-full w-full rounded-lg border" />
-      {markers.length === 0 && (
+      {(loading || empty) && (
         <div className="absolute inset-0 flex items-center justify-center rounded-lg border bg-muted/30 text-sm text-muted-foreground">
-          좌표 없음 — 단지·매물 선택 후 표시
+          {loading ? "수집 중…" : "좌표 없음 — 단지·매물 선택 후 표시"}
         </div>
       )}
     </div>

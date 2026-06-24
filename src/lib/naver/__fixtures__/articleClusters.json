@@ -1,0 +1,13 @@
+{
+  "isSuccess": true,
+  "detailCode": "success",
+  "message": "",
+  "result": {
+    "totalCount": 208,
+    "clusters": [
+      { "clusterId": "16/55901/25450", "coordinates": { "xCoordinate": 127.07511294, "yCoordinate": 37.25375158 }, "articleCount": 72 },
+      { "clusterId": "16/55901/25451", "coordinates": { "xCoordinate": 127.07674677, "yCoordinate": 37.25153203 }, "articleCount": 61 },
+      { "clusterId": "16/55898/25451", "coordinates": { "xCoordinate": 127.05921594, "yCoordinate": 37.24785469 }, "articleCount": 1 }
+    ]
+  }
+}

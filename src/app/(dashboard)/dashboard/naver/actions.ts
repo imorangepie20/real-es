@@ -2,11 +2,17 @@
 
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
-import { getComplexArticles, getRegionArticles, listComplexesByRegion } from "@/lib/naver";
+import { getArticleClusters, getClusteredArticles, getComplexArticles, getRegionArticles, listComplexesByRegion } from "@/lib/naver";
+import type { NaverArticle } from "@/lib/naver";
 
 export type Region = { code: string; name: string; naverCode: string | null };
 export type ComplexRow = { complexNumber: string; name: string; totalHouseholds: number | null; dealCount: number; leaseDepositCount: number; leaseMonthlyCount: number; lat: number | null; lng: number | null };
 export type ArticleRow = { articleNumber: string; name: string | null; realEstateType: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null };
+export type ClusterRow = { clusterId: string; lat: number | null; lng: number | null; count: number };
+
+// 매물명 = 단지명 + 동명("N동")
+const combineName = (name: string | null, dong: string | null): string | null =>
+  [name, dong ? (dong.endsWith("동") ? dong : `${dong}동`) : null].filter(Boolean).join(" ") || null;
 
 async function requireUser() {
   const user = await getCurrentUser();
@@ -18,9 +24,7 @@ type DbArticle = { articleNumber: string; realEstateType: string | null; tradeTy
 const toRow = (a: DbArticle): ArticleRow => {
   const raw = (a.raw ?? {}) as { name?: string | null; dong?: string | null };
   const dong = a.dong ?? raw.dong ?? null;
-  const complexName = raw.name ?? null;
-  // 매물명 = 단지명 + 동명("N동"). 둘 중 하나만 있으면 있는 것만.
-  const name = [complexName, dong ? (dong.endsWith("동") ? dong : `${dong}동`) : null].filter(Boolean).join(" ") || null;
+  const name = combineName(raw.name ?? null, dong);
   return {
     articleNumber: a.articleNumber, name, realEstateType: a.realEstateType ?? "", tradeType: a.tradeType,
     price: a.price?.toString() ?? null, rentPrice: a.rentPrice?.toString() ?? null,
@@ -28,6 +32,14 @@ const toRow = (a: DbArticle): ArticleRow => {
     lat: a.lat, lng: a.lng,
   };
 };
+
+// NaverArticle(클러스터 드릴 결과) → ArticleRow
+const naverToRow = (a: NaverArticle): ArticleRow => ({
+  articleNumber: a.articleNumber, name: combineName(a.name, a.dong), realEstateType: a.realEstateType, tradeType: a.tradeType,
+  price: a.price != null ? String(a.price) : null, rentPrice: a.rentPrice != null ? String(a.rentPrice) : null,
+  areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong: a.dong, realtorName: a.realtorName,
+  lat: a.lat, lng: a.lng,
+});
 
 export async function getSidos(): Promise<Region[]> {
   await requireUser();
@@ -72,6 +84,20 @@ export async function loadRegionArticles(naverCode: string, realEstateType: stri
   if (!refresh) { const cached = await readFromDb(); if (cached.length) return { articles: cached }; }
   await getRegionArticles(naverCode, { realEstateTypes: [realEstateType], tradeTypes: [tradeType] });
   return { articles: await readFromDb() };
+}
+
+/** 비단지형 지도용 클러스터(원 안 숫자) — 단일 호출, 캐시 없음 */
+export async function loadArticleClusters(naverCode: string, realEstateType: string, tradeType: string): Promise<ClusterRow[]> {
+  await requireUser();
+  const clusters = await getArticleClusters(naverCode, { realEstateTypes: [realEstateType], tradeTypes: [tradeType] });
+  return clusters.map((c) => ({ clusterId: c.clusterId, lat: c.lat, lng: c.lng, count: c.count }));
+}
+
+/** 클러스터 클릭 → 하위 매물(원 안 숫자 매물) 수집 + 반환 */
+export async function loadClusterArticles(clusterId: string, naverCode: string, realEstateType: string, tradeType: string): Promise<{ articles: ArticleRow[] }> {
+  await requireUser();
+  const arts = await getClusteredArticles(clusterId, { realEstateTypes: [realEstateType], tradeTypes: [tradeType], regionCode: naverCode });
+  return { articles: arts.map(naverToRow) };
 }
 
 export async function loadArticles(complexNumber: string, tradeTypes: string[], refresh = false): Promise<{ articles: ArticleRow[]; lat: number | null; lng: number | null }> {
