@@ -66,13 +66,15 @@ export function FavoritesView({ favorites }: { favorites: ArticleRow[] }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={allSelected} indeterminate={someSelected} onCheckedChange={(c) => toggleAll(c)} aria-label="전체 선택" /></TableHead>
+                  <TableHead className="w-12 text-right">#</TableHead>
                   <TableHead>매물명</TableHead><TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {favorites.map((a) => (
+                {favorites.map((a, i) => (
                   <TableRow key={a.articleNumber} data-state={sel.has(a.articleNumber) ? "selected" : undefined}>
                     <TableCell><Checkbox checked={sel.has(a.articleNumber)} onCheckedChange={(c) => toggleOne(a.articleNumber, c)} aria-label="선택" /></TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">{favorites.length - i}</TableCell>
                     <TableCell className="font-medium">{a.name ?? "-"}</TableCell>
                     <TableCell>{PROPERTY_LABEL[a.realEstateType] ?? a.realEstateType}</TableCell>
                     <TableCell>{TRADE_LABEL[a.tradeType] ?? a.tradeType}</TableCell>
