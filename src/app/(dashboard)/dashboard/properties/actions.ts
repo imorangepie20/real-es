@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { PROPERTY_FIELDS, FIELD_BY_KEY } from "@/lib/properties/fields";
+import { parseWorkbook } from "@/lib/properties/excel-read";
+import type { ParsedSheet } from "@/lib/properties/excel-import";
 
 export type PropertyView = "all" | "favorites" | "contracted";
 export type PropertyRow = { id: string; isFavorite: boolean } & Record<string, string | number | boolean | null>;
@@ -105,4 +107,12 @@ export async function importProperties(rows: Record<string, unknown>[]): Promise
   }
   revalidatePath("/dashboard/properties");
   return n;
+}
+
+export async function analyzeWorkbook(formData: FormData): Promise<ParsedSheet> {
+  await requireUser();
+  const file = formData.get("file");
+  if (!(file instanceof File)) throw new Error("엑셀 파일을 선택하세요");
+  const buf = await file.arrayBuffer();
+  return parseWorkbook(buf);
 }

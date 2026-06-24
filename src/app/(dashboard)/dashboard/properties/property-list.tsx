@@ -18,6 +18,7 @@ import { FIELD_BY_KEY, LIST_COLUMNS, type PropertyField } from "@/lib/properties
 import { TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { PROPERTY_LABEL, PROPERTY_OPTIONS } from "@/lib/naver/property-types"
 import { deleteProperties, setPropertyStatus, togglePropertyFavorite, updateProperty, type PropertyRow, type PropertyView } from "./actions"
+import { ExcelImportDialog } from "./excel-import-dialog"
 
 const VIEW_TITLE: Record<PropertyView, string> = { all: "전체 매물", favorites: "관심 매물", contracted: "계약완료" }
 const won = (v: string | number | null) => (v == null || v === "" ? "-" : Number(v).toLocaleString("ko-KR"))
@@ -99,7 +100,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               </Button>
             </>
           )}
-          {/* Task 4에서 ExcelImportDialog가 여기에 추가됨 */}
+          <ExcelImportDialog />
           <Button size="sm" render={<Link href="/dashboard/properties/new" />}>
             <Plus className="size-3.5" />새 매물
           </Button>
