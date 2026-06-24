@@ -15,6 +15,8 @@ export async function GET(req: Request) {
   const regionCode = params.get("regionCode");
   const realEstateType = params.get("realEstateType");
   const tradeType = params.get("tradeType");
+  const fieldsParam = params.get("fields");
+  const fields = fieldsParam ? fieldsParam.split(",").filter(Boolean) : undefined;
 
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -68,7 +70,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "complexNumber 또는 regionCode+realEstateType+tradeType 필요" }, { status: 400 });
   }
 
-  const wb = articlesToWorkbook(rows);
+  const wb = articlesToWorkbook(rows, fields);
   const buf = await wb.xlsx.writeBuffer();
   return new NextResponse(buf as unknown as BodyInit, {
     headers: {

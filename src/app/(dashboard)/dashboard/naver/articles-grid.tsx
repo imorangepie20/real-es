@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, ChevronRight, Download, Inbox, ListFilter, RefreshCw } from "lucide-react"
+import { ChevronLeft, ChevronRight, Inbox, ListFilter, RefreshCw } from "lucide-react"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ExportDialog } from "./export-dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -48,7 +49,7 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh, onSave 
           <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading}>
             <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />{loading ? "수집 중" : "갱신"}
           </Button>
-          <a className={cn(buttonVariants({ size: "sm" }))} href={exportHref}><Download className="size-3.5" />엑셀</a>
+          <ExportDialog exportHref={exportHref} />
         </CardAction>
       </CardHeader>
       <CardContent className="p-0">
