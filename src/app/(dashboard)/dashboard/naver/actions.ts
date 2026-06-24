@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { getComplexArticles, getRegionArticles, listComplexesByRegion } from "@/lib/naver";
 
 export type Region = { code: string; name: string; naverCode: string | null };
-export type ComplexRow = { complexNumber: string; name: string; totalHouseholds: number | null; dealCount: number; leaseDepositCount: number; leaseMonthlyCount: number };
+export type ComplexRow = { complexNumber: string; name: string; totalHouseholds: number | null; dealCount: number; leaseDepositCount: number; leaseMonthlyCount: number; lat: number | null; lng: number | null };
 export type ArticleRow = { articleNumber: string; realEstateType: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null };
 
 async function requireUser() {
@@ -44,7 +44,7 @@ export async function loadComplexes(naverCode: string, realEstateType: string, t
     const rows = await db.complex.findMany({ where: { regionCode: naverCode, type: realEstateType }, orderBy: { totalHouseholds: "desc" } });
     return rows.map((c) => {
       const raw = (c.raw ?? {}) as { dealCount?: number; leaseDepositCount?: number; leaseMonthlyCount?: number };
-      return { complexNumber: c.complexNumber, name: c.name, totalHouseholds: c.totalHouseholds, dealCount: raw.dealCount ?? 0, leaseDepositCount: raw.leaseDepositCount ?? 0, leaseMonthlyCount: raw.leaseMonthlyCount ?? 0 };
+      return { complexNumber: c.complexNumber, name: c.name, totalHouseholds: c.totalHouseholds, dealCount: raw.dealCount ?? 0, leaseDepositCount: raw.leaseDepositCount ?? 0, leaseMonthlyCount: raw.leaseMonthlyCount ?? 0, lat: c.lat, lng: c.lng };
     });
   };
 

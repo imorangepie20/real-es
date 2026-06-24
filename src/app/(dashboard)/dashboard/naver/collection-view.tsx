@@ -160,7 +160,12 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
               <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshRegion} onSelect={(c) => selectComplex(c)} selectedNumber={selected?.complexNumber} />
             </div>
             <div className="min-h-72 flex-1">
-              <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={selected?.name ?? emdName ?? ""} />
+              <KakaoMap
+                appKey={kakaoKey}
+                markers={complexes.flatMap((c) => (c.lat != null && c.lng != null ? [{ key: c.complexNumber, lat: c.lat, lng: c.lng, name: c.name }] : []))}
+                selectedKey={selected?.complexNumber}
+                onSelect={(key) => { const c = complexes.find((x) => x.complexNumber === key); if (c) selectComplex(c) }}
+              />
             </div>
           </div>
           {selected && (
@@ -174,7 +179,10 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={PROPERTY_LABEL[property] ?? ""} />
+          <KakaoMap
+            appKey={kakaoKey}
+            markers={coord.lat != null && coord.lng != null ? [{ key: "region", lat: coord.lat, lng: coord.lng, name: PROPERTY_LABEL[property] ?? "" }] : []}
+          />
           <ArticlesGrid
             exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
             articles={articles}
