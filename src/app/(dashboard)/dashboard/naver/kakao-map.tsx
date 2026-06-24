@@ -27,20 +27,21 @@ export function KakaoMap({ appKey, markers = [], clusters = [], selectedKey, onS
     clusters.map((c) => `c:${c.clusterId}@${c.lat},${c.lng}:${c.count}`).join("|")
 
   useEffect(() => {
-    if (!appKey || (markers.length === 0 && clusters.length === 0)) return
+    if (!appKey) return
     let cancelled = false
 
     const draw = () => window.kakao.maps.load(() => {
       if (cancelled || !ref.current) return
       const kakao = window.kakao
       const first = markers[0] ?? clusters[0]
-      if (!first) return
+      const SEOUL = { lat: 37.5663, lng: 126.9779 } // 서울시청 — 빈 상태 기본 중심
       if (!mapRef.current) {
-        mapRef.current = new kakao.maps.Map(ref.current, { center: new kakao.maps.LatLng(first.lat, first.lng), level: 6 })
+        mapRef.current = new kakao.maps.Map(ref.current, { center: new kakao.maps.LatLng(first?.lat ?? SEOUL.lat, first?.lng ?? SEOUL.lng), level: first ? 6 : 8 })
       }
       const map = mapRef.current
       markerObjs.current.forEach((mk) => mk.setMap(null)); markerObjs.current.clear()
       overlayObjs.current.forEach((ov) => ov.setMap(null)); overlayObjs.current = []
+      if (!first) { map.setCenter(new kakao.maps.LatLng(SEOUL.lat, SEOUL.lng)); return }
 
       const bounds = new kakao.maps.LatLngBounds()
 
@@ -99,14 +100,11 @@ export function KakaoMap({ appKey, markers = [], clusters = [], selectedKey, onS
   if (!appKey) {
     return <div className="flex h-full min-h-72 items-center justify-center rounded-lg border text-sm text-muted-foreground">지도 키 없음</div>
   }
-  const empty = markers.length === 0 && clusters.length === 0
   return (
     <div className="relative h-full min-h-72 w-full">
       <div ref={ref} aria-label="지도" className="h-full w-full rounded-lg border" />
-      {(loading || empty) && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg border bg-muted/30 text-sm text-muted-foreground">
-          {loading ? "수집 중…" : "좌표 없음 — 단지·매물 선택 후 표시"}
-        </div>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-lg border bg-muted/30 text-sm text-muted-foreground">수집 중…</div>
       )}
     </div>
   )
