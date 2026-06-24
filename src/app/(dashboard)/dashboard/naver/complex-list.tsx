@@ -13,7 +13,7 @@ export function ComplexList({ complexes, loading, onRefresh, onSelect, selectedN
   complexes: ComplexRow[]; loading: boolean; onRefresh: () => void; onSelect: (c: ComplexRow) => void; selectedNumber?: string
 }) {
   return (
-    <Card>
+    <Card className="lg:h-full">
       <CardHeader className="border-b">
         <CardTitle className="flex items-center gap-2"><Building2 className="size-4" /> 단지 목록</CardTitle>
         <CardAction className="flex items-center gap-2">
@@ -23,7 +23,7 @@ export function ComplexList({ complexes, loading, onRefresh, onSelect, selectedN
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent className="max-h-96 overflow-y-auto">
+      <CardContent className="max-h-96 overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0">
         {loading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16" />)}

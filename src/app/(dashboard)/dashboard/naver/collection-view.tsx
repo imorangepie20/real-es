@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DEFAULT_TRADE, TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { DEFAULT_PROPERTY, PROPERTY_LABEL, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
-import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
+import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
 import { KakaoMap } from "./kakao-map"
@@ -52,10 +52,9 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       try { setComplexes(await loadComplexes(code, property, trade)) } catch (e) { fail(e) } finally { setLoadingC(false) }
     } else {
       setComplexes([])
+      // 초기 테이블은 비움 — 지도 클러스터(원)를 클릭하면 그 묶음 매물이 채워짐
       setLoadingClusters(true)
       try { setClusters(await loadArticleClusters(code, property, trade)) } catch (e) { fail(e) } finally { setLoadingClusters(false) }
-      setLoadingA(true)
-      try { setArticles((await loadRegionArticles(code, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
     }
   }
 
@@ -66,11 +65,9 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       setLoadingC(true)
       try { setComplexes(await loadComplexes(naverCode, property, trade, true)) } catch (e) { fail(e) } finally { setLoadingC(false) }
     } else {
-      setClusterDrill(null)
+      setClusterDrill(null); setArticles([])
       setLoadingClusters(true)
       try { setClusters(await loadArticleClusters(naverCode, property, trade)) } catch (e) { fail(e) } finally { setLoadingClusters(false) }
-      setLoadingA(true)
-      try { setArticles((await loadRegionArticles(naverCode, property, trade, true)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
     }
   }
 
@@ -83,12 +80,6 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
     if (!naverCode) return
     setError(null); setClusterDrill(clusterId); setLoadingA(true)
     try { setArticles((await loadClusterArticles(clusterId, naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
-  }
-
-  async function showAllRegion() {
-    if (!naverCode) return
-    setError(null); setClusterDrill(null); setLoadingA(true)
-    try { setArticles((await loadRegionArticles(naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
   }
 
   return (
@@ -166,11 +157,11 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       ) : mode === "complex" ? (
         // 단지형: 단지목록(좌) + 지도(우) → 매물(하단 풀너비)
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 lg:flex-row">
+          <div className="flex flex-col gap-4 lg:h-[40rem] lg:flex-row">
             <div className="lg:w-80 lg:shrink-0">
               <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshRegion} onSelect={(c) => selectComplex(c)} selectedNumber={selected?.complexNumber} />
             </div>
-            <div className="min-h-72 flex-1">
+            <div className="min-h-72 flex-1 lg:min-h-0">
               <KakaoMap
                 appKey={kakaoKey}
                 markers={complexes.flatMap((c) => (c.lat != null && c.lng != null ? [{ key: c.complexNumber, lat: c.lat, lng: c.lng, name: c.name }] : []))}
@@ -192,7 +183,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
       ) : (
         // 비단지형: 지도(위, 클러스터 원 안 숫자) → 매물(아래 풀너비)
         <div className="flex flex-col gap-4">
-          <div className="h-80">
+          <div className="h-[40rem]">
             <KakaoMap
               appKey={kakaoKey}
               clusters={clusters.flatMap((c) => (c.lat != null && c.lng != null ? [{ clusterId: c.clusterId, lat: c.lat, lng: c.lng, count: c.count }] : []))}
@@ -203,14 +194,14 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
           {clusterDrill && (
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <Badge variant="secondary">선택한 묶음 매물 {articles.length}개</Badge>
-              <Button size="sm" variant="outline" onClick={showAllRegion}>전체 매물 보기</Button>
+              <Button size="sm" variant="outline" onClick={() => { setClusterDrill(null); setArticles([]) }}>선택 해제</Button>
             </div>
           )}
           <ArticlesGrid
             exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
             articles={articles}
             loading={loadingA}
-            onRefresh={refreshRegion}
+            onRefresh={() => (clusterDrill ? drillCluster(clusterDrill) : refreshRegion())}
           />
         </div>
       )}
