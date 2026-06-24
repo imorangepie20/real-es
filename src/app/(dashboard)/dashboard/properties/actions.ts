@@ -52,7 +52,7 @@ export async function listProperties(view: PropertyView = "all"): Promise<Proper
   const where: { userId: string; isFavorite?: boolean; status?: string } = { userId: user.id };
   if (view === "favorites") where.isFavorite = true;
   if (view === "contracted") where.status = "계약완료";
-  const rows = await db.property.findMany({ where, orderBy: { updatedAt: "desc" } });
+  const rows = await db.property.findMany({ where, orderBy: { createdAt: "desc" } });
   return rows.map((r) => toRow(r as unknown as Record<string, unknown>));
 }
 

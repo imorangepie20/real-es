@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { EditCell, SelectCell } from "@/components/data-grid/editable-cell"
-import { FIELD_BY_KEY, LIST_COLUMNS, type PropertyField } from "@/lib/properties/fields"
+import { FIELD_BY_KEY, LIST_COLUMNS, STATUS_OPTIONS, type PropertyField } from "@/lib/properties/fields"
 import { TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { PROPERTY_LABEL, PROPERTY_OPTIONS } from "@/lib/naver/property-types"
 import { deleteProperties, setPropertyStatus, togglePropertyFavorite, updateProperty, type PropertyRow, type PropertyView } from "./actions"
@@ -45,9 +45,12 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
   const [busy, setBusy] = useState(false)
   const [fType, setFType] = useState("ALL")
   const [fTrade, setFTrade] = useState("ALL")
+  const [fStatus, setFStatus] = useState("ALL")
 
   const rows = data.filter(
-    (p) => (fType === "ALL" || p.realEstateType === fType) && (fTrade === "ALL" || p.tradeType === fTrade),
+    (p) => (fType === "ALL" || p.realEstateType === fType)
+      && (fTrade === "ALL" || p.tradeType === fTrade)
+      && (fStatus === "ALL" || p.status === fStatus),
   )
   const allSelected = rows.length > 0 && rows.every((p) => sel.has(p.id))
   const someSelected = rows.some((p) => sel.has(p.id)) && !allSelected
@@ -90,6 +93,15 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               {TRADE_OPTIONS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
             </SelectContent>
           </Select>
+          {view !== "contracted" && (
+            <Select value={fStatus} onValueChange={(v) => { if (v != null) setFStatus(v) }}>
+              <SelectTrigger className="h-8"><SelectValue>{fStatus === "ALL" ? "상태 전체" : fStatus}</SelectValue></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">상태 전체</SelectItem>
+                {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
           {sel.size > 0 && (
             <>
               <Button size="sm" variant="outline" onClick={() => run(() => setPropertyStatus([...sel], "계약완료"), "계약완료로 전환했습니다")} disabled={busy}>
