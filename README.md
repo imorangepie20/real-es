@@ -50,4 +50,5 @@ real-es/
 - 매물유형 전체 수집 단계 4: 거래유형(매매/전세/월세/**단기임대**) + **매물유형 14종**(아파트/오피스텔/빌라/상가/토지 등) 선택. 매물유형에 따라 **단지형**(아파트·오피스텔·재건축 → 단지목록→매물)과 **비단지형**(나머지 → 동별 매물 직접) 자동 분기. 네이버 bounded API(`boundedComplexes`/`boundedArticles`), 박스=동 중심 ±0.3°(법정동 코드가 실필터). 거래·매물유형 단일 소스(`trade-types`/`property-types`). 라이브 검증(영통동: 오피스텔 9단지 / 상가 208매물).
 - 매물유형 표시 수정: 매물유형 셀렉트가 코드(A01)를 그대로 노출하던 것을 라벨(아파트)로 표시 — Base UI `SelectValue`는 value를 렌더하므로 `PROPERTY_LABEL` 매핑을 children으로 전달.
 - 매물 검색 페이지 단계 ①(레이아웃): 검색 바를 Card로 묶고 선택 요약 Badge(거래·매물·동)·결과 수 표시, 지도/결과 좌우 분할, 로딩 Skeleton·빈 상태 Empty·클릭 단지 카드 button화(접근성). 템플릿 프리미티브 재사용(§6). 설계: [docs/superpowers/specs/2026-06-24-naver-search-page-design.md](docs/superpowers/specs/2026-06-24-naver-search-page-design.md).
+- 카카오 지도 키 정정: `page.tsx`가 존재하지 않는 `KAKAO_MAP_KEY`를 읽어 지도가 빈 화면이던 것을 `.env` 실제 변수명 `NEXT_PUBLIC_KAKAO_MAP_KEY`로 수정 — 지도 정상 로드.
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)
