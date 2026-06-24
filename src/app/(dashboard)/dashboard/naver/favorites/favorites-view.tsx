@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { type ReactNode, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Star, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -11,22 +11,63 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 import { TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { PROPERTY_LABEL, PROPERTY_OPTIONS } from "@/lib/naver/property-types"
 import { ExportDialog } from "../export-dialog"
-import { deleteFavorites, type ArticleRow } from "../actions"
+import { deleteFavorites, updateFavorite, type ArticleRow } from "../actions"
 
 const won = (v: string | null) => (v == null ? "-" : Number(v).toLocaleString("ko-KR"))
 const ymd = (v: string | null) => (v && v.length === 8 ? `${v.slice(0, 4)}.${v.slice(4, 6)}.${v.slice(6, 8)}` : v ?? "-")
 
+// 더블클릭 → 입력 편집, blur/Enter 저장, Esc 취소
+function EditCell({ value, display, onSave, numeric }: { value: string | number | null; display: ReactNode; onSave: (v: string) => void; numeric?: boolean }) {
+  const [editing, setEditing] = useState(false)
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        type={numeric ? "number" : "text"}
+        defaultValue={value ?? ""}
+        onBlur={(e) => { if (String(value ?? "") !== e.target.value) onSave(e.target.value); setEditing(false) }}
+        onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); else if (e.key === "Escape") setEditing(false) }}
+        className={cn("w-full min-w-16 rounded bg-background px-1 py-0.5 outline-none ring-1 ring-ring", numeric && "text-right tabular-nums")}
+      />
+    )
+  }
+  return (
+    <div onDoubleClick={() => setEditing(true)} title="더블클릭하여 편집" className="cursor-text rounded px-1 py-0.5 hover:bg-muted/50">{display}</div>
+  )
+}
+
+// 더블클릭 → 셀렉트 편집 (유형·거래)
+function SelectCell({ value, label, options, onSave }: { value: string; label: string; options: { value: string; label: string }[]; onSave: (v: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  if (editing) {
+    return (
+      <Select defaultOpen value={value} onOpenChange={(o) => { if (!o) setEditing(false) }} onValueChange={(v) => { if (v != null) onSave(v); setEditing(false) }}>
+        <SelectTrigger className="h-7 px-1"><SelectValue>{label}</SelectValue></SelectTrigger>
+        <SelectContent>{options.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+      </Select>
+    )
+  }
+  return (
+    <div onDoubleClick={() => setEditing(true)} title="더블클릭하여 편집" className="cursor-text rounded px-1 py-0.5 hover:bg-muted/50">{label}</div>
+  )
+}
+
 export function FavoritesView({ favorites }: { favorites: ArticleRow[] }) {
   const router = useRouter()
+  const [data, setData] = useState(favorites)
+  const [seen, setSeen] = useState(favorites)
+  if (seen !== favorites) { setSeen(favorites); setData(favorites) }
+
   const [sel, setSel] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
   const [fType, setFType] = useState("ALL")
   const [fTrade, setFTrade] = useState("ALL")
 
-  const rows = favorites.filter(
+  const rows = data.filter(
     (a) => (fType === "ALL" || a.realEstateType === fType) && (fTrade === "ALL" || a.tradeType === fTrade),
   )
 
@@ -34,6 +75,11 @@ export function FavoritesView({ favorites }: { favorites: ArticleRow[] }) {
   const someSelected = rows.some((a) => sel.has(a.articleNumber)) && !allSelected
   const toggleAll = (c: boolean) => setSel(c ? new Set(rows.map((a) => a.articleNumber)) : new Set())
   const toggleOne = (n: string, c: boolean) => setSel((prev) => { const next = new Set(prev); if (c) next.add(n); else next.delete(n); return next })
+
+  function patchRow(articleNumber: string, patch: Partial<ArticleRow>) {
+    setData((prev) => prev.map((r) => (r.articleNumber === articleNumber ? { ...r, ...patch } : r)))
+    updateFavorite(articleNumber, patch).catch((e) => toast.error(e instanceof Error ? e.message : "저장 실패"))
+  }
 
   const qp = new URLSearchParams()
   if (fType !== "ALL") qp.set("realEstateType", fType)
@@ -86,7 +132,7 @@ export function FavoritesView({ favorites }: { favorites: ArticleRow[] }) {
             <EmptyHeader>
               <EmptyMedia variant="icon"><Star /></EmptyMedia>
               <EmptyTitle>관심 매물이 없습니다</EmptyTitle>
-              <EmptyDescription>매물 수집에서 매물을 체크해 저장하면 여기에 모입니다.</EmptyDescription>
+              <EmptyDescription>매물 수집에서 매물을 체크해 저장하면 여기에 모입니다. 셀을 더블클릭하면 수정할 수 있습니다.</EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
@@ -104,18 +150,18 @@ export function FavoritesView({ favorites }: { favorites: ArticleRow[] }) {
                   <TableRow key={a.articleNumber} data-state={sel.has(a.articleNumber) ? "selected" : undefined}>
                     <TableCell><Checkbox checked={sel.has(a.articleNumber)} onCheckedChange={(c) => toggleOne(a.articleNumber, c)} aria-label="선택" /></TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">{rows.length - i}</TableCell>
-                    <TableCell className="font-medium">{a.name ?? "-"}</TableCell>
-                    <TableCell>{PROPERTY_LABEL[a.realEstateType] ?? a.realEstateType}</TableCell>
-                    <TableCell>{TRADE_LABEL[a.tradeType] ?? a.tradeType}</TableCell>
-                    <TableCell>{won(a.price)}</TableCell>
-                    <TableCell>{won(a.rentPrice)}</TableCell>
-                    <TableCell>{a.areaExclusive ?? "-"}</TableCell>
-                    <TableCell>{a.areaSupply ?? "-"}</TableCell>
-                    <TableCell>{a.floor ?? "-"}</TableCell>
-                    <TableCell>{a.dong ?? "-"}</TableCell>
-                    <TableCell>{a.realtorName ?? "-"}</TableCell>
-                    <TableCell>{a.address ?? "-"}</TableCell>
-                    <TableCell className="tabular-nums">{ymd(a.approvalDate)}</TableCell>
+                    <TableCell className="min-w-40 font-medium"><EditCell value={a.name} display={a.name ?? "-"} onSave={(v) => patchRow(a.articleNumber, { name: v || null })} /></TableCell>
+                    <TableCell><SelectCell value={a.realEstateType} label={PROPERTY_LABEL[a.realEstateType] ?? a.realEstateType} options={PROPERTY_OPTIONS} onSave={(v) => patchRow(a.articleNumber, { realEstateType: v })} /></TableCell>
+                    <TableCell><SelectCell value={a.tradeType} label={TRADE_LABEL[a.tradeType] ?? a.tradeType} options={TRADE_OPTIONS} onSave={(v) => patchRow(a.articleNumber, { tradeType: v })} /></TableCell>
+                    <TableCell><EditCell numeric value={a.price} display={won(a.price)} onSave={(v) => patchRow(a.articleNumber, { price: v || null })} /></TableCell>
+                    <TableCell><EditCell numeric value={a.rentPrice} display={won(a.rentPrice)} onSave={(v) => patchRow(a.articleNumber, { rentPrice: v || null })} /></TableCell>
+                    <TableCell><EditCell numeric value={a.areaExclusive} display={a.areaExclusive ?? "-"} onSave={(v) => patchRow(a.articleNumber, { areaExclusive: v ? Number(v) : null })} /></TableCell>
+                    <TableCell><EditCell numeric value={a.areaSupply} display={a.areaSupply ?? "-"} onSave={(v) => patchRow(a.articleNumber, { areaSupply: v ? Number(v) : null })} /></TableCell>
+                    <TableCell><EditCell value={a.floor} display={a.floor ?? "-"} onSave={(v) => patchRow(a.articleNumber, { floor: v || null })} /></TableCell>
+                    <TableCell><EditCell value={a.dong} display={a.dong ?? "-"} onSave={(v) => patchRow(a.articleNumber, { dong: v || null })} /></TableCell>
+                    <TableCell className="min-w-40"><EditCell value={a.realtorName} display={a.realtorName ?? "-"} onSave={(v) => patchRow(a.articleNumber, { realtorName: v || null })} /></TableCell>
+                    <TableCell className="min-w-48"><EditCell value={a.address} display={a.address ?? "-"} onSave={(v) => patchRow(a.articleNumber, { address: v || null })} /></TableCell>
+                    <TableCell><EditCell value={a.approvalDate} display={ymd(a.approvalDate)} onSave={(v) => patchRow(a.articleNumber, { approvalDate: v || null })} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

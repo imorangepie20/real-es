@@ -127,6 +127,15 @@ export async function deleteFavorites(articleNumbers: string[]): Promise<number>
   return res.count;
 }
 
+/** 관심 매물 셀 인라인 편집 → 스냅샷(data) 병합 저장 */
+export async function updateFavorite(articleNumber: string, patch: Partial<ArticleRow>): Promise<void> {
+  const user = await requireUser();
+  const fav = await db.favorite.findUnique({ where: { userId_articleNumber: { userId: user.id, articleNumber } } });
+  if (!fav) return;
+  const data = { ...(fav.data as object), ...patch };
+  await db.favorite.update({ where: { userId_articleNumber: { userId: user.id, articleNumber } }, data: { data: data as object } });
+}
+
 export async function loadArticles(complexNumber: string, tradeTypes: string[], refresh = false): Promise<{ articles: ArticleRow[]; lat: number | null; lng: number | null }> {
   await requireUser();
 
