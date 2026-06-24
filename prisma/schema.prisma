@@ -103,6 +103,7 @@ model Property {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  name           String?
   articleNo      String?
   complexName    String?
   realEstateType String? // property-types 코드
