@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DEFAULT_TRADE, TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { DEFAULT_PROPERTY, PROPERTY_LABEL, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
-import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
+import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
 import { KakaoMap } from "./kakao-map"
@@ -80,6 +80,12 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
     if (!naverCode) return
     setError(null); setClusterDrill(clusterId); setLoadingA(true)
     try { setArticles((await loadClusterArticles(clusterId, naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
+  }
+
+  async function showAllRegion() {
+    if (!naverCode) return
+    setError(null); setClusterDrill(null); setLoadingA(true)
+    try { setArticles((await loadRegionArticles(naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
   }
 
   return (
@@ -191,12 +197,15 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
               onClusterClick={drillCluster}
             />
           </div>
-          {clusterDrill && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <Badge variant="secondary">선택한 묶음 매물 {articles.length}개</Badge>
-              <Button size="sm" variant="outline" onClick={() => { setClusterDrill(null); setArticles([]) }}>선택 해제</Button>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <Button size="sm" variant="outline" onClick={showAllRegion}>전체 매물</Button>
+            {clusterDrill && (
+              <>
+                <Badge variant="secondary">선택한 묶음 매물 {articles.length}개</Badge>
+                <Button size="sm" variant="ghost" onClick={() => { setClusterDrill(null); setArticles([]) }}>선택 해제</Button>
+              </>
+            )}
+          </div>
           <ArticlesGrid
             exportHref={`/api/naver/export?regionCode=${naverCode}&realEstateType=${property}&tradeType=${trade}`}
             articles={articles}

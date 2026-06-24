@@ -16,6 +16,10 @@ export async function GET(req: Request) {
   const realEstateType = params.get("realEstateType");
   const tradeType = params.get("tradeType");
 
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const ts = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+
   let rows: ExcelRow[];
   let filename: string;
 
@@ -39,7 +43,7 @@ export async function GET(req: Request) {
       dong: a.dong,
       realtorName: a.realtorName,
     }));
-    filename = encodeURIComponent(`${complex.name}_매물.xlsx`);
+    filename = encodeURIComponent(`${complex.name}_매물_${ts}.xlsx`);
   } else if (regionCode && realEstateType && tradeType) {
     // 비단지형
     const articles = await db.article.findMany({
@@ -59,7 +63,7 @@ export async function GET(req: Request) {
       dong: a.dong,
       realtorName: a.realtorName,
     }));
-    filename = encodeURIComponent(`${regionCode}_${PROPERTY_LABEL[realEstateType] ?? realEstateType}_매물.xlsx`);
+    filename = encodeURIComponent(`${regionCode}_${PROPERTY_LABEL[realEstateType] ?? realEstateType}_매물_${ts}.xlsx`);
   } else {
     return NextResponse.json({ error: "complexNumber 또는 regionCode+realEstateType+tradeType 필요" }, { status: 400 });
   }

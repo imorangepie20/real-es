@@ -58,12 +58,13 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>매물명</TableHead><TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead>
+                  <TableHead className="w-12 text-right">#</TableHead><TableHead>매물명</TableHead><TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paged.map((a) => (
+                {paged.map((a, j) => (
                   <TableRow key={a.articleNumber}>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">{articles.length - (current * PAGE_SIZE + j)}</TableCell>
                     <TableCell className="font-medium">{a.name ?? "-"}</TableCell>
                     <TableCell>{PROPERTY_LABEL[a.realEstateType] ?? a.realEstateType}</TableCell>
                     <TableCell>{TRADE_LABEL[a.tradeType] ?? a.tradeType}</TableCell>
