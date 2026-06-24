@@ -42,6 +42,7 @@ describe("parseArticles", () => {
     const { articles, totalCount } = parseArticles(boundedArticlesFixture, "");
     expect(articles[0]).toEqual({
       articleNumber: "2633824750",
+      name: "복합상가",
       complexNumber: "",
       realEstateType: "D02",
       tradeType: "A1",

@@ -59,6 +59,7 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
     const coords = ((a.address as Record<string, unknown>)?.coordinates as Record<string, unknown>) ?? {};
     return {
       articleNumber: String(a.articleNumber),
+      name: a.articleName ? String(a.articleName) : a.complexName ? String(a.complexName) : null,
       complexNumber,
       realEstateType: String(a.realEstateType),
       tradeType: String(a.tradeType),

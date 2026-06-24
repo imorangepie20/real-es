@@ -58,12 +58,13 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead>
+                  <TableHead>매물명</TableHead><TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.map((a) => (
                   <TableRow key={a.articleNumber}>
+                    <TableCell className="font-medium">{a.name ?? "-"}</TableCell>
                     <TableCell>{PROPERTY_LABEL[a.realEstateType] ?? a.realEstateType}</TableCell>
                     <TableCell>{TRADE_LABEL[a.tradeType] ?? a.tradeType}</TableCell>
                     <TableCell>{won(a.price)}</TableCell>

@@ -15,6 +15,7 @@ export type NaverComplex = {
 
 export type NaverArticle = {
   articleNumber: string;
+  name: string | null; // 매물명 (articleName ?? complexName)
   complexNumber: string;
   realEstateType: string;
   tradeType: string;

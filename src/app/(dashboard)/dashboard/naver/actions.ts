@@ -6,7 +6,7 @@ import { getComplexArticles, getRegionArticles, listComplexesByRegion } from "@/
 
 export type Region = { code: string; name: string; naverCode: string | null };
 export type ComplexRow = { complexNumber: string; name: string; totalHouseholds: number | null; dealCount: number; leaseDepositCount: number; leaseMonthlyCount: number; lat: number | null; lng: number | null };
-export type ArticleRow = { articleNumber: string; realEstateType: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null };
+export type ArticleRow = { articleNumber: string; name: string | null; realEstateType: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null };
 
 async function requireUser() {
   const user = await getCurrentUser();
@@ -15,12 +15,19 @@ async function requireUser() {
 }
 
 type DbArticle = { articleNumber: string; realEstateType: string | null; tradeType: string; price: bigint | null; rentPrice: bigint | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null; raw: unknown };
-const toRow = (a: DbArticle): ArticleRow => ({
-  articleNumber: a.articleNumber, realEstateType: a.realEstateType ?? "", tradeType: a.tradeType,
-  price: a.price?.toString() ?? null, rentPrice: a.rentPrice?.toString() ?? null,
-  areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong: a.dong ?? (a.raw as { dong?: string } | null)?.dong ?? null, realtorName: a.realtorName,
-  lat: a.lat, lng: a.lng,
-});
+const toRow = (a: DbArticle): ArticleRow => {
+  const raw = (a.raw ?? {}) as { name?: string | null; dong?: string | null };
+  const dong = a.dong ?? raw.dong ?? null;
+  const complexName = raw.name ?? null;
+  // 매물명 = 단지명 + 동명("N동"). 둘 중 하나만 있으면 있는 것만.
+  const name = [complexName, dong ? (dong.endsWith("동") ? dong : `${dong}동`) : null].filter(Boolean).join(" ") || null;
+  return {
+    articleNumber: a.articleNumber, name, realEstateType: a.realEstateType ?? "", tradeType: a.tradeType,
+    price: a.price?.toString() ?? null, rentPrice: a.rentPrice?.toString() ?? null,
+    areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong, realtorName: a.realtorName,
+    lat: a.lat, lng: a.lng,
+  };
+};
 
 export async function getSidos(): Promise<Region[]> {
   await requireUser();
