@@ -25,6 +25,7 @@ model User {
   createdAt    DateTime  @default(now())
   sessions     Session[]
   favorites    Favorite[]
+  properties   Property[]
 }
 
 model Session {
@@ -94,6 +95,61 @@ model Article {
 
   @@index([complexId])
   @@index([regionCode])
+}
+
+// 자체 매물 (사용자별 소유) — 네이버 캐시와 무관. 스펙 §필드정의.
+model Property {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  articleNo      String?
+  complexName    String?
+  realEstateType String? // property-types 코드
+  tradeType      String? // trade-types 코드
+  status         String  @default("진행") // 진행 | 계약완료
+  isFavorite     Boolean @default(false)
+  source         String  @default("수기") // 수기 | 엑셀 | 네이버
+
+  siteArea      Float?
+  areaExclusive Float?
+  areaSupply    Float?
+  landArea      Float?
+  buildingArea  Float?
+  area          Float?
+
+  dealAmount BigInt? // 거래금액(원)
+  price      BigInt? // 가격(원)
+
+  totalHouseholds Int?
+  approvalDate    String?
+  parkingCount    Int?
+  heating         String?
+  isPreSale       Boolean?
+
+  customerName   String?
+  customerPhone  String?
+  partnerName    String?
+  partnerPhone   String?
+  partnerManager String?
+  manager        String?
+
+  contractHopeDate String?
+  contractDate     String?
+  moveInHopeDate   String?
+  moveInDate       String?
+  interim1Date     String?
+  interim2Date     String?
+  balanceDate      String?
+
+  note String?
+  memo String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, isFavorite])
 }
 
 // 관심 매물 (사용자별 저장) — 저장 시점 스냅샷 보관(전역 캐시 변동과 무관)
