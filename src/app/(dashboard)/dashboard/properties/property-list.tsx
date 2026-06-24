@@ -113,11 +113,13 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               </Button>
             </>
           )}
-          <ExcelImportDialog />
+          {view === "all" && <ExcelImportDialog />}
           <PropertyExportDialog view={view} fType={fType} fTrade={fTrade} fStatus={fStatus} />
-          <Button size="sm" render={<Link href="/dashboard/properties/new" />}>
-            <Plus className="size-3.5" />새 매물
-          </Button>
+          {view === "all" && (
+            <Button size="sm" render={<Link href="/dashboard/properties/new" />}>
+              <Plus className="size-3.5" />새 매물
+            </Button>
+          )}
           <span className="text-sm text-muted-foreground">{rows.length}개</span>
         </CardAction>
       </CardHeader>
