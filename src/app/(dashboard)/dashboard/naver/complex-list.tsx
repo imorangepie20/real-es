@@ -23,9 +23,9 @@ export function ComplexList({ complexes, loading, onRefresh, onSelect, selectedN
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent>
+      <CardContent className="max-h-96 overflow-y-auto">
         {loading ? (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-2">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
           </div>
         ) : complexes.length === 0 ? (
@@ -37,13 +37,13 @@ export function ComplexList({ complexes, loading, onRefresh, onSelect, selectedN
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-2">
             {complexes.map((c) => (
               <button
                 key={c.complexNumber}
                 onClick={() => onSelect(c)}
                 className={cn(
-                  "rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  "w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   selectedNumber === c.complexNumber && "border-primary ring-1 ring-primary",
                 )}
               >

@@ -43,7 +43,7 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="max-h-96 overflow-auto">
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

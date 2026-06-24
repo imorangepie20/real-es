@@ -155,17 +155,21 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
         </Card>
       ) : mode === "complex" ? (
         <div className="flex flex-col gap-4">
-          <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshRegion} onSelect={(c) => selectComplex(c)} selectedNumber={selected?.complexNumber} />
-          {selected && (
-            <div className="grid gap-4 lg:grid-cols-2">
-              <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={selected.name} />
-              <ArticlesGrid
-                exportHref={`/api/naver/export?complexNumber=${selected.complexNumber}`}
-                articles={articles}
-                loading={loadingA}
-                onRefresh={() => selectComplex(selected, true)}
-              />
+          <div className="flex flex-col gap-4 lg:flex-row">
+            <div className="lg:w-80 lg:shrink-0">
+              <ComplexList complexes={complexes} loading={loadingC} onRefresh={refreshRegion} onSelect={(c) => selectComplex(c)} selectedNumber={selected?.complexNumber} />
             </div>
+            <div className="min-h-72 flex-1">
+              <KakaoMap appKey={kakaoKey} lat={coord.lat} lng={coord.lng} name={selected?.name ?? emdName ?? ""} />
+            </div>
+          </div>
+          {selected && (
+            <ArticlesGrid
+              exportHref={`/api/naver/export?complexNumber=${selected.complexNumber}`}
+              articles={articles}
+              loading={loadingA}
+              onRefresh={() => selectComplex(selected, true)}
+            />
           )}
         </div>
       ) : (
