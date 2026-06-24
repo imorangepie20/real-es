@@ -63,13 +63,55 @@ export const FIELD_BY_KEY: Record<string, PropertyField> = Object.fromEntries(
   PROPERTY_FIELDS.map((f) => [f.key, f]),
 );
 
-export const FORM_GROUPS = ["기본", "면적", "금액", "건물", "고객", "관련부동산", "일정", "메모"] as const;
+export const FORM_GROUPS = ["기본", "금액", "면적", "건물", "고객", "관련부동산", "일정", "메모"] as const;
 
 // 목록 그리드에 노출할 컬럼(나머지는 폼에서 편집)
 export const LIST_COLUMNS = [
   "articleNo", "complexName", "realEstateType", "tradeType", "status",
   "price", "dealAmount", "areaExclusive", "customerName", "manager",
 ];
+
+export type FormInput = "text" | "select" | "money" | "area" | "count" | "date" | "tel" | "textarea" | "bool";
+
+// 필드별 폼 메타 오버라이드(나머지는 type에서 파생)
+const FORM_OVERRIDE: Record<string, Partial<{ formInput: FormInput; unit: string; span: number; placeholder: string; formHidden: boolean }>> = {
+  source: { formHidden: true },
+  complexName: { span: 6, placeholder: "예: 정자동 래미안" },
+  articleNo: { placeholder: "예: 2024-1001" },
+  dealAmount: { span: 6 },
+  price: { span: 6 },
+  totalHouseholds: { unit: "세대" },
+  parkingCount: { unit: "대" },
+  heating: { placeholder: "예: 개별난방" },
+  customerName: { span: 4 },
+  customerPhone: { formInput: "tel", span: 4, placeholder: "010-0000-0000" },
+  partnerName: { span: 4 },
+  partnerPhone: { formInput: "tel", span: 4, placeholder: "010-0000-0000" },
+  partnerManager: { span: 4 },
+  manager: { span: 4 },
+  note: { formInput: "textarea", span: 12 },
+  memo: { formInput: "textarea", span: 12 },
+};
+
+const TYPE_TO_INPUT: Record<PropertyField["type"], FormInput> = {
+  text: "text", select: "select", money: "money", area: "area", number: "count", date: "date", bool: "bool",
+};
+
+export function formMeta(f: PropertyField): { formInput: FormInput; unit?: string; span: number; placeholder?: string; formHidden: boolean } {
+  const o = FORM_OVERRIDE[f.key] ?? {};
+  const formInput = o.formInput ?? TYPE_TO_INPUT[f.type];
+  const unit = o.unit ?? (f.type === "money" ? "원" : f.type === "area" ? "㎡" : undefined);
+  const span = o.span ?? (formInput === "textarea" ? 12 : 3);
+  return { formInput, unit, span, placeholder: o.placeholder, formHidden: o.formHidden ?? false };
+}
+
+// 가변폭: 모바일 풀 → sm 2단 → lg span. (Tailwind 정적 클래스)
+export const SPAN_CLASS: Record<number, string> = {
+  3: "col-span-12 sm:col-span-6 lg:col-span-3",
+  4: "col-span-12 sm:col-span-6 lg:col-span-4",
+  6: "col-span-12 sm:col-span-6",
+  12: "col-span-12",
+};
 
 // 엑셀·폼·인라인 공용 값 정규화. null=빈값.
 export function coerceField(type: FieldType, raw: unknown): string | number | boolean | null {
