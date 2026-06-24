@@ -6,7 +6,7 @@ import {
   Share2, Mail, ListTodo, CheckSquare, Calendar, KeyRound, Store,
   BookOpen, Bot, Image as ImageIcon, AudioLines, UserCircle, Rocket,
   Layers, Settings, Tag, ShieldCheck, Bell, TriangleAlert, Boxes,
-  Component, Blocks, FlaskConical, Globe,
+  Component, Blocks, FlaskConical, Globe, Star,
 } from "lucide-react";
 
 export type NavItem = { title: string; href: string; icon?: LucideIcon };
@@ -23,6 +23,7 @@ export const navGroups: NavGroup[] = [
       { title: "Project Management", href: "/dashboard/project-management", icon: KanbanSquare },
       { title: "Real Estate", href: "/dashboard/real-estate", icon: Building2 },
       { title: "매물 수집", href: "/dashboard/naver", icon: Building2 },
+      { title: "관심 매물", href: "/dashboard/naver/favorites", icon: Star },
       { title: "Sales", href: "/dashboard/sales", icon: TrendingUp },
       { title: "CRM", href: "/dashboard/crm", icon: Users },
       { title: "Website Analytics", href: "/dashboard/analytics", icon: BarChart3 },

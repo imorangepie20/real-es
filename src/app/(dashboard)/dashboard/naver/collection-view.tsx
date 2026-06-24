@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { MapPin, Search } from "lucide-react"
+import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DEFAULT_TRADE, TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { DEFAULT_PROPERTY, PROPERTY_LABEL, PROPERTY_OPTIONS, propertyMode } from "@/lib/naver/property-types"
-import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, loadRegionArticles, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
+import { loadArticleClusters, loadArticles, loadClusterArticles, loadComplexes, loadRegionArticles, saveFavorites, type ArticleRow, type ClusterRow, type ComplexRow, type Region } from "./actions"
 import { RegionPicker } from "./region-picker"
 import { ComplexList } from "./complex-list"
 import { KakaoMap } from "./kakao-map"
@@ -86,6 +87,12 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
     if (!naverCode) return
     setError(null); setClusterDrill(null); setLoadingA(true)
     try { setArticles((await loadRegionArticles(naverCode, property, trade)).articles) } catch (e) { fail(e) } finally { setLoadingA(false) }
+  }
+
+  async function saveFavs(rows: ArticleRow[]) {
+    if (!rows.length) return
+    try { const n = await saveFavorites(rows); toast.success(`관심 매물 ${n}건 저장했습니다`) }
+    catch (e) { toast.error(e instanceof Error ? e.message : "관심 매물 저장 실패") }
   }
 
   return (
@@ -183,6 +190,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
               articles={articles}
               loading={loadingA}
               onRefresh={() => selectComplex(selected, true)}
+              onSave={saveFavs}
             />
           )}
         </div>
@@ -211,6 +219,7 @@ export function CollectionView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey:
             articles={articles}
             loading={loadingA}
             onRefresh={() => (clusterDrill ? drillCluster(clusterDrill) : refreshRegion())}
+            onSave={saveFavs}
           />
         </div>
       )}

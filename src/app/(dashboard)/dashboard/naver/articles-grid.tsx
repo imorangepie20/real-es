@@ -17,8 +17,8 @@ import type { ArticleRow } from "./actions"
 const PAGE_SIZE = 20
 const won = (v: string | null) => (v == null ? "-" : Number(v).toLocaleString("ko-KR"))
 
-export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
-  exportHref: string; articles: ArticleRow[]; loading: boolean; onRefresh: () => void
+export function ArticlesGrid({ exportHref, articles, loading, onRefresh, onSave }: {
+  exportHref: string; articles: ArticleRow[]; loading: boolean; onRefresh: () => void; onSave?: (rows: ArticleRow[]) => void | Promise<void>
 }) {
   const [page, setPage] = useState(0)
   const [sel, setSel] = useState<Set<string>>(new Set())
@@ -41,6 +41,9 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh }: {
         <CardTitle className="flex items-center gap-2"><ListFilter className="size-4" /> 매물</CardTitle>
         <CardAction className="flex items-center gap-2">
           {sel.size > 0 && <span className="text-sm font-medium">선택 {sel.size}</span>}
+          {onSave && sel.size > 0 && (
+            <Button size="sm" onClick={() => { onSave(articles.filter((a) => sel.has(a.articleNumber))); setSel(new Set()) }}>관심 매물 저장</Button>
+          )}
           {!loading && <span className="text-sm text-muted-foreground">{articles.length}개</span>}
           <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading}>
             <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />{loading ? "수집 중" : "갱신"}

@@ -100,6 +100,31 @@ export async function loadClusterArticles(clusterId: string, naverCode: string, 
   return { articles: arts.map(naverToRow) };
 }
 
+// ── 관심 매물 (사용자별, 저장 시점 스냅샷) ──
+export async function saveFavorites(rows: ArticleRow[]): Promise<number> {
+  const user = await requireUser();
+  for (const r of rows) {
+    await db.favorite.upsert({
+      where: { userId_articleNumber: { userId: user.id, articleNumber: r.articleNumber } },
+      create: { userId: user.id, articleNumber: r.articleNumber, data: r as object },
+      update: { data: r as object },
+    });
+  }
+  return rows.length;
+}
+
+export async function listFavorites(): Promise<ArticleRow[]> {
+  const user = await requireUser();
+  const favs = await db.favorite.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
+  return favs.map((f) => f.data as ArticleRow);
+}
+
+export async function deleteFavorites(articleNumbers: string[]): Promise<number> {
+  const user = await requireUser();
+  const res = await db.favorite.deleteMany({ where: { userId: user.id, articleNumber: { in: articleNumbers } } });
+  return res.count;
+}
+
 export async function loadArticles(complexNumber: string, tradeTypes: string[], refresh = false): Promise<{ articles: ArticleRow[]; lat: number | null; lng: number | null }> {
   await requireUser();
 

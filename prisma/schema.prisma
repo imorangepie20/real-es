@@ -24,6 +24,7 @@ model User {
   role         String    @default("member")
   createdAt    DateTime  @default(now())
   sessions     Session[]
+  favorites    Favorite[]
 }
 
 model Session {
@@ -93,4 +94,17 @@ model Article {
 
   @@index([complexId])
   @@index([regionCode])
+}
+
+// 관심 매물 (사용자별 저장) — 저장 시점 스냅샷 보관(전역 캐시 변동과 무관)
+model Favorite {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleNumber String
+  data          Json     // ArticleRow 스냅샷
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, articleNumber])
+  @@index([userId])
 }
