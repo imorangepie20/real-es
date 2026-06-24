@@ -12,4 +12,6 @@ export const EXCEL_FIELDS: ExcelField[] = [
   { key: "floor", header: "층", width: 8 },
   { key: "dong", header: "동", width: 8 },
   { key: "realtorName", header: "중개사", width: 28 },
+  { key: "address", header: "주소", width: 24 },
+  { key: "approvalDate", header: "사용승인일", width: 12 },
 ];

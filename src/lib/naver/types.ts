@@ -26,6 +26,8 @@ export type NaverArticle = {
   floor: string | null; // "2/23"
   realtorName: string | null;
   dong: string | null;
+  address: string | null; // 주소 (시/도 시/군/구 동)
+  approvalDate: string | null; // 사용승인일/준공일 YYYYMMDD
   lng: number | null;
   lat: number | null;
 };

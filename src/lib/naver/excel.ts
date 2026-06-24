@@ -15,6 +15,8 @@ export type ExcelRow = {
   floor: string | null;
   dong: string | null;
   realtorName: string | null;
+  address: string | null;
+  approvalDate: string | null;
 };
 
 /** fields가 주어지면 해당 키 컬럼만 출력(순서 보존), 없으면 전체. */
@@ -38,6 +40,8 @@ export function articlesToWorkbook(rows: ExcelRow[], fields?: string[]): ExcelJS
       floor: r.floor,
       dong: r.dong,
       realtorName: r.realtorName,
+      address: r.address,
+      approvalDate: r.approvalDate,
     };
     const row: Record<string, string | number | null> = {};
     for (const f of cols) row[f.key] = full[f.key];

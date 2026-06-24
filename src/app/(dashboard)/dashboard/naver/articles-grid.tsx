@@ -17,6 +17,7 @@ import type { ArticleRow } from "./actions"
 
 const PAGE_SIZE = 20
 const won = (v: string | null) => (v == null ? "-" : Number(v).toLocaleString("ko-KR"))
+const ymd = (v: string | null) => (v && v.length === 8 ? `${v.slice(0, 4)}.${v.slice(4, 6)}.${v.slice(6, 8)}` : v ?? "-")
 
 export function ArticlesGrid({ exportHref, articles, loading, onRefresh, onSave }: {
   exportHref: string; articles: ArticleRow[]; loading: boolean; onRefresh: () => void; onSave?: (rows: ArticleRow[]) => void | Promise<void>
@@ -70,7 +71,7 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh, onSave 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10"><Checkbox checked={allSelected} indeterminate={someSelected} onCheckedChange={(c) => toggleAll(c)} aria-label="전체 선택" /></TableHead><TableHead className="w-12 text-right">#</TableHead><TableHead>매물명</TableHead><TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead>
+                  <TableHead className="w-10"><Checkbox checked={allSelected} indeterminate={someSelected} onCheckedChange={(c) => toggleAll(c)} aria-label="전체 선택" /></TableHead><TableHead className="w-12 text-right">#</TableHead><TableHead>매물명</TableHead><TableHead>유형</TableHead><TableHead>거래</TableHead><TableHead>가격</TableHead><TableHead>월세</TableHead><TableHead>전용</TableHead><TableHead>공급</TableHead><TableHead>층</TableHead><TableHead>동</TableHead><TableHead>중개사</TableHead><TableHead>주소</TableHead><TableHead>사용승인일</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -88,6 +89,8 @@ export function ArticlesGrid({ exportHref, articles, loading, onRefresh, onSave 
                     <TableCell>{a.floor ?? "-"}</TableCell>
                     <TableCell>{a.dong ?? "-"}</TableCell>
                     <TableCell>{a.realtorName ?? "-"}</TableCell>
+                    <TableCell>{a.address ?? "-"}</TableCell>
+                    <TableCell className="tabular-nums">{ymd(a.approvalDate)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -12,7 +12,7 @@ const ART_R = "TEST-AR-R";
 const art = (over: Partial<NaverArticle>): NaverArticle => ({
   articleNumber: "x", name: "테스트매물", complexNumber: "", realEstateType: "A01", tradeType: "A1",
   price: 100, rentPrice: 0, areaExclusive: 84, areaSupply: 109, floor: "2/23",
-  realtorName: "중개사", dong: "101", lng: 127, lat: 37, ...over,
+  realtorName: "중개사", dong: "101", address: null, approvalDate: null, lng: 127, lat: 37, ...over,
 });
 
 describe("cache upsert", () => {

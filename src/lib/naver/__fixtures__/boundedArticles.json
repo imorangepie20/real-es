@@ -22,6 +22,10 @@
             "floorSpace": 0,
             "exclusiveSpaceName": "54"
           },
+          "buildingInfo": {
+            "buildingConjunctionDate": "20030808",
+            "approvalElapsedYear": 23
+          },
           "brokerInfo": {
             "cpId": "SERVE",
             "brokerageName": "영통역IPARK부동산중개사무소",

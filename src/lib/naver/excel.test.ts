@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { articlesToWorkbook, type ExcelRow } from "./excel";
 
 const rows: ExcelRow[] = [
-  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "A1", price: BigInt(690000000), rentPrice: BigInt(0), areaExclusive: 84.77, areaSupply: 109.23, floor: "2/23", dong: "142", realtorName: "아파트뱅크공인중개사사무소" },
-  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "B1", price: BigInt(300000000), rentPrice: BigInt(0), areaExclusive: 84.77, areaSupply: 109.23, floor: "5/23", dong: "142", realtorName: "공인중개사A" },
-  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "B2", price: BigInt(10000000), rentPrice: BigInt(500000), areaExclusive: 84.77, areaSupply: 109.23, floor: "10/23", dong: "142", realtorName: "공인중개사B" },
-  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "B3", price: BigInt(5000000), rentPrice: BigInt(800000), areaExclusive: 84.77, areaSupply: 109.23, floor: "15/23", dong: "142", realtorName: "공인중개사C" },
+  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "A1", price: BigInt(690000000), rentPrice: BigInt(0), areaExclusive: 84.77, areaSupply: 109.23, floor: "2/23", dong: "142", realtorName: "아파트뱅크공인중개사사무소", address: "경기도 수원시 권선구 곡반정동", approvalDate: "20180228" },
+  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "B1", price: BigInt(300000000), rentPrice: BigInt(0), areaExclusive: 84.77, areaSupply: 109.23, floor: "5/23", dong: "142", realtorName: "공인중개사A", address: "경기도 수원시 권선구 곡반정동", approvalDate: "20180228" },
+  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "B2", price: BigInt(10000000), rentPrice: BigInt(500000), areaExclusive: 84.77, areaSupply: 109.23, floor: "10/23", dong: "142", realtorName: "공인중개사B", address: "경기도 수원시 권선구 곡반정동", approvalDate: "20180228" },
+  { complexName: "수원SK스카이뷰", realEstateType: "A01", tradeType: "B3", price: BigInt(5000000), rentPrice: BigInt(800000), areaExclusive: 84.77, areaSupply: 109.23, floor: "15/23", dong: "142", realtorName: "공인중개사C", address: "경기도 수원시 권선구 곡반정동", approvalDate: "20180228" },
 ];
 
 describe("articlesToWorkbook", () => {

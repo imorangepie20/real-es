@@ -55,10 +55,12 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
     const detail = (a.articleDetail as Record<string, unknown>) ?? {};
     const broker = (a.brokerInfo as Record<string, unknown>) ?? {};
     const price = (a.priceInfo as Record<string, unknown>) ?? {};
+    const addr = (a.address as Record<string, unknown>) ?? {};
+    const building = (a.buildingInfo as Record<string, unknown>) ?? {};
 
     const deal = num(price.dealPrice);
     const warranty = num(price.warrantyPrice);
-    const coords = ((a.address as Record<string, unknown>)?.coordinates as Record<string, unknown>) ?? {};
+    const coords = (addr.coordinates as Record<string, unknown>) ?? {};
     return {
       articleNumber: String(a.articleNumber),
       name: a.articleName ? String(a.articleName) : a.complexName ? String(a.complexName) : null,
@@ -72,6 +74,8 @@ export function parseArticles(json: unknown, complexNumber: string): ArticlesRes
       floor: detail.floorInfo ? String(detail.floorInfo) : null,
       realtorName: broker.brokerageName ? String(broker.brokerageName) : null,
       dong: a.dongName ? String(a.dongName) : null,
+      address: [addr.city, addr.division, addr.sector].filter(Boolean).map(String).join(" ") || null,
+      approvalDate: building.buildingConjunctionDate ? String(building.buildingConjunctionDate) : null,
       lng: num(coords.xCoordinate),
       lat: num(coords.yCoordinate),
     };

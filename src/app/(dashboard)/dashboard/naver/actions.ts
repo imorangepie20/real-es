@@ -7,7 +7,7 @@ import type { NaverArticle } from "@/lib/naver";
 
 export type Region = { code: string; name: string; naverCode: string | null };
 export type ComplexRow = { complexNumber: string; name: string; totalHouseholds: number | null; dealCount: number; leaseDepositCount: number; leaseMonthlyCount: number; lat: number | null; lng: number | null };
-export type ArticleRow = { articleNumber: string; name: string | null; realEstateType: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null };
+export type ArticleRow = { articleNumber: string; name: string | null; realEstateType: string; tradeType: string; price: string | null; rentPrice: string | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; address: string | null; approvalDate: string | null; lat: number | null; lng: number | null };
 export type ClusterRow = { clusterId: string; lat: number | null; lng: number | null; count: number };
 
 // 매물명 = 단지명 + 동명("N동")
@@ -22,13 +22,14 @@ async function requireUser() {
 
 type DbArticle = { articleNumber: string; realEstateType: string | null; tradeType: string; price: bigint | null; rentPrice: bigint | null; areaExclusive: number | null; areaSupply: number | null; floor: string | null; dong: string | null; realtorName: string | null; lat: number | null; lng: number | null; raw: unknown };
 const toRow = (a: DbArticle): ArticleRow => {
-  const raw = (a.raw ?? {}) as { name?: string | null; dong?: string | null };
+  const raw = (a.raw ?? {}) as { name?: string | null; dong?: string | null; address?: string | null; approvalDate?: string | null };
   const dong = a.dong ?? raw.dong ?? null;
   const name = combineName(raw.name ?? null, dong);
   return {
     articleNumber: a.articleNumber, name, realEstateType: a.realEstateType ?? "", tradeType: a.tradeType,
     price: a.price?.toString() ?? null, rentPrice: a.rentPrice?.toString() ?? null,
     areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong, realtorName: a.realtorName,
+    address: raw.address ?? null, approvalDate: raw.approvalDate ?? null,
     lat: a.lat, lng: a.lng,
   };
 };
@@ -38,6 +39,7 @@ const naverToRow = (a: NaverArticle): ArticleRow => ({
   articleNumber: a.articleNumber, name: combineName(a.name, a.dong), realEstateType: a.realEstateType, tradeType: a.tradeType,
   price: a.price != null ? String(a.price) : null, rentPrice: a.rentPrice != null ? String(a.rentPrice) : null,
   areaExclusive: a.areaExclusive, areaSupply: a.areaSupply, floor: a.floor, dong: a.dong, realtorName: a.realtorName,
+  address: a.address, approvalDate: a.approvalDate,
   lat: a.lat, lng: a.lng,
 });
 

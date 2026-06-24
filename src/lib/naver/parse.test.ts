@@ -54,6 +54,8 @@ describe("parseArticles", () => {
       floor: "1/10",
       realtorName: "영통역IPARK부동산중개사무소",
       dong: null,
+      address: "경기도 수원시 영통구 영통동",
+      approvalDate: "20030808",
       lng: 127.0750347,
       lat: 37.2544778,
     });

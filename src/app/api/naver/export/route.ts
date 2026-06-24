@@ -33,18 +33,23 @@ export async function GET(req: Request) {
     });
     if (!complex) return NextResponse.json({ error: "단지 없음" }, { status: 404 });
 
-    rows = complex.articles.map((a) => ({
-      complexName: complex.name,
-      realEstateType: a.realEstateType ?? "",
-      tradeType: a.tradeType,
-      price: a.price,
-      rentPrice: a.rentPrice,
-      areaExclusive: a.areaExclusive,
-      areaSupply: a.areaSupply,
-      floor: a.floor,
-      dong: a.dong,
-      realtorName: a.realtorName,
-    }));
+    rows = complex.articles.map((a) => {
+      const raw = (a.raw ?? {}) as { address?: string | null; approvalDate?: string | null };
+      return {
+        complexName: complex.name,
+        realEstateType: a.realEstateType ?? "",
+        tradeType: a.tradeType,
+        price: a.price,
+        rentPrice: a.rentPrice,
+        areaExclusive: a.areaExclusive,
+        areaSupply: a.areaSupply,
+        floor: a.floor,
+        dong: a.dong,
+        realtorName: a.realtorName,
+        address: raw.address ?? null,
+        approvalDate: raw.approvalDate ?? null,
+      };
+    });
     filename = encodeURIComponent(`${complex.name}_매물_${ts}.xlsx`);
   } else if (regionCode && realEstateType && tradeType) {
     // 비단지형
@@ -53,18 +58,23 @@ export async function GET(req: Request) {
       orderBy: { fetchedAt: "desc" },
     });
 
-    rows = articles.map((a) => ({
-      complexName: "",
-      realEstateType: a.realEstateType ?? "",
-      tradeType: a.tradeType,
-      price: a.price,
-      rentPrice: a.rentPrice,
-      areaExclusive: a.areaExclusive,
-      areaSupply: a.areaSupply,
-      floor: a.floor,
-      dong: a.dong,
-      realtorName: a.realtorName,
-    }));
+    rows = articles.map((a) => {
+      const raw = (a.raw ?? {}) as { address?: string | null; approvalDate?: string | null };
+      return {
+        complexName: "",
+        realEstateType: a.realEstateType ?? "",
+        tradeType: a.tradeType,
+        price: a.price,
+        rentPrice: a.rentPrice,
+        areaExclusive: a.areaExclusive,
+        areaSupply: a.areaSupply,
+        floor: a.floor,
+        dong: a.dong,
+        realtorName: a.realtorName,
+        address: raw.address ?? null,
+        approvalDate: raw.approvalDate ?? null,
+      };
+    });
     filename = encodeURIComponent(`${regionCode}_${PROPERTY_LABEL[realEstateType] ?? realEstateType}_매물_${ts}.xlsx`);
   } else {
     return NextResponse.json({ error: "complexNumber 또는 regionCode+realEstateType+tradeType 필요" }, { status: 400 });
