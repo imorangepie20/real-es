@@ -65,6 +65,7 @@ export async function getProperty(id: string): Promise<PropertyRow | null> {
 export async function createProperty(input: Record<string, unknown>): Promise<string> {
   const user = await requireUser();
   const data = toData(input);
+  if (data.status == null) delete data.status; // status는 NOT NULL DEFAULT '진행' — 빈 값이면 생략해 기본값 적용
   const p = await db.property.create({ data: { ...data, userId: user.id, source: (data.source as string) || "수기" } });
   revalidatePath("/dashboard/properties");
   return p.id;
@@ -72,7 +73,9 @@ export async function createProperty(input: Record<string, unknown>): Promise<st
 
 export async function updateProperty(id: string, patch: Record<string, unknown>): Promise<void> {
   const user = await requireUser();
-  await db.property.updateMany({ where: { id, userId: user.id }, data: toData(patch) });
+  const data = toData(patch);
+  if ("status" in data && data.status == null) delete data.status; // status는 NOT NULL — 빈 값으로 덮어쓰지 않음
+  await db.property.updateMany({ where: { id, userId: user.id }, data });
   revalidatePath("/dashboard/properties");
 }
 

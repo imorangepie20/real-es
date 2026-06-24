@@ -19,7 +19,7 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
     const init: Record<string, string> = {}
     for (const f of PROPERTY_FIELDS) {
       const v = property?.[f.key]
-      init[f.key] = v == null ? "" : f.type === "bool" ? (v ? "true" : "") : String(v)
+      init[f.key] = v == null ? (f.key === "status" ? "진행" : "") : f.type === "bool" ? (v ? "true" : "") : String(v)
     }
     return init
   })
