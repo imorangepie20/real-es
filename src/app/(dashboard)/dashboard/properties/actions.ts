@@ -11,7 +11,7 @@ import type { ParsedSheet } from "@/lib/properties/excel-import";
 export type PropertyView = "all" | "favorites" | "contracted";
 export type PropertyRow = { id: string; isFavorite: boolean } & Record<string, string | number | boolean | null>;
 
-async function requireUser() {
+export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) throw new Error("인증이 필요합니다");
   return user;
@@ -23,7 +23,7 @@ const FLOAT = new Set(PROPERTY_FIELDS.filter((f) => f.type === "area").map((f) =
 const BOOL = new Set(PROPERTY_FIELDS.filter((f) => f.type === "bool").map((f) => f.key));
 
 // Prisma Property → 직렬화 가능한 PropertyRow (BigInt→string)
-function toRow(p: Record<string, unknown>): PropertyRow {
+export function toRow(p: Record<string, unknown>): PropertyRow {
   const row: PropertyRow = { id: p.id as string, isFavorite: !!p.isFavorite };
   for (const f of PROPERTY_FIELDS) {
     const v = p[f.key];
