@@ -59,7 +59,7 @@ export async function toggleChecklistItem(id: string, itemId: string, checked: b
 
 export async function startContract(id: string): Promise<void> {
   const user = await requireUser();
-  await db.property.updateMany({ where: { id, userId: user.id }, data: { status: "계약진행" } });
+  await db.property.updateMany({ where: { id, userId: user.id, status: "진행" }, data: { status: "계약진행" } });
   revalidatePath("/dashboard/properties");
 }
 

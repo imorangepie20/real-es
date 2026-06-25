@@ -77,13 +77,6 @@ export async function deleteProperties(ids: string[]): Promise<number> {
   return res.count;
 }
 
-export async function setPropertyStatus(ids: string[], status: string): Promise<number> {
-  const user = await requireUser();
-  const res = await db.property.updateMany({ where: { id: { in: ids }, userId: user.id }, data: { status } });
-  revalidatePath("/dashboard/properties");
-  return res.count;
-}
-
 export async function togglePropertyFavorite(id: string, isFavorite: boolean): Promise<void> {
   const user = await requireUser();
   await db.property.updateMany({ where: { id, userId: user.id }, data: { isFavorite } });

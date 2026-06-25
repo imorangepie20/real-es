@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { PARTY_LABEL } from "@/lib/properties/contract-checklist";
+import { PARTY_LABEL, PARTIES } from "@/lib/properties/contract-checklist";
 import { FIELD_BY_KEY, formMeta } from "@/lib/properties/fields";
 import { groupDigits, stripDigits, toDateInput, fromDateInput } from "@/lib/properties/format";
 import { updateProperty } from "../../actions";
@@ -49,7 +49,7 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
     finally { setBusy(false); }
   }
 
-  const groups = ["common", "seller", "buyer", "landlord", "tenant", "agent"];
+  const groups = PARTIES.map((p) => p.value);
 
   return (
     <div className="space-y-6">
