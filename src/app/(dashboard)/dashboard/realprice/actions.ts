@@ -28,25 +28,36 @@ export async function loadRealPrice(filters: {
     months,
   });
 
-  // 동별 집계 + LegalDivision 좌표
+  // 동별 집계 + 좌표: LegalDivision(읍면동) 우선, 매칭 실패 시(군 지역의 리 등) 대표 지번 지오코딩 폴백.
   const dongs = [...new Set(records.map((r) => r.umdNm).filter(Boolean))];
   const divisions = await db.legalDivision.findMany({
     where: { level: "EMD", sigunguCode: filters.lawdCd },
   });
   const coordByName = new Map(divisions.map((d) => [d.name, d]));
+  const sigungu = await db.legalDivision.findUnique({ where: { code: filters.lawdCd } });
+  const regionFull = sigungu?.fullName ?? "";
   const price = (r: RealTxRecord) => (r.kind === "sale" ? r.dealAmount : r.deposit) ?? null;
-  const byDong = dongs.map((umdNm) => {
+  const byDong: { umdNm: string; count: number; avg: number | null; lat: number | null; lng: number | null }[] = [];
+  for (const umdNm of dongs) {
     const rs = records.filter((r) => r.umdNm === umdNm);
     const ps = rs.map(price).filter((v): v is number => v != null);
     const d = coordByName.get(umdNm);
-    return {
+    let lat: number | null = d?.lat ?? null;
+    let lng: number | null = d?.lng ?? null;
+    if (lat == null && regionFull) {
+      // 읍면동 매칭 실패 → 그 동의 대표 지번 주소로 좌표 조회(GeocodeCache 캐시).
+      const sample = rs.find((r) => r.jibun);
+      const g = await geocode(sample ? `${regionFull} ${umdNm} ${sample.jibun}` : `${regionFull} ${umdNm}`);
+      if (g) { lat = g.lat; lng = g.lng; }
+    }
+    byDong.push({
       umdNm,
       count: rs.length,
       avg: ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : null,
-      lat: d?.lat ?? null,
-      lng: d?.lng ?? null,
-    };
-  });
+      lat,
+      lng,
+    });
+  }
 
   return { records, stats: computeStats(records), byDong, failedMonths };
 }
