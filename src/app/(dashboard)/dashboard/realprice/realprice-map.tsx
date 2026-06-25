@@ -45,10 +45,16 @@ export function RealpriceMap({
     [withCoords],
   )
 
-  const markers: MapMarker[] = useMemo(
-    () => points.map((p) => ({ key: p.key, lat: p.lat, lng: p.lng, name: p.key.split("/")[1] ?? p.key })),
-    [points],
-  )
+  // 드릴된 동(단지 좌표 0개일 때 폴백 중심으로 사용).
+  const drilled = useMemo(() => (drillDong ? byDong.find((d) => d.umdNm === drillDong) : undefined), [byDong, drillDong])
+
+  const markers: MapMarker[] = useMemo(() => {
+    if (!drillDong) return []
+    if (points.length) return points.map((p) => ({ key: p.key, lat: p.lat, lng: p.lng, name: p.key.split("/")[1] ?? p.key }))
+    // 단지 좌표를 못 찾으면 동 자체 좌표 1개로 폴백 — 서울시청 리셋 방지.
+    if (drilled?.lat != null && drilled?.lng != null) return [{ key: drillDong, lat: drilled.lat, lng: drilled.lng, name: drillDong }]
+    return []
+  }, [drillDong, points, drilled])
 
   async function drill(umdNm: string) {
     const reqId = ++drillReqRef.current
@@ -56,13 +62,14 @@ export function RealpriceMap({
     setPoints([])
     setLoading(true)
     try {
-      // 해당 동 records를 (umdNm, name)로 묶어 단지별 건수·평균가 생성.
+      // 해당 동 records를 (umdNm, name)로 묶어 단지별 건수·평균가·대표 지번 생성.
       const rs = records.filter((r) => r.umdNm === umdNm)
-      const byComplex = new Map<string, { name: string; umdNm: string; count: number; sum: number; n: number }>()
+      const byComplex = new Map<string, { name: string; umdNm: string; jibun: string; count: number; sum: number; n: number }>()
       for (const r of rs) {
         const name = r.name || "-"
         const k = `${umdNm}/${name}`
-        const cur = byComplex.get(k) ?? { name, umdNm, count: 0, sum: 0, n: 0 }
+        const cur = byComplex.get(k) ?? { name, umdNm, jibun: r.jibun || "", count: 0, sum: 0, n: 0 }
+        if (!cur.jibun && r.jibun) cur.jibun = r.jibun
         cur.count += 1
         const p = price(r)
         if (p != null) { cur.sum += p; cur.n += 1 }
@@ -71,11 +78,15 @@ export function RealpriceMap({
       const items = [...byComplex.values()].map((c) => ({
         name: c.name,
         umdNm: c.umdNm,
+        jibun: c.jibun,
         count: c.count,
         avg: c.n ? c.sum / c.n : null,
       }))
       const res = await loadComplexPoints(items, cityDivision)
       if (reqId === drillReqRef.current) setPoints(res)
+    } catch (e) {
+      console.error("[realprice-map] 단지 좌표 조회 실패:", e)
+      if (reqId === drillReqRef.current) setPoints([])
     } finally {
       if (reqId === drillReqRef.current) setLoading(false)
     }
@@ -95,7 +106,8 @@ export function RealpriceMap({
               <ChevronLeft className="size-3.5" />동 전체
             </Button>
             <span className="font-medium text-foreground">{drillDong}</span>
-            {!loading && <span>단지 {markers.length}곳</span>}
+            {!loading && points.length > 0 && <span>단지 {points.length}곳</span>}
+            {!loading && points.length === 0 && <span>단지 좌표를 찾지 못해 동 위치를 표시합니다.</span>}
           </>
         ) : (
           <>
@@ -108,7 +120,7 @@ export function RealpriceMap({
         <KakaoMap
           appKey={appKey}
           clusters={drillDong ? [] : clusters}
-          markers={drillDong ? markers : []}
+          markers={markers}
           selectedKey={selectedKey}
           onSelect={onSelect}
           onClusterClick={drill}

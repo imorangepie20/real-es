@@ -51,11 +51,13 @@ export async function loadRealPrice(filters: {
   return { records, stats: computeStats(records), byDong, failedMonths };
 }
 
-export async function loadComplexPoints(items: { name: string; umdNm: string; count: number; avg: number | null }[], cityDivision: string): Promise<{ key: string; lat: number; lng: number; count: number; avg: number | null }[]> {
+export async function loadComplexPoints(items: { name: string; umdNm: string; jibun: string; count: number; avg: number | null }[], cityDivision: string): Promise<{ key: string; lat: number; lng: number; count: number; avg: number | null }[]> {
   if (!(await getCurrentUser())) throw new Error("인증이 필요합니다");
   const out: { key: string; lat: number; lng: number; count: number; avg: number | null }[] = [];
   for (const it of items.slice(0, 200)) { // 상한
-    const g = await geocode(`${cityDivision} ${it.umdNm} ${it.name}`);
+    // 단지명은 주소가 아니라 지오코딩이 안 됨 → 지번 주소로 좌표 조회(지번 없으면 단지명 폴백).
+    const addr = it.jibun ? `${cityDivision} ${it.umdNm} ${it.jibun}` : `${cityDivision} ${it.umdNm} ${it.name}`;
+    const g = await geocode(addr);
     if (g) out.push({ key: `${it.umdNm}/${it.name}`, lat: g.lat, lng: g.lng, count: it.count, avg: it.avg });
   }
   return out;
