@@ -18,6 +18,7 @@ import type { RealTxRecord } from "@/lib/realprice/types"
 import type { Region } from "@/app/(dashboard)/dashboard/naver/actions"
 import { loadRealPrice } from "./actions"
 import { RegionPicker } from "./region-picker"
+import { StatsPanel } from "./stats-panel"
 
 const PAGE_SIZE = 20
 
@@ -212,13 +213,17 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
       )}
 
-      {/* 통계 패널 placeholder (Task 8) */}
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2"><BarChart3 className="size-4" /> 통계</CardTitle>
-        </CardHeader>
-        <CardContent className="py-6 text-sm text-muted-foreground">다음 단계에서 표시</CardContent>
-      </Card>
+      {/* 통계 패널 */}
+      {queried && data && (
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2"><BarChart3 className="size-4" /> 통계</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatsPanel stats={data.stats} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* 지도 placeholder (Task 9) */}
       <Card>
