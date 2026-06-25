@@ -12,11 +12,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <div className="print:hidden"><AppSidebar /></div>
       <SidebarInset>
-        <AppHeader />
+        <div className="print:hidden"><AppHeader /></div>
         <main className="flex flex-1 flex-col gap-4 p-4">{children}</main>
-        <AppFooter />
+        <div className="print:hidden"><AppFooter /></div>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -17,11 +17,11 @@ export default async function PrintFormPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="mx-auto max-w-[210mm] bg-white p-[15mm] text-black print:p-0">
-      <div className="mb-4 flex items-center justify-between print:hidden">
-        <span className="text-xs text-muted-foreground">실무 보조용 자동기입 양식 — 공식 표준양식 아님</span>
+      <div className="mb-4 flex justify-end print:hidden">
         <PrintButton />
       </div>
       <h1 className="mb-6 text-center text-xl font-bold">{form.label}</h1>
+      <p className="mb-6 text-center text-xs text-gray-500">실무 보조용 자동기입 양식 — 공식 표준양식 아님</p>
       <table className="w-full border-collapse text-sm">
         <tbody>
           {form.slots.map((s, i) => {
