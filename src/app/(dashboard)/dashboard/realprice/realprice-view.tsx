@@ -19,6 +19,7 @@ import type { Region } from "@/app/(dashboard)/dashboard/naver/actions"
 import { loadRealPrice } from "./actions"
 import { RealpriceMap } from "./realprice-map"
 import { RegionPicker } from "./region-picker"
+import { SelectionDetail } from "./selection-detail"
 import { StatsPanel } from "./stats-panel"
 
 const PAGE_SIZE = 20
@@ -264,6 +265,11 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
             />
           </CardContent>
         </Card>
+      )}
+
+      {/* 지도 선택 상세 (서클=동 / 마커=단지) */}
+      {queried && data && selectedKey && sorted.length > 0 && (
+        <SelectionDetail records={sorted} label={selLabel} isComplex={selectedKey.includes("/")} uiKind={queried.uiKind} />
       )}
 
       {/* 실패 월 안내 */}

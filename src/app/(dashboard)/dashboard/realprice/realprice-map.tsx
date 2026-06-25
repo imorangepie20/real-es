@@ -112,8 +112,8 @@ export function RealpriceMap({
           </>
         ) : (
           <>
-            <span>동을 클릭하면 단지별 위치를 표시합니다.</span>
-            {missingCount > 0 && <span>· 좌표 없는 {missingCount}개 동 제외</span>}
+            <span>법정동(서클)을 클릭하면 단지 마커가 펼쳐지고, 단지 마커를 클릭하면 표·엑셀·상세가 그 단지로 갱신됩니다.</span>
+            {missingCount > 0 && <span>· 좌표 없는 {missingCount}개 법정동 제외</span>}
           </>
         )}
       </div>
