@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ArrowDown, ArrowUp, ArrowUpDown, BarChart3, ChevronLeft, ChevronRight, Download, Inbox, Map, Search } from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowUpDown, BarChart3, ChevronLeft, ChevronRight, Download, Inbox, Map, Search, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -100,6 +100,13 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
     return data.records
   }, [data, queried])
 
+  // 지도 선택 라벨: selectedKey "umdNm"=동, "umdNm/name"=단지.
+  const selLabel = selectedKey
+    ? selectedKey.includes("/")
+      ? `${selectedKey.slice(0, selectedKey.indexOf("/"))} · ${selectedKey.slice(selectedKey.indexOf("/") + 1)}`
+      : selectedKey
+    : ""
+
   const priceOf = (r: RealTxRecord) => (r.kind === "sale" ? r.dealAmount : r.deposit) ?? null
   const sortVal = (r: RealTxRecord, k: SortKey): string | number => {
     switch (k) {
@@ -113,7 +120,17 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
     }
   }
   const sorted = useMemo(() => {
-    const arr = [...records]
+    // 지도 선택 필터: "umdNm"=동, "umdNm/name"=단지.
+    let base = records
+    if (selectedKey) {
+      const i = selectedKey.indexOf("/")
+      if (i === -1) base = records.filter((r) => r.umdNm === selectedKey)
+      else {
+        const umd = selectedKey.slice(0, i), name = selectedKey.slice(i + 1)
+        base = records.filter((r) => r.umdNm === umd && (r.name || "-") === name)
+      }
+    }
+    const arr = [...base]
     arr.sort((a, b) => {
       const av = sortVal(a, sort.key), bv = sortVal(b, sort.key)
       const c = av < bv ? -1 : av > bv ? 1 : 0
@@ -121,7 +138,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
     })
     return arr
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [records, sort])
+  }, [records, selectedKey, sort])
 
   function toggleSort(key: SortKey) {
     setSort((p) => (p.key === key ? { key, dir: p.dir === "asc" ? "desc" : "asc" } : { key, dir: "desc" }))
@@ -135,7 +152,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
   const paged = sorted.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE)
 
   const exportHref = queried
-    ? `/api/realprice/export?lawdCd=${queried.lawdCd}&type=${queried.propertyType}&kind=${queried.uiKind === "매매" ? "sale" : "rent"}&months=${queried.months}&split=${encodeURIComponent(queried.uiKind)}`
+    ? `/api/realprice/export?lawdCd=${queried.lawdCd}&type=${queried.propertyType}&kind=${queried.uiKind === "매매" ? "sale" : "rent"}&months=${queried.months}&split=${encodeURIComponent(queried.uiKind)}${selectedKey ? `&sel=${encodeURIComponent(selectedKey)}` : ""}`
     : ""
 
   const priceHeader = !queried ? "금액" : queried.uiKind === "매매" ? "매매가" : queried.uiKind === "전세" ? "보증금" : "보증금/월세"
@@ -243,7 +260,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
               byDong={data.byDong}
               records={records}
               selectedKey={selectedKey}
-              onSelect={setSelectedKey}
+              onSelect={(k) => { setSelectedKey(k); setPage(0) }}
             />
           </CardContent>
         </Card>
@@ -272,7 +289,17 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
       ) : (
         <Card className="gap-0">
           <CardHeader className="border-b">
-            <CardTitle>실거래 내역</CardTitle>
+            <CardTitle className="flex flex-wrap items-center gap-2">
+              실거래 내역
+              {selectedKey && (
+                <Badge variant="secondary" className="gap-1 font-normal">
+                  지도: {selLabel}
+                  <button type="button" onClick={() => { setSelectedKey(null); setPage(0) }} className="ml-0.5 rounded-sm hover:text-foreground" aria-label="지도 필터 해제">
+                    <X className="size-3" />
+                  </button>
+                </Badge>
+              )}
+            </CardTitle>
             <CardAction className="flex items-center gap-2">
               {!loading && <span className="text-sm text-muted-foreground">{sorted.length}건</span>}
               <a href={exportHref} className={cn(buttonVariants({ size: "sm" }), (loading || sorted.length === 0) && "pointer-events-none opacity-50")}>

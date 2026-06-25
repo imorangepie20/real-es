@@ -31,6 +31,17 @@ export async function GET(req: Request) {
   if (split === "전세") rows = records.filter((r) => (r.monthlyRent ?? 0) === 0);
   else if (split === "월세") rows = records.filter((r) => (r.monthlyRent ?? 0) > 0);
 
+  // 지도 선택 필터: "umdNm" = 동, "umdNm/name" = 단지.
+  const sel = params.get("sel");
+  if (sel) {
+    const i = sel.indexOf("/");
+    if (i === -1) rows = rows.filter((r) => r.umdNm === sel);
+    else {
+      const umd = sel.slice(0, i), name = sel.slice(i + 1);
+      rows = rows.filter((r) => r.umdNm === umd && (r.name || "-") === name);
+    }
+  }
+
   const isRent = kind === "rent";
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("실거래");
@@ -67,8 +78,9 @@ export async function GET(req: Request) {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
   const ts = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  const selSuffix = sel ? `_${sel.includes("/") ? sel.split("/")[1] : sel}` : "";
   const label = split && split !== "매매" ? split : propLabel(type);
-  const filename = encodeURIComponent(`실거래_${label}_${lawdCd}_${ts}.xlsx`);
+  const filename = encodeURIComponent(`실거래_${label}${selSuffix}_${lawdCd}_${ts}.xlsx`);
 
   const buf = await wb.xlsx.writeBuffer();
   return new NextResponse(buf as unknown as BodyInit, {

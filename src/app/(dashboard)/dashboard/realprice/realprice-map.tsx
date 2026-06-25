@@ -26,7 +26,7 @@ export function RealpriceMap({
   byDong: Dong[]
   records: RealTxRecord[]
   selectedKey?: string | null
-  onSelect?: (key: string) => void
+  onSelect?: (key: string | null) => void
 }) {
   // 드릴인된 동(umdNm). null이면 동 클러스터 뷰.
   const [drillDong, setDrillDong] = useState<string | null>(null)
@@ -95,6 +95,7 @@ export function RealpriceMap({
   function back() {
     setDrillDong(null)
     setPoints([])
+    onSelect?.(null) // 그리드·엑셀 필터 해제
   }
 
   return (
@@ -123,7 +124,7 @@ export function RealpriceMap({
           markers={markers}
           selectedKey={selectedKey}
           onSelect={onSelect}
-          onClusterClick={drill}
+          onClusterClick={(umd) => { drill(umd); onSelect?.(umd) }}
           loading={loading}
         />
       </div>
