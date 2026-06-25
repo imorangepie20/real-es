@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,15 @@ export function RealpriceMap({
   const [points, setPoints] = useState<ComplexPoint[]>([])
   const [loading, setLoading] = useState(false)
 
+  // Issue 1: 쿼리가 바뀌면(byDong·cityDivision 교체) 드릴 상태 초기화.
+  useEffect(() => {
+    setDrillDong(null)
+    setPoints([])
+  }, [byDong, cityDivision])
+
+  // Issue 2: loadComplexPoints 경쟁조건 가드용 요청 ID.
+  const drillReqRef = useRef(0)
+
   // 좌표 있는 동만 클러스터로. 없는 동은 제외(KakaoMap이 실좌표 필요).
   const withCoords = useMemo(() => byDong.filter((d) => d.lat != null && d.lng != null), [byDong])
   const missingCount = byDong.length - withCoords.length
@@ -48,6 +57,7 @@ export function RealpriceMap({
   )
 
   async function drill(umdNm: string) {
+    const reqId = ++drillReqRef.current
     setDrillDong(umdNm)
     setPoints([])
     setLoading(true)
@@ -71,9 +81,9 @@ export function RealpriceMap({
         avg: c.n ? c.sum / c.n : null,
       }))
       const res = await loadComplexPoints(items, cityDivision)
-      setPoints(res)
+      if (reqId === drillReqRef.current) setPoints(res)
     } finally {
-      setLoading(false)
+      if (reqId === drillReqRef.current) setLoading(false)
     }
   }
 
