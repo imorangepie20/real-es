@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { ChevronLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -33,13 +33,7 @@ export function RealpriceMap({
   const [points, setPoints] = useState<ComplexPoint[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Issue 1: 쿼리가 바뀌면(byDong·cityDivision 교체) 드릴 상태 초기화.
-  useEffect(() => {
-    setDrillDong(null)
-    setPoints([])
-  }, [byDong, cityDivision])
-
-  // Issue 2: loadComplexPoints 경쟁조건 가드용 요청 ID.
+  // loadComplexPoints 경쟁조건 가드용 요청 ID.
   const drillReqRef = useRef(0)
 
   // 좌표 있는 동만 클러스터로. 없는 동은 제외(KakaoMap이 실좌표 필요).

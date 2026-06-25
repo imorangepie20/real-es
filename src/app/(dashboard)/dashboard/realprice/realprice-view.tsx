@@ -237,6 +237,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
           </CardHeader>
           <CardContent>
             <RealpriceMap
+              key={`${queried.lawdCd}|${queried.uiKind}|${queried.propertyType}|${queried.months}`}
               appKey={KAKAO_KEY}
               cityDivision={queried.regionName}
               byDong={data.byDong}
