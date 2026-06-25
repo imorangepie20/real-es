@@ -40,7 +40,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
               <Link href={`/dashboard/properties/${id}/edit`} className="text-primary underline">수정 폼 열기</Link>
             </div>
           ) : (
-            <ContractClient id={id} data={data} forms={formsFor(g, t)} />
+            <ContractClient id={id} data={data} forms={formsFor(g, t).map((f) => ({ id: f.id, label: f.label }))} />
           )}
         </CardContent>
       </Card>

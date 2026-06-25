@@ -15,9 +15,8 @@ import { FIELD_BY_KEY, formMeta } from "@/lib/properties/fields";
 import { groupDigits, stripDigits, toDateInput, fromDateInput } from "@/lib/properties/format";
 import { updateProperty } from "../../actions";
 import { toggleChecklistItem, completeContract, type ContractData } from "../../contract-actions";
-import type { ContractForm } from "@/lib/properties/contract-forms";
 
-export function ContractClient({ id, data, forms }: { id: string; data: ContractData; forms: ContractForm[] }) {
+export function ContractClient({ id, data, forms }: { id: string; data: ContractData; forms: { id: string; label: string }[] }) {
   const router = useRouter();
   const readOnly = data.status === "계약완료";
   const [checked, setChecked] = useState(data.checked);
