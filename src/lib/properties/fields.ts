@@ -8,6 +8,7 @@ export type PropertyField = { key: string; label: string; group: string; type: F
 
 export const STATUS_OPTIONS: FieldOption[] = [
   { value: "진행", label: "진행" },
+  { value: "계약진행", label: "계약진행" },
   { value: "계약완료", label: "계약완료" },
 ];
 
@@ -33,6 +34,7 @@ export const PROPERTY_FIELDS: PropertyField[] = [
   // 금액
   { key: "dealAmount", label: "거래금액", group: "금액", type: "money" },
   { key: "price", label: "가격", group: "금액", type: "money" },
+  { key: "rentPrice", label: "월세", group: "금액", type: "money" },
   // 건물
   { key: "totalHouseholds", label: "총세대수", group: "건물", type: "number" },
   { key: "approvalDate", label: "사용승인일", group: "건물", type: "date" },

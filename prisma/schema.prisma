@@ -108,7 +108,7 @@ model Property {
   complexName    String?
   realEstateType String? // property-types 코드
   tradeType      String? // trade-types 코드
-  status         String  @default("진행") // 진행 | 계약완료
+  status         String  @default("진행") // 진행 | 계약진행 | 계약완료
   isFavorite     Boolean @default(false)
   source         String  @default("수기") // 수기 | 엑셀 | 네이버
 
@@ -121,6 +121,7 @@ model Property {
 
   dealAmount BigInt? // 거래금액(원)
   price      BigInt? // 가격(원)
+  rentPrice  BigInt? // 월세(원)
 
   totalHouseholds Int?
   approvalDate    String?
@@ -145,6 +146,8 @@ model Property {
 
   note String?
   memo String?
+
+  contractChecklist Json? // 계약진행 체크리스트
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
