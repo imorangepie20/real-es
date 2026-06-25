@@ -2,6 +2,7 @@
 import { db } from "@/lib/db";
 import { fetchRealTransactions, recentMonths } from "@/lib/realprice/fetch";
 import { computeStats } from "@/lib/realprice/stats";
+import { geocode } from "@/lib/realprice/geocode";
 import type { RealTradeKind, RealStats, RealTxRecord } from "@/lib/realprice/types";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
@@ -48,4 +49,14 @@ export async function loadRealPrice(filters: {
   });
 
   return { records, stats: computeStats(records), byDong, failedMonths };
+}
+
+export async function loadComplexPoints(items: { name: string; umdNm: string; count: number; avg: number | null }[], cityDivision: string): Promise<{ key: string; lat: number; lng: number; count: number; avg: number | null }[]> {
+  if (!(await getCurrentUser())) throw new Error("인증이 필요합니다");
+  const out: { key: string; lat: number; lng: number; count: number; avg: number | null }[] = [];
+  for (const it of items.slice(0, 200)) { // 상한
+    const g = await geocode(`${cityDivision} ${it.umdNm} ${it.name}`);
+    if (g) out.push({ key: `${it.umdNm}/${it.name}`, lat: g.lat, lng: g.lng, count: it.count, avg: it.avg });
+  }
+  return out;
 }

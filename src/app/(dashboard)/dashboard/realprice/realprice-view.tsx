@@ -17,10 +17,12 @@ import { REALPRICE_PROPERTY_TYPES } from "@/lib/realprice/endpoints"
 import type { RealTxRecord } from "@/lib/realprice/types"
 import type { Region } from "@/app/(dashboard)/dashboard/naver/actions"
 import { loadRealPrice } from "./actions"
+import { RealpriceMap } from "./realprice-map"
 import { RegionPicker } from "./region-picker"
 import { StatsPanel } from "./stats-panel"
 
 const PAGE_SIZE = 20
+const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? ""
 
 // UI 거래유형: 매매 / 전세 / 월세. 서버 kind: 매매→sale, 전세·월세→rent.
 type UiKind = "매매" | "전세" | "월세"
@@ -59,6 +61,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
 
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "dealDate", dir: "desc" })
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
   const isRent = uiKind !== "매매"
   // 거래유형이 전세/월세면 rent 지원 유형만, 매매면 전체(sale).
@@ -80,6 +83,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
       setData(res)
       setQueried({ uiKind, propertyType, lawdCd, regionName, months })
       setPage(0)
+      setSelectedKey(null)
     } catch (e) {
       setData(null); setQueried(null)
       setError(e instanceof Error ? e.message : "조회 중 오류가 발생했습니다")
@@ -225,13 +229,24 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
         </Card>
       )}
 
-      {/* 지도 placeholder (Task 9) */}
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2"><Map className="size-4" /> 지도</CardTitle>
-        </CardHeader>
-        <CardContent className="py-6 text-sm text-muted-foreground">다음 단계에서 표시</CardContent>
-      </Card>
+      {/* 지도: 동 집계 클러스터 → 단지 지오코딩 마커 */}
+      {queried && data && (
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2"><Map className="size-4" /> 지도</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RealpriceMap
+              appKey={KAKAO_KEY}
+              cityDivision={queried.regionName}
+              byDong={data.byDong}
+              records={records}
+              selectedKey={selectedKey}
+              onSelect={setSelectedKey}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* 실패 월 안내 */}
       {queried && data && data.failedMonths.length > 0 && (
