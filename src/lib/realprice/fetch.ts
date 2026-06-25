@@ -24,22 +24,49 @@ async function fetchMonth(lawdCd: string, dealYmd: string, propertyType: string,
     return cached.records as unknown as RealTxRecord[];
   }
   const key = process.env.PUBLIC_DATA_API_KEY ?? "";
-  const url = new URL(operationUrl(ep.service));
-  url.searchParams.set("serviceKey", key);
-  url.searchParams.set("LAWD_CD", lawdCd);
-  url.searchParams.set("DEAL_YMD", dealYmd);
-  url.searchParams.set("numOfRows", "1000");
-  url.searchParams.set("pageNo", "1");
+  // URL 기본 파라미터 세팅 (pageNo만 루프마다 바꿈)
+  const baseUrl = new URL(operationUrl(ep.service));
+  baseUrl.searchParams.set("serviceKey", key);
+  baseUrl.searchParams.set("LAWD_CD", lawdCd);
+  baseUrl.searchParams.set("DEAL_YMD", dealYmd);
+  baseUrl.searchParams.set("numOfRows", "1000");
+
+  // 1페이지 먼저 요청 — 실패 시 null 반환(failedMonths 처리)
+  baseUrl.searchParams.set("pageNo", "1");
   let res: Response;
-  try { res = await fetch(url, { cache: "no-store" }); } catch { return null; }
+  try { res = await fetch(baseUrl, { cache: "no-store" }); } catch { return null; }
   if (!res.ok) return null;
-  const parsed = parseResponse(await res.text());
-  if (parsed.resultCode && parsed.resultCode !== "000") return null;
-  const records = normalizeItems(parsed.items, propertyType, kind);
+  const firstParsed = parseResponse(await res.text());
+  if (firstParsed.resultCode && firstParsed.resultCode !== "000") return null;
+
+  const allItems = [...firstParsed.items];
+  const totalCount = firstParsed.totalCount;
+
+  // 총 건수가 1페이지(1000건)를 초과하면 추가 페이지 요청
+  // 안전 상한: 20페이지(=20,000건) — totalCount 오류로 인한 무한 루프 방지
+  const MAX_PAGES = 20;
+  let pageNo = 2;
+  while (allItems.length < totalCount && pageNo <= MAX_PAGES) {
+    baseUrl.searchParams.set("pageNo", String(pageNo));
+    try {
+      const pageRes = await fetch(baseUrl, { cache: "no-store" });
+      if (!pageRes.ok) break; // 후속 페이지 실패 → 지금까지 누적분으로 진행
+      const pageParsed = parseResponse(await pageRes.text());
+      if (pageParsed.resultCode && pageParsed.resultCode !== "000") break;
+      if (pageParsed.items.length === 0) break; // 더 이상 데이터 없음
+      allItems.push(...pageParsed.items);
+    } catch {
+      // 후속 페이지 네트워크 오류 → 부분 결과 사용(month 전체 폐기 안 함)
+      break;
+    }
+    pageNo++;
+  }
+
+  const records = normalizeItems(allItems, propertyType, kind);
   await db.realTxCache.upsert({
     where: { lawdCd_dealYmd_propertyType_kind: { lawdCd, dealYmd, propertyType, kind } },
-    create: { lawdCd, dealYmd, propertyType, kind, records: records as unknown as object, totalCount: parsed.totalCount },
-    update: { records: records as unknown as object, totalCount: parsed.totalCount, fetchedAt: new Date() },
+    create: { lawdCd, dealYmd, propertyType, kind, records: records as unknown as object, totalCount },
+    update: { records: records as unknown as object, totalCount, fetchedAt: new Date() },
   });
   return records;
 }
