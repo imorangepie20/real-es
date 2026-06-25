@@ -169,3 +169,24 @@ model Favorite {
   @@unique([userId, articleNumber])
   @@index([userId])
 }
+
+model RealTxCache {
+  id           String   @id @default(cuid())
+  lawdCd       String
+  dealYmd      String
+  propertyType String
+  kind         String
+  records      Json
+  totalCount   Int      @default(0)
+  fetchedAt    DateTime @default(now())
+
+  @@unique([lawdCd, dealYmd, propertyType, kind])
+}
+
+model GeocodeCache {
+  id        String   @id @default(cuid())
+  query     String   @unique
+  lat       Float?
+  lng       Float?
+  fetchedAt DateTime @default(now())
+}

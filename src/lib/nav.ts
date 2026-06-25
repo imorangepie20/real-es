@@ -20,6 +20,7 @@ export const navGroups: NavGroup[] = [
       { title: "전체 매물", href: "/dashboard/properties", icon: ClipboardList },
       { title: "관심 매물", href: "/dashboard/properties/favorites", icon: Star },
       { title: "계약완료", href: "/dashboard/properties/contracted", icon: CircleCheck },
+      { title: "실거래가", href: "/dashboard/realprice", icon: TrendingUp },
     ],
   },
   {
