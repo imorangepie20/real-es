@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { PROPERTY_FIELDS, FIELD_BY_KEY } from "@/lib/properties/fields";
 import { parseWorkbook } from "@/lib/properties/excel-read";
 import type { ParsedSheet } from "@/lib/properties/excel-import";
+import { toRow } from "./row-utils";
 
 export type PropertyView = "all" | "favorites" | "contracted";
 export type PropertyRow = { id: string; isFavorite: boolean } & Record<string, string | number | boolean | null>;
@@ -21,16 +22,6 @@ const MONEY = new Set(PROPERTY_FIELDS.filter((f) => f.type === "money").map((f) 
 const INT = new Set(PROPERTY_FIELDS.filter((f) => f.type === "number").map((f) => f.key));
 const FLOAT = new Set(PROPERTY_FIELDS.filter((f) => f.type === "area").map((f) => f.key));
 const BOOL = new Set(PROPERTY_FIELDS.filter((f) => f.type === "bool").map((f) => f.key));
-
-// Prisma Property → 직렬화 가능한 PropertyRow (BigInt→string)
-export function toRow(p: Record<string, unknown>): PropertyRow {
-  const row: PropertyRow = { id: p.id as string, isFavorite: !!p.isFavorite };
-  for (const f of PROPERTY_FIELDS) {
-    const v = p[f.key];
-    row[f.key] = typeof v === "bigint" ? v.toString() : ((v as string | number | boolean | null | undefined) ?? null);
-  }
-  return row;
-}
 
 // PropertyRow patch → Prisma data (문자열→BigInt/Int/Float/Bool). 알 수 없는 키 무시.
 function toData(patch: Record<string, unknown>): Record<string, unknown> {

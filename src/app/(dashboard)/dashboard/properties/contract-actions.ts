@@ -10,7 +10,8 @@ import {
   contractProgress,
   type ChecklistItem,
 } from "@/lib/properties/contract-checklist";
-import { requireUser, toRow, type PropertyRow } from "./actions";
+import { requireUser, type PropertyRow } from "./actions";
+import { toRow } from "./row-utils";
 
 export type ContractData = {
   property: PropertyRow;

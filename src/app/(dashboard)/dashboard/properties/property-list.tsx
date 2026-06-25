@@ -17,7 +17,8 @@ import { EditCell, SelectCell } from "@/components/data-grid/editable-cell"
 import { FIELD_BY_KEY, LIST_COLUMNS, STATUS_OPTIONS, type PropertyField } from "@/lib/properties/fields"
 import { TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { PROPERTY_LABEL, PROPERTY_OPTIONS } from "@/lib/naver/property-types"
-import { deleteProperties, setPropertyStatus, togglePropertyFavorite, updateProperty, type PropertyRow, type PropertyView } from "./actions"
+import { deleteProperties, togglePropertyFavorite, updateProperty, type PropertyRow, type PropertyView } from "./actions"
+import { startContract } from "./contract-actions"
 import { ExcelImportDialog } from "./excel-import-dialog"
 import { PropertyExportDialog } from "./property-export-dialog"
 
@@ -105,8 +106,8 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
           )}
           {sel.size > 0 && (
             <>
-              <Button size="sm" variant="outline" onClick={() => run(() => setPropertyStatus([...sel], "계약완료"), "계약완료로 전환했습니다")} disabled={busy}>
-                <CircleCheck className="size-3.5" />계약완료
+              <Button size="sm" variant="outline" onClick={() => run(() => Promise.all([...sel].map((sid) => startContract(sid))), "계약진행으로 전환했습니다")} disabled={busy}>
+                <CircleCheck className="size-3.5" />계약진행
               </Button>
               <Button size="sm" variant="destructive" onClick={() => run(() => deleteProperties([...sel]), "삭제했습니다")} disabled={busy}>
                 <Trash2 className="size-3.5" />삭제 {sel.size}
@@ -141,6 +142,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                   <TableHead className="w-12 text-right">#</TableHead>
                   <TableHead className="w-10" aria-label="관심" />
                   {LIST_COLUMNS.map((k) => <TableHead key={k}>{FIELD_BY_KEY[k].label}</TableHead>)}
+                  <TableHead className="w-12" aria-label="계약" />
                   <TableHead className="w-10" aria-label="수정" />
                 </TableRow>
               </TableHeader>
@@ -163,6 +165,11 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                       const numeric = f.type === "money" || f.type === "number" || f.type === "area"
                       return <TableCell key={k} className={cn(k === "complexName" && "min-w-40 font-medium")}><EditCell numeric={numeric} value={v as string | number | null} display={display(f, v)} onSave={(nv) => patchRow(p.id, { [k]: nv })} /></TableCell>
                     })}
+                    <TableCell>
+                      {(p.status === "계약진행" || p.status === "계약완료") && (
+                        <Link href={`/dashboard/properties/${p.id}/contract`} className="text-xs text-primary underline">계약</Link>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Link href={`/dashboard/properties/${p.id}/edit`} aria-label="수정" className="text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></Link>
                     </TableCell>
