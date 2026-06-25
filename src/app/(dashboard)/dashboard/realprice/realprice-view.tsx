@@ -296,7 +296,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
                         <TableCell className="text-right tabular-nums">{r.area != null ? r.area.toLocaleString("ko-KR") : "-"}</TableCell>
                         <TableCell className="text-right tabular-nums">
                           {queried.uiKind === "월세"
-                            ? `${won억(r.deposit)} / ${(r.monthlyRent ?? 0).toLocaleString("ko-KR")}만`
+                            ? `${won억(r.deposit)} / ${((r.monthlyRent ?? 0) / 10000).toLocaleString("ko-KR")}만`
                             : won억(priceOf(r))}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">{r.floor ?? "-"}</TableCell>
