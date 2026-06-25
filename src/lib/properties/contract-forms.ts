@@ -15,7 +15,8 @@ const NONRESI = [...GROUPS.COMMERCIAL, ...GROUPS.LAND, ...GROUPS.FACTORY];
 
 // 부동산 표시·당사자 공통 슬롯
 const PROPERTY_SLOTS: FormFieldSlot[] = [
-  { slot: "소재지(단지/건물)", sourceKey: "complexName" },
+  { slot: "소재지(주소)", sourceKey: "address" },
+  { slot: "단지명", sourceKey: "complexName" },
   { slot: "매물명", sourceKey: "name" },
   { slot: "전용면적", sourceKey: "areaExclusive" },
   { slot: "공급면적", sourceKey: "areaSupply" },

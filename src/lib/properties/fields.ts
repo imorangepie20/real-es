@@ -20,6 +20,7 @@ export const PROPERTY_FIELDS: PropertyField[] = [
   { key: "name", label: "매물명", group: "기본", type: "text" },
   { key: "articleNo", label: "매물번호", group: "기본", type: "text" },
   { key: "complexName", label: "단지명", group: "기본", type: "text" },
+  { key: "address", label: "주소", group: "기본", type: "text" },
   { key: "realEstateType", label: "매물유형", group: "기본", type: "select", options: propertyOpts },
   { key: "tradeType", label: "거래유형", group: "기본", type: "select", options: tradeOpts },
   { key: "status", label: "상태", group: "기본", type: "select", options: STATUS_OPTIONS },
@@ -79,6 +80,7 @@ export type FormInput = "text" | "select" | "money" | "area" | "count" | "date" 
 // 필드별 폼 메타 오버라이드(나머지는 type에서 파생)
 const FORM_OVERRIDE: Record<string, Partial<{ formInput: FormInput; unit: string; span: number; placeholder: string; formHidden: boolean }>> = {
   name: { span: 6, placeholder: "예: 정자동 래미안 102동 1503호" },
+  address: { span: 6, placeholder: "예: 성남시 분당구 정자일로 95 (정자동)" },
   source: { formHidden: true },
   complexName: { span: 6, placeholder: "예: 정자동 래미안" },
   articleNo: { placeholder: "예: 2024-1001" },

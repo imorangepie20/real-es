@@ -106,6 +106,7 @@ model Property {
   name           String?
   articleNo      String?
   complexName    String?
+  address        String? // 소재지 주소
   realEstateType String? // property-types 코드
   tradeType      String? // trade-types 코드
   status         String  @default("진행") // 진행 | 계약진행 | 계약완료
