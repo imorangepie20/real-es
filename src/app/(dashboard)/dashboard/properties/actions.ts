@@ -29,7 +29,7 @@ function toData(patch: Record<string, unknown>): Record<string, unknown> {
   for (const [k, v] of Object.entries(patch)) {
     if (!FIELD_BY_KEY[k]) continue;
     if (v == null || v === "") { data[k] = null; continue; }
-    if (MONEY.has(k)) data[k] = BigInt(Math.trunc(Number(v)));
+    if (MONEY.has(k)) data[k] = BigInt(Math.trunc(Number(v) * 10000)); // 만원 입력 → 원 저장
     else if (INT.has(k)) data[k] = Math.trunc(Number(v));
     else if (FLOAT.has(k)) data[k] = Number(v);
     else if (BOOL.has(k)) data[k] = v === true || v === "true";

@@ -23,7 +23,7 @@ import { ExcelImportDialog } from "./excel-import-dialog"
 import { PropertyExportDialog } from "./property-export-dialog"
 
 const VIEW_TITLE: Record<PropertyView, string> = { all: "전체 매물", favorites: "관심 매물", contracted: "계약완료" }
-const won = (v: string | number | null) => (v == null || v === "" ? "-" : Number(v).toLocaleString("ko-KR"))
+const won = (v: string | number | null) => (v == null || v === "" ? "-" : (Number(v) / 10000).toLocaleString("ko-KR")) // 원 저장 → 만원 표시
 const ymd = (v: string | number | null) => { const s = v == null ? "" : String(v); return s.length === 8 ? `${s.slice(0, 4)}.${s.slice(4, 6)}.${s.slice(6, 8)}` : (s || "-") }
 
 function display(field: PropertyField, value: string | number | boolean | null) {
@@ -163,7 +163,8 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                         return <TableCell key={k}><SelectCell value={String(v ?? "")} label={display(f, v)} options={f.options ?? []} onSave={(nv) => patchRow(p.id, { [k]: nv })} /></TableCell>
                       }
                       const numeric = f.type === "money" || f.type === "number" || f.type === "area"
-                      return <TableCell key={k} className={cn(k === "complexName" && "min-w-40 font-medium")}><EditCell numeric={numeric} value={v as string | number | null} display={display(f, v)} onSave={(nv) => patchRow(p.id, { [k]: nv })} /></TableCell>
+                      const editV = f.type === "money" && v != null ? Number(v) / 10000 : (v as string | number | null) // money는 만원으로 편집
+                      return <TableCell key={k} className={cn(k === "complexName" && "min-w-40 font-medium")}><EditCell numeric={numeric} value={editV} display={display(f, v)} onSave={(nv) => patchRow(p.id, { [k]: nv })} /></TableCell>
                     })}
                     <TableCell>
                       {(p.status === "계약진행" || p.status === "계약완료") && (

@@ -42,7 +42,7 @@ export const CONTRACT_FORMS: ContractForm[] = [
     applies: (_g, t) => t === "A1",
     slots: [
       ...PROPERTY_SLOTS,
-      { slot: "매매대금", sourceKey: "dealAmount" },
+      { slot: "매매대금", sourceKey: "price" },
       { slot: "계약금(수기)" },
       { slot: "잔금(수기)" },
       ...SCHEDULE_SLOTS,

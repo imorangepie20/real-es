@@ -74,7 +74,7 @@ function SaleAmount({ p }: { p: P }) {
   return (
     <table className="w-full border-collapse border border-black">
       <tbody>
-        <AmountRow label="매매대금" amount={won(p.dealAmount)} note="아래 지불방법에 따라 지불한다." />
+        <AmountRow label="매매대금" amount={won(p.price)} note="아래 지불방법에 따라 지불한다." />
         <AmountRow label="계약금" note="계약 체결 시 지불하고 영수함." />
         <AmountRow label="중도금" note={<>지불일&nbsp;<Fill value={ymd(p.interim1Date)} w="55%" /></>} />
         <AmountRow label="잔 금" note={<>지불일&nbsp;<Fill value={ymd(p.balanceDate)} w="55%" /></>} />
@@ -229,7 +229,7 @@ function ConfirmStatement({ p }: { p: P }) {
         {row("실제 권리관계 또는 공시되지 않은 물건의 권리", <Fill />)}
         {row("입지조건 (도로·교통·교육 등)", <Fill />)}
         {row("관리에 관한 사항 (관리비·주차)", <Fill value={p.parkingCount ? `주차 ${text(p.parkingCount)}대` : ""} w="40%" />)}
-        {row("거래예정금액", <Fill value={won(p.dealAmount) || won(p.price)} w="40%" />)}
+        {row("거래예정금액", <Fill value={won(p.price)} w="40%" />)}
         {row("중개보수", <Fill />)}
       </tbody>
     </table>
@@ -237,7 +237,7 @@ function ConfirmStatement({ p }: { p: P }) {
 }
 
 function Receipt({ p }: { p: P }) {
-  const amount = won(p.dealAmount) || won(p.price);
+  const amount = won(p.price);
   return (
     <div className="mt-8">
       <table className="w-full border-collapse border-2 border-black">

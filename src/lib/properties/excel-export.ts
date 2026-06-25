@@ -11,7 +11,7 @@ function cellValue(key: string, v: unknown): string | number | null {
   if (v == null || v === "") return null;
   const f = FIELD_BY_KEY[key];
   switch (f.type) {
-    case "money": return Number(v);
+    case "money": return Number(v) / 10000; // 원 → 만원
     case "area": case "number": return Number(v);
     case "select": return f.options?.find((o) => o.value === v)?.label ?? String(v);
     case "date": return ymd(String(v));

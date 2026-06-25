@@ -129,7 +129,7 @@ function ContractField({ id, fieldKey, initial, readOnly, onFilled }: {
 }) {
   const f = FIELD_BY_KEY[fieldKey];
   const meta = formMeta(f);
-  const [val, setVal] = useState(initial == null ? "" : String(initial));
+  const [val, setVal] = useState(initial == null ? "" : f.type === "money" ? String(Number(initial) / 10000) : String(initial));
 
   function save(raw: string) {
     onFilled(raw !== "");

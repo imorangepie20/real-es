@@ -7,7 +7,7 @@ const norm = (s: string) => s.replace(/[\s()（）[\]/]/g, "").toLowerCase();
 const ALIASES: Record<string, string> = {
   종류: "realEstateType", 거래: "tradeType",
   전용: "areaExclusive", 공급: "areaSupply", 대지: "landArea", 건축: "buildingArea", 연면적: "area",
-  매매가: "dealAmount", 보증금: "price", 세대수: "totalHouseholds", 주차: "parkingCount", 난방: "heating",
+  매매가: "price", 보증금: "price", 세대수: "totalHouseholds", 주차: "parkingCount", 난방: "heating",
   잔금: "balanceDate",
 };
 

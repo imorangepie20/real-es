@@ -19,7 +19,7 @@ describe("parseWorkbook", () => {
     const parsed = await parseWorkbook(await makeBuffer());
     expect(parsed.headers).toEqual(["단지명", "매매가", "없는헤더"]);
     expect(parsed.matches[0].fieldKey).toBe("complexName");
-    expect(parsed.matches[1].fieldKey).toBe("dealAmount");
+    expect(parsed.matches[1].fieldKey).toBe("price");
     expect(parsed.matches[2].fieldKey).toBeNull();
     expect(parsed.rows).toHaveLength(2);
     expect(parsed.rows[0][0]).toBe("행복아파트");

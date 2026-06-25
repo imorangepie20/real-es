@@ -71,7 +71,7 @@ export function resolveChecklist(realEstateType: string, tradeType: string): Che
 
 export function requiredFieldKeys(tradeType: string): string[] {
   const base = ["customerName", "contractDate", "balanceDate"];
-  if (tradeType === "A1") return [...base, "dealAmount"];
+  if (tradeType === "A1") return [...base, "price"];
   if (tradeType === "B1") return [...base, "price"];
   if (tradeType === "B2") return [...base, "price", "rentPrice"];
   return base;

@@ -22,9 +22,9 @@ describe("formsFor", () => {
 });
 
 describe("FORM_BY_ID 슬롯", () => {
-  it("매매계약서에 매매대금 슬롯(sourceKey=dealAmount) 존재", () => {
+  it("매매계약서에 매매대금 슬롯(sourceKey=price) 존재", () => {
     const slots = FORM_BY_ID.sale_contract.slots;
-    expect(slots.some((s) => s.sourceKey === "dealAmount")).toBe(true);
+    expect(slots.some((s) => s.sourceKey === "price")).toBe(true);
   });
   it("임대차계약서에 월세 슬롯(sourceKey=rentPrice) 존재", () => {
     expect(FORM_BY_ID.lease_contract.slots.some((s) => s.sourceKey === "rentPrice")).toBe(true);

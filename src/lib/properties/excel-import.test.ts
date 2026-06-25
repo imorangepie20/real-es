@@ -10,15 +10,15 @@ const sheet: ParsedSheet = {
     ["풍경마을", "오백만", "59.9"],
   ],
 };
-const mapping = { 0: "complexName", 1: "dealAmount", 2: "areaExclusive" };
+const mapping = { 0: "complexName", 1: "price", 2: "areaExclusive" };
 
 describe("buildImportRows", () => {
   it("매핑·정규화 적용", () => {
     const rows = buildImportRows(sheet, mapping);
-    expect(rows[0]).toEqual({ complexName: "행복아파트", dealAmount: 350000000, areaExclusive: 84.21 });
+    expect(rows[0]).toEqual({ complexName: "행복아파트", price: 350000000, areaExclusive: 84.21 });
   });
   it("파싱 실패 숫자 셀 → null", () => {
-    expect(buildImportRows(sheet, mapping)[1].dealAmount).toBeNull();
+    expect(buildImportRows(sheet, mapping)[1].price).toBeNull();
   });
   it("매핑 null 컬럼은 제외", () => {
     const rows = buildImportRows(sheet, { 0: "complexName", 1: null, 2: "areaExclusive" });

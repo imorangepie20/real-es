@@ -35,8 +35,8 @@ describe("resolveChecklist 교차", () => {
 });
 
 describe("requiredFieldKeys", () => {
-  it("매매=거래금액, 전세=보증금, 월세=보증금+월세, 단기=공통만", () => {
-    expect(requiredFieldKeys("A1")).toEqual(["customerName", "contractDate", "balanceDate", "dealAmount"]);
+  it("매매=가격, 전세=보증금, 월세=보증금+월세, 단기=공통만", () => {
+    expect(requiredFieldKeys("A1")).toEqual(["customerName", "contractDate", "balanceDate", "price"]);
     expect(requiredFieldKeys("B1")).toContain("price");
     expect(requiredFieldKeys("B2")).toEqual(expect.arrayContaining(["price", "rentPrice"]));
     expect(requiredFieldKeys("B3")).toEqual(["customerName", "contractDate", "balanceDate"]);
@@ -44,7 +44,7 @@ describe("requiredFieldKeys", () => {
 });
 
 describe("contractProgress 게이트", () => {
-  const full = { customerName: "홍길동", contractDate: "20260701", balanceDate: "20260801", dealAmount: "500000000" };
+  const full = { customerName: "홍길동", contractDate: "20260701", balanceDate: "20260801", price: "500000000" };
   it("required 항목·필드 전부 충족 시 complete", () => {
     const items = resolveChecklist("A01", "A1").filter((i) => i.required);
     const checked = Object.fromEntries(items.map((i) => [i.id, "2026-07-01T00:00:00Z"]));

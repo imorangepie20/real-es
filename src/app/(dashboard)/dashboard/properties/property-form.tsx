@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
 import { FORM_GROUPS, PROPERTY_FIELDS, SPAN_CLASS, formMeta, type PropertyField } from "@/lib/properties/fields"
 import { fromDateInput, groupDigits, stripDigits, formatTel, toDateInput } from "@/lib/properties/format"
 import { createProperty, updateProperty, type PropertyRow } from "./actions"
@@ -25,7 +24,7 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
     const init: Record<string, string> = {}
     for (const f of PROPERTY_FIELDS) {
       const v = property?.[f.key]
-      init[f.key] = v == null ? (f.key === "status" ? "진행" : "") : f.type === "bool" ? (v ? "true" : "") : String(v)
+      init[f.key] = v == null ? (f.key === "status" ? "진행" : "") : f.type === "bool" ? (v ? "true" : "") : f.type === "money" ? String(Number(v) / 10000) : String(v)
     }
     return init
   })
@@ -68,9 +67,8 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
                     const m = formMeta(f)
                     // 거래유형 연동: price 라벨/강조
                     const label = f.key === "price" ? (isRental ? "보증금" : "가격") : f.label
-                    const dim = (f.key === "dealAmount" && isRental) || (f.key === "price" && !isRental && values.tradeType === "A1")
                     return (
-                      <div key={f.key} className={cn(SPAN_CLASS[m.span], dim && "opacity-50")}>
+                      <div key={f.key} className={SPAN_CLASS[m.span]}>
                         <FieldInput field={f} meta={m} label={label} value={values[f.key]} onChange={(v) => set(f.key, v)} />
                       </div>
                     )
