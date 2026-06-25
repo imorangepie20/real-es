@@ -359,51 +359,61 @@
 ### 데이터 구조 (제안)
 
 ```jsonc
-// 1) 마스터: 재사용 가능한 체크리스트 항목 사전
+// 1) 마스터: 재사용 가능한 체크리스트 항목 사전 (구현 src/lib/properties/contract-checklist.ts와 동일)
+//    필드: label(필드명)·party(당사자)·kind(종류: 서류/처리/신고/세금)·required(완료 게이트 필수 여부)
 {
   "checklistItems": {
-    "DOC_ID_CARD":        { "label": "신분증", "party": "common", "phase": "contract", "kind": "document" },
-    "DOC_SEAL_CERT_SALE": { "label": "인감증명서(부동산 매도용, 3개월 이내)", "party": "seller", "phase": "contract", "kind": "document" },
-    "DOC_TITLE_DEED":     { "label": "등기권리증(등기필증)", "party": "seller", "phase": "closing", "kind": "document" },
-    "DOC_REGISTER":       { "label": "등기사항전부증명서(당일 최신본)", "party": "agent", "phase": "contract", "kind": "document" },
-    "DOC_BLDG_LEDGER":    { "label": "건축물대장", "party": "agent", "phase": "contract", "kind": "document" },
-    "ACT_MOVE_IN":        { "label": "전입신고(대항력)", "party": "tenant", "phase": "closing", "kind": "action" },
-    "ACT_FIXED_DATE":     { "label": "확정일자(우선변제권)", "party": "tenant", "phase": "closing", "kind": "action" },
-    "ACT_BIZ_REG":        { "label": "사업자등록(개업 20일 내)", "party": "tenant", "phase": "closing", "kind": "action" },
-    "ACT_FARMLAND_CERT":  { "label": "농지취득자격증명(농취증)", "party": "buyer", "phase": "permit", "kind": "action" },
-    "ACT_LUT_PERMIT":     { "label": "토지거래허가", "party": "buyer", "phase": "permit", "kind": "action" },
-    "FILE_TX_REPORT":     { "label": "부동산거래신고", "party": "agent", "phase": "post", "deadlineDays": 30, "kind": "filing" },
-    "FILE_LEASE_REPORT":  { "label": "주택임대차신고", "party": "common", "phase": "post", "deadlineDays": 30, "kind": "filing" },
-    "TAX_ACQUISITION":    { "label": "취득세 신고·납부", "party": "buyer", "phase": "post", "deadlineDays": 60, "kind": "tax" },
-    "TAX_CAPITAL_GAINS":  { "label": "양도세 예정신고", "party": "seller", "phase": "post", "kind": "tax" }
+    "DOC_ID":            { "label": "신분증", "party": "common", "kind": "서류", "required": true },
+    "DOC_REGISTER":      { "label": "등기사항전부증명서(당일 최신본)", "party": "agent", "kind": "서류", "required": true },
+    "DOC_BLDG_LEDGER":   { "label": "건축물대장", "party": "agent", "kind": "서류", "required": true },
+    "DOC_CONTRACT":      { "label": "부동산 매매·임대차계약서", "party": "agent", "kind": "서류", "required": true },
+    "DOC_CONFIRM":       { "label": "중개대상물 확인·설명서", "party": "agent", "kind": "서류", "required": true },
+    "DOC_TITLE_DEED":    { "label": "등기권리증(등기필증)", "party": "seller", "kind": "서류", "required": true },
+    "DOC_SEAL_SALE":     { "label": "인감증명서(부동산 매도용, 3개월 이내)", "party": "seller", "kind": "서류", "required": true },
+    "ACT_OWNERSHIP":     { "label": "소유권이전등기", "party": "buyer", "kind": "처리", "required": true },
+    "FILE_TX_REPORT":    { "label": "부동산거래신고(계약+30일)", "party": "agent", "kind": "신고", "required": false },
+    "TAX_ACQUISITION":   { "label": "취득세 신고·납부", "party": "buyer", "kind": "세금", "required": false },
+    "TAX_CAPITAL_GAINS": { "label": "양도세 예정신고", "party": "seller", "kind": "세금", "required": false },
+    "DOC_TAX_CLEARANCE": { "label": "임대인 납세증명서·미납국세 확인", "party": "landlord", "kind": "서류", "required": false },
+    "ACT_SENIOR_LIEN":   { "label": "선순위 권리·전입세대 점검", "party": "agent", "kind": "처리", "required": true },
+    "ACT_MOVE_IN":       { "label": "전입신고(대항력)", "party": "tenant", "kind": "처리", "required": true },
+    "ACT_FIXED_DATE":    { "label": "확정일자(우선변제권)", "party": "tenant", "kind": "처리", "required": true },
+    "ACT_DEPOSIT_GUARANTEE": { "label": "전세보증금반환보증", "party": "tenant", "kind": "처리", "required": false },
+    "FILE_LEASE_REPORT": { "label": "주택임대차신고(30일)", "party": "common", "kind": "신고", "required": false },
+    "ACT_BIZ_REG":       { "label": "사업자등록(개업 20일 내)", "party": "tenant", "kind": "처리", "required": true },
+    "ACT_TAX_FIXED_DATE":{ "label": "세무서 확정일자", "party": "tenant", "kind": "처리", "required": true },
+    "ACT_FARMLAND_CERT": { "label": "농지취득자격증명(농취증)", "party": "buyer", "kind": "처리", "required": false },
+    "ACT_LUT_PERMIT":    { "label": "토지거래허가", "party": "buyer", "kind": "처리", "required": false }
   }
 }
 ```
 
 ```jsonc
-// 2) 합성 규칙: 거래유형 공통 + 매물유형군 공통 + ★교차 오버레이
+// 2) 합성 규칙 (구현 contract-checklist.ts itemIds()와 동일)
+//    결과 = 공통 ∪ byDealType[deal] ∪ byPropertyGroup[group].add ∪ (매칭되는 byCross[i].add)
 {
-  // (a) 거래유형 공통 — 매물유형과 무관하게 항상 적용 (신고·세금·등기 등)
+  // (공통) 모든 거래·매물에 항상: DOC_ID, DOC_REGISTER, DOC_BLDG_LEDGER, DOC_CONTRACT, DOC_CONFIRM
+  // (a) 거래유형별
   "byDealType": {
-    "A1": ["DOC_TITLE_DEED","DOC_SEAL_CERT_SALE","DOC_REGISTER","DOC_BLDG_LEDGER","FILE_TX_REPORT","TAX_ACQUISITION","TAX_CAPITAL_GAINS"],
-    "B1": ["DOC_REGISTER","FILE_LEASE_REPORT"],
-    "B2": ["DOC_REGISTER","FILE_LEASE_REPORT"],
-    "B3": ["DOC_REGISTER","DOC_BLDG_LEDGER"]
+    "A1": ["DOC_TITLE_DEED","DOC_SEAL_SALE","ACT_OWNERSHIP","FILE_TX_REPORT","TAX_ACQUISITION","TAX_CAPITAL_GAINS"],
+    "B1": ["FILE_LEASE_REPORT","DOC_TAX_CLEARANCE"],
+    "B2": ["FILE_LEASE_REPORT","DOC_TAX_CLEARANCE"],
+    "B3": []   // 단기: 분기 없음(전입 통상 불가) → 공통 항목 위주
   },
-  // (b) 매물유형군 공통 — 거래유형과 무관하게 항상 적용
+  // (b) 매물유형군별
   "byPropertyGroup": {
-    "RESI_MULTI":  { "codes": ["A01","A02","A04","C02","C01"], "add": [], "note": "장기수선충당금·전입세대열람원" },
-    "RESI_SINGLE": { "codes": ["C03","C04"], "add": [], "note": "다가구 보증금 합산 점검·토지대장" },
-    "COMMERCIAL":  { "codes": ["D01","D02","D03","D05"], "add": [], "note": "환산보증금·권리금·VAT/포괄양수도" },
-    "LAND":        { "codes": ["E03"], "add": ["ACT_FARMLAND_CERT","ACT_LUT_PERMIT"], "note": "농취증·토지거래허가" },
-    "FACTORY":     { "codes": ["E02","E04"], "add": [], "note": "산업단지 입주계약·업종 적합성·지산 취득세 감면" }
+    "RESI":        { "codes": ["A01","A02","A04","C02","C01"], "add": [] },
+    "RESI_SINGLE": { "codes": ["C03","C04"], "add": [] },
+    "COMMERCIAL":  { "codes": ["D01","D02","D03","D05"], "add": [] },
+    "LAND":        { "codes": ["E03"], "add": ["ACT_FARMLAND_CERT","ACT_LUT_PERMIT"] },
+    "FACTORY":     { "codes": ["E02","E04"], "add": [] }   // MVP: 산업단지 전용 항목 미정의(공통+거래유형만)
   },
-  // (c) ★ 교차 오버레이 — (매물유형군 × 거래유형) 조합에서만 적용.
-  //     단순 합집합으로는 표현 불가. 예: 임대차 대항·우선변제 수단은 주거(전입신고)와
-  //     상가(사업자등록)가 다르므로 거래유형 공통에 두면 안 되고 교차로 분기해야 한다.
+  // (c) ★ 교차 오버레이 — (매물유형군 × 거래유형) 조합에서만. 단순 합집합 불가
+  //     (임대차 대항·우선변제 수단: 주거=전입신고 / 상가=사업자등록).  RESIDENTIAL = RESI ∪ RESI_SINGLE
   "byCross": [
-    { "groups": ["RESI_MULTI","RESI_SINGLE"], "deals": ["B1","B2"], "add": ["ACT_MOVE_IN","ACT_FIXED_DATE"] }, // 주거 임대차: 전입신고+확정일자
-    { "groups": ["COMMERCIAL"],               "deals": ["B1","B2"], "add": ["ACT_BIZ_REG","ACT_FIXED_DATE"] }  // 상가 임대차: 사업자등록+세무서 확정일자(전입신고 아님)
+    { "groups": ["RESI","RESI_SINGLE"], "deals": ["B1","B2"], "add": ["ACT_MOVE_IN","ACT_FIXED_DATE","ACT_SENIOR_LIEN"] }, // 주거 임대: 전입신고+확정일자+선순위점검
+    { "groups": ["RESI","RESI_SINGLE"], "deals": ["B1"],      "add": ["ACT_DEPOSIT_GUARANTEE"] },                          // 주거 전세: 보증보험
+    { "groups": ["COMMERCIAL"],         "deals": ["B1","B2"], "add": ["ACT_BIZ_REG","ACT_TAX_FIXED_DATE"] }                // 상가 임대: 사업자등록+세무서 확정일자(전입신고 아님)
   ]
 }
 ```
@@ -413,37 +423,38 @@
 //    결과 체크리스트 = common ∪ byDealType[deal] ∪ byPropertyGroup[group].add
 //                     ∪ (group·deal 이 매칭되는 모든 byCross[i].add)
 {
+  // 공통(항상): DOC_ID, DOC_REGISTER, DOC_BLDG_LEDGER, DOC_CONTRACT, DOC_CONFIRM
   // 예) 토지 매매 (E03 × A1) — 교차 오버레이 해당 없음
   "example": { "propertyCode": "E03", "dealType": "A1",
     "resolvedItems": [
-      "DOC_ID_CARD","DOC_REGISTER","DOC_BLDG_LEDGER",       // common
-      "DOC_TITLE_DEED","DOC_SEAL_CERT_SALE","FILE_TX_REPORT","TAX_ACQUISITION","TAX_CAPITAL_GAINS", // A1
-      "ACT_FARMLAND_CERT","ACT_LUT_PERMIT"                  // LAND.add
+      "DOC_ID","DOC_REGISTER","DOC_BLDG_LEDGER","DOC_CONTRACT","DOC_CONFIRM",            // common
+      "DOC_TITLE_DEED","DOC_SEAL_SALE","ACT_OWNERSHIP","FILE_TX_REPORT","TAX_ACQUISITION","TAX_CAPITAL_GAINS", // A1
+      "ACT_FARMLAND_CERT","ACT_LUT_PERMIT"                                               // LAND.add
     ] },
-  // 예) 상가 월세 (D02 × B2) — COMMERCIAL×B2 교차 → 사업자등록(전입신고 아님)
+  // 예) 상가 월세 (D02 × B2) — COMMERCIAL×B2 교차 → 사업자등록(전입신고·선순위 아님)
   "example2": { "propertyCode": "D02", "dealType": "B2",
     "resolvedItems": [
-      "DOC_ID_CARD","DOC_REGISTER","DOC_BLDG_LEDGER",       // common
-      "FILE_LEASE_REPORT",                                  // B2
-      "ACT_BIZ_REG","ACT_FIXED_DATE"                        // COMMERCIAL×B2 교차 (★ ACT_MOVE_IN 제외)
+      "DOC_ID","DOC_REGISTER","DOC_BLDG_LEDGER","DOC_CONTRACT","DOC_CONFIRM",            // common
+      "FILE_LEASE_REPORT","DOC_TAX_CLEARANCE",                                           // B2
+      "ACT_BIZ_REG","ACT_TAX_FIXED_DATE"                                                 // COMMERCIAL×B2 교차 (★ ACT_MOVE_IN 제외)
     ] },
-  // 예) 아파트 전세 (A01 × B1) — RESI×B1 교차 → 전입신고+확정일자
+  // 예) 아파트 전세 (A01 × B1) — RESI×B1 교차 → 전입신고+확정일자+선순위+보증보험
   "example3": { "propertyCode": "A01", "dealType": "B1",
     "resolvedItems": [
-      "DOC_ID_CARD","DOC_REGISTER","DOC_BLDG_LEDGER",       // common
-      "FILE_LEASE_REPORT",                                  // B1
-      "ACT_MOVE_IN","ACT_FIXED_DATE"                        // RESI_MULTI×B1 교차
+      "DOC_ID","DOC_REGISTER","DOC_BLDG_LEDGER","DOC_CONTRACT","DOC_CONFIRM",            // common
+      "FILE_LEASE_REPORT","DOC_TAX_CLEARANCE",                                           // B1
+      "ACT_MOVE_IN","ACT_FIXED_DATE","ACT_SENIOR_LIEN","ACT_DEPOSIT_GUARANTEE"           // RESI×B1 교차
     ] }
 }
 ```
 
 ### 설계 포인트
 
-- 각 항목에 `party`(seller/buyer/tenant/landlord/agent/common), `phase`(contract/permit/closing/post), `kind`(document/action/filing/tax), `deadlineDays`를 부여하면 **당사자별 뷰·타임라인 뷰·기한 알림**을 한 데이터에서 파생할 수 있다.
+- 각 항목은 `party`(common/seller/buyer/landlord/tenant/agent — UI 라벨 공통/매도인/매수인/임대인/임차인/중개)·`kind`(**서류/처리/신고/세금**)·`required`(완료 게이트 필수)로 정의한다. 이 `party`/`kind`로 **당사자별 그룹·종류 배지**를 한 데이터에서 파생한다. (구현 `contract-checklist.ts`의 `ChecklistItem`과 동일.)
 - 결과 체크리스트는 **공통 ∪ 거래유형 ∪ 매물유형군 ∪ 교차 오버레이**의 합집합으로 동적 생성. **교차 오버레이가 핵심** — 임대차의 대항·우선변제 수단(주거=전입신고 / 상가=사업자등록)처럼 거래유형만으로도, 매물유형만으로도 결정되지 않는 항목은 (매물군 × 거래유형) 교차에서만 부여해야 잘못된 항목(예: 상가에 전입신고)이 섞이지 않는다.
 - `note`·`⚠️확인필요` 플래그를 항목에 달아 변동성 높은 항목(세율·규제)을 UI에서 경고 배지로 노출.
-- **임대인(landlord) 전용 항목**도 항목화 필요: 납세증명서·미납국세 열람·(등록임대) 임대보증금 반환보증 가입증명 등은 `party:"landlord"`로 정식 등록해 임대차 임대인 체크리스트를 채운다.
-- 사용자별 체크 상태는 별도 테이블(`{contractId, itemId, checked, checkedAt, memo}`)로 분리해 마스터 사전과 분리.
+- **임대인(landlord) 전용 항목** 포함(구현됨): `DOC_TAX_CLEARANCE`(납세증명서·미납국세 확인). (등록임대) 임대보증금 반환보증 가입증명 등은 후속 확장 여지.
+- 체크 상태 저장은 **MVP에서 `Property.contractChecklist`(JSON, `{itemId: checkedAt}`)** 로 구현. 항목별 memo·감사 필요 시 별도 테이블(`{contractId, itemId, checked, checkedAt, memo}`)로 이관.
 
 ---
 

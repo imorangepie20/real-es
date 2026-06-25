@@ -21,8 +21,8 @@ describe("resolveChecklist 교차", () => {
   it("토지 매매(E03×A1): 농취증·토허 포함", () => {
     expect(ids("E03", "A1")).toEqual(expect.arrayContaining(["ACT_FARMLAND_CERT", "ACT_LUT_PERMIT"]));
   });
-  it("매매(A1): 등기권리증·소유권이전·거래신고 포함", () => {
-    expect(ids("A01", "A1")).toEqual(expect.arrayContaining(["DOC_TITLE_DEED", "ACT_OWNERSHIP", "FILE_TX_REPORT"]));
+  it("매매(A1): 등기권리증·소유권이전·거래신고·취득세·양도세 포함", () => {
+    expect(ids("A01", "A1")).toEqual(expect.arrayContaining(["DOC_TITLE_DEED", "ACT_OWNERSHIP", "FILE_TX_REPORT", "TAX_ACQUISITION", "TAX_CAPITAL_GAINS"]));
   });
   it("임대(B1/B2): 임대인 납세증명 포함, B3·공장은 공통 위주", () => {
     expect(ids("A01", "B2")).toContain("DOC_TAX_CLEARANCE");

@@ -93,7 +93,7 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
                 <label key={i.id} className="flex items-center gap-2 text-sm">
                   <Checkbox checked={!!checked[i.id]} onCheckedChange={(c) => onToggle(i.id, c)} disabled={readOnly} />
                   <span className={cn(checked[i.id] && "text-muted-foreground line-through")}>{i.label}</span>
-                  {!i.required && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{i.kind === "신고" ? "법정신고" : "참고"}</span>}
+                  {!i.required && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{i.kind === "신고" ? "법정신고" : i.kind === "세금" ? "세금" : "참고"}</span>}
                 </label>
               ))}
             </div>
