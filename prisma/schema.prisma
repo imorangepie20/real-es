@@ -26,6 +26,7 @@ model User {
   sessions     Session[]
   favorites    Favorite[]
   properties   Property[]
+  customers    Customer[]
 }
 
 model Session {
@@ -150,6 +151,8 @@ model Property {
 
   contractChecklist Json? // 계약진행 체크리스트
 
+  customers Customer[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -189,4 +192,23 @@ model GeocodeCache {
   lat       Float?
   lng       Float?
   fetchedAt DateTime @default(now())
+}
+
+model Customer {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  types      String[]  @default(["단순방문"]) // 매도인·매수인·임대인·임차인(다중) | 단순방문(단독)
+  name       String
+  phone      String?
+  address    String?
+  email      String?
+  gender     String? // 남 | 여 | 미지정
+  memo       String?
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
 }
