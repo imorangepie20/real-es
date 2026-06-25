@@ -20,7 +20,7 @@ export const REALPRICE_PROPERTY_TYPES: { value: string; label: string; sale: boo
 const DATE = { dealYear: "dealDate", dealMonth: "dealDate", dealDay: "dealDate" } as const; // dealDate는 normalize에서 조립
 const ENDPOINTS: Record<string, { sale?: Omit<RealEndpoint, "service"> & { service: string }; rent?: Omit<RealEndpoint, "service"> & { service: string } }> = {
   apt: {
-    sale: { service: "RTMSDataSvcAptTradeDev", areaKind: "전용", nameField: "aptNm",
+    sale: { service: "RTMSDataSvcAptTrade", areaKind: "전용", nameField: "aptNm",
       fieldMap: { aptNm: "name", umdNm: "umdNm", jibun: "jibun", roadNm: "roadNm", excluUseAr: "area", dealAmount: "dealAmount", floor: "floor", buildYear: "buildYear", cdealType: "isCanceled", ...DATE } },
     rent: { service: "RTMSDataSvcAptRent", areaKind: "전용", nameField: "aptNm",
       fieldMap: { aptNm: "name", umdNm: "umdNm", jibun: "jibun", excluUseAr: "area", deposit: "deposit", monthlyRent: "monthlyRent", floor: "floor", buildYear: "buildYear", contractType: "isRenewal", preDeposit: "preDeposit", preMonthlyRent: "preMonthlyRent", ...DATE } },

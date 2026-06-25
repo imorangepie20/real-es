@@ -3,7 +3,7 @@ import { endpointFor, REALPRICE_PROPERTY_TYPES, operationUrl } from "./endpoints
 
 describe("endpointFor", () => {
   it("아파트 매매/전월세 둘 다 지원", () => {
-    expect(endpointFor("apt", "sale")?.service).toBe("RTMSDataSvcAptTradeDev");
+    expect(endpointFor("apt", "sale")?.service).toBe("RTMSDataSvcAptTrade");
     expect(endpointFor("apt", "rent")?.service).toBe("RTMSDataSvcAptRent");
   });
   it("토지·상업업무용은 매매만(전월세 null)", () => {
