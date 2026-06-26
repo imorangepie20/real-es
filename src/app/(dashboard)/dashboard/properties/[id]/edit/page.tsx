@@ -4,7 +4,9 @@ import { UserPlus } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { getProperty } from "../../actions"
+import { listParties } from "../../party-actions"
 import { PropertyForm } from "../../property-form"
+import { PropertyParties } from "../../property-parties"
 
 export const dynamic = "force-dynamic"
 
@@ -12,6 +14,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
   const { id } = await params
   const property = await getProperty(id)
   if (!property) notFound()
+  const parties = await listParties(id)
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
@@ -21,6 +24,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </Link>
       </div>
       <PropertyForm property={property} />
+      <PropertyParties propertyId={id} initial={parties} />
     </div>
   )
 }

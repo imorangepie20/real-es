@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { PROPERTY_FIELDS, FIELD_BY_KEY } from "@/lib/properties/fields";
+import { ownerRoleFromTrade } from "@/lib/properties/party-role";
 import { parseWorkbook } from "@/lib/properties/excel-read";
 import type { ParsedSheet } from "@/lib/properties/excel-import";
 import { toRow } from "./row-utils";
@@ -88,42 +89,32 @@ export async function togglePropertyFavorite(id: string, isFavorite: boolean): P
   revalidatePath("/dashboard/properties");
 }
 
-// 매물 거래유형 → 매물 소유자 측 고객유형(매물의 고객은 보통 그 매물을 내놓은 사람).
-// 매매=매도인, 전세/월세/단기임대=임대인, 거래유형 없음=단순방문.
-function customerTypesFromTrade(tradeType?: string | null): string[] {
-  if (tradeType === "A1") return ["매도인"];
-  if (tradeType === "B1" || tradeType === "B2" || tradeType === "B3") return ["임대인"];
-  return ["단순방문"];
-}
-
 export async function importProperties(rows: Record<string, unknown>[]): Promise<number> {
   const user = await requireUser();
-  // 고객 구분키 = 이름 + 전화(숫자만). 기존 고객 + 같은 파일 내 중복은 다시 만들지 않는다.
+  // 고객 구분키 = 이름 + 전화(숫자만). 같은 사람(이름+전화)은 고객 1명으로, 매물마다 PropertyParty로 연결.
   const custKey = (name?: string | null, phone?: string | null) => `${(name ?? "").trim()}|${String(phone ?? "").replace(/\D/g, "")}`;
-  const existing = await db.customer.findMany({ where: { userId: user.id }, select: { name: true, phone: true } });
-  const seen = new Set(existing.map((c) => custKey(c.name, c.phone)));
+  const existing = await db.customer.findMany({ where: { userId: user.id }, select: { id: true, name: true, phone: true } });
+  const idByKey = new Map(existing.map((c) => [custKey(c.name, c.phone), c.id]));
   let n = 0;
   for (const r of rows) {
     const data = toData(r);
     if (Object.keys(data).length === 0) continue;
     const p = await db.property.create({ data: { ...data, userId: user.id, source: "엑셀" } });
     n++;
-    // 고객명이 있으면 고객도 생성(매물 연결) — 유형은 거래유형으로 자동.
+    // 고객명이 있으면 고객 find-or-create 후 매물에 당사자(역할=거래유형 기준)로 연결.
     const name = (data.customerName as string | null)?.trim();
     if (name) {
+      const role = ownerRoleFromTrade(data.tradeType as string | null);
       const key = custKey(name, data.customerPhone as string | null);
-      if (!seen.has(key)) {
-        seen.add(key);
-        await db.customer.create({
-          data: {
-            userId: user.id,
-            name,
-            phone: (data.customerPhone as string | null) || null,
-            types: customerTypesFromTrade(data.tradeType as string | null),
-            propertyId: p.id,
-          },
+      let customerId = idByKey.get(key);
+      if (!customerId) {
+        const c = await db.customer.create({
+          data: { userId: user.id, name, phone: (data.customerPhone as string | null) || null, types: [role] },
         });
+        customerId = c.id;
+        idByKey.set(key, customerId);
       }
+      await db.propertyParty.create({ data: { propertyId: p.id, customerId, role } });
     }
   }
   revalidatePath("/dashboard/properties");

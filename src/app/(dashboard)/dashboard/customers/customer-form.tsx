@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, Save } from "lucide-react"
 import { toast } from "sonner"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -66,6 +67,19 @@ export function CustomerForm({ customer, draft }: { customer?: CustomerRow; draf
         {propertyLabel && (
           <div className="rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
             출처 매물: <span className="font-medium text-foreground">{propertyLabel}</span>
+          </div>
+        )}
+
+        {customer && customer.parties.length > 0 && (
+          <div className="rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+            <span className="text-muted-foreground">연결 매물</span>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {customer.parties.map((pp) => (
+                <Badge key={`${pp.propertyId}-${pp.role}`} variant="outline" className="font-normal">
+                  {pp.role}·{pp.propertyLabel}
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
 

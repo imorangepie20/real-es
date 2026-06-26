@@ -89,7 +89,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
                   <TableHead>전화번호</TableHead>
                   <TableHead>유형</TableHead>
                   <TableHead>주소</TableHead>
-                  <TableHead>출처 매물</TableHead>
+                  <TableHead>연결 매물</TableHead>
                   <TableHead>수정일</TableHead>
                   <TableHead className="w-24 text-right">관리</TableHead>
                 </TableRow>
@@ -105,7 +105,19 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
                       </div>
                     </TableCell>
                     <TableCell className="max-w-48 truncate">{c.address || "-"}</TableCell>
-                    <TableCell className="text-muted-foreground">{c.propertyName || "-"}</TableCell>
+                    <TableCell className="max-w-60">
+                      {c.parties.length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {c.parties.map((pp) => (
+                            <Badge key={`${pp.propertyId}-${pp.role}`} variant="outline" className="font-normal">
+                              {pp.role}·{pp.propertyLabel}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
                     <TableCell className="tabular-nums text-muted-foreground">{c.updatedAt}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { normalizeCustomerTypes, GENDERS } from "@/lib/customers/types";
+import { ownerRoleFromTrade } from "@/lib/properties/party-role";
 
 export type CustomerInput = {
   name: string; zipcode?: string | null; phone?: string | null; address?: string | null; email?: string | null;
@@ -12,7 +13,9 @@ export type CustomerInput = {
 export type CustomerRow = {
   id: string; types: string[]; name: string; zipcode: string | null; phone: string | null; address: string | null;
   email: string | null; gender: string | null; memo: string | null;
-  propertyId: string | null; propertyName: string | null; updatedAt: string;
+  propertyId: string | null; propertyName: string | null;
+  parties: { propertyId: string; propertyLabel: string; role: string }[];
+  updatedAt: string;
 };
 
 async function requireUser() {
@@ -47,10 +50,16 @@ const toRow = (r: {
   id: string; types: string[]; name: string; zipcode: string | null; phone: string | null; address: string | null;
   email: string | null; gender: string | null; memo: string | null; propertyId: string | null;
   updatedAt: Date; property?: { name: string | null; complexName: string | null } | null;
+  parties?: { propertyId: string; role: string; property: { name: string | null; complexName: string | null } | null }[];
 }): CustomerRow => ({
   id: r.id, types: r.types, name: r.name, zipcode: r.zipcode, phone: r.phone, address: r.address, email: r.email,
   gender: r.gender, memo: r.memo, propertyId: r.propertyId,
   propertyName: r.property?.name ?? r.property?.complexName ?? null,
+  parties: (r.parties ?? []).map((pp) => ({
+    propertyId: pp.propertyId,
+    propertyLabel: pp.property?.name ?? pp.property?.complexName ?? "매물",
+    role: pp.role,
+  })),
   updatedAt: r.updatedAt.toISOString().slice(0, 10),
 });
 
@@ -64,7 +73,10 @@ export async function listCustomers(opts?: { q?: string; type?: string }): Promi
       ...(opts?.type ? { types: { has: opts.type } } : {}),
     },
     orderBy: { updatedAt: "desc" },
-    include: { property: { select: { name: true, complexName: true } } },
+    include: {
+      property: { select: { name: true, complexName: true } },
+      parties: { include: { property: { select: { name: true, complexName: true } } }, orderBy: { createdAt: "asc" } },
+    },
   });
   return rows.map(toRow);
 }
@@ -73,7 +85,10 @@ export async function getCustomer(id: string): Promise<CustomerRow | null> {
   const user = await requireUser();
   const r = await db.customer.findFirst({
     where: { id, userId: user.id },
-    include: { property: { select: { name: true, complexName: true } } },
+    include: {
+      property: { select: { name: true, complexName: true } },
+      parties: { include: { property: { select: { name: true, complexName: true } } }, orderBy: { createdAt: "asc" } },
+    },
   });
   return r ? toRow(r) : null;
 }
@@ -84,6 +99,17 @@ export async function createCustomer(input: CustomerInput): Promise<string> {
   if (!data.name) throw new Error("이름은 필수입니다");
   const propertyId = await ownedPropertyId(user.id, input.propertyId);
   const c = await db.customer.create({ data: { ...data, userId: user.id, propertyId } });
+  // 매물에서 등록한 경우 당사자(역할=거래유형 기준)로도 연결 — 고객 화면에 연결 매물로 표시됨.
+  if (propertyId) {
+    const prop = await db.property.findUnique({ where: { id: propertyId }, select: { tradeType: true } });
+    const role = ownerRoleFromTrade(prop?.tradeType);
+    await db.propertyParty.upsert({
+      where: { propertyId_customerId_role: { propertyId, customerId: c.id, role } },
+      create: { propertyId, customerId: c.id, role },
+      update: {},
+    });
+    revalidatePath(`/dashboard/properties/${propertyId}/edit`);
+  }
   revalidatePath("/dashboard/customers");
   return c.id;
 }
