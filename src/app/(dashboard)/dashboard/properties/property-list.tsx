@@ -3,13 +3,14 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus } from "lucide-react"
+import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus, Search } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
@@ -48,12 +49,16 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
   const [fType, setFType] = useState("ALL")
   const [fTrade, setFTrade] = useState("ALL")
   const [fStatus, setFStatus] = useState("ALL")
+  const [q, setQ] = useState("")
 
-  const rows = data.filter(
-    (p) => (fType === "ALL" || p.realEstateType === fType)
-      && (fTrade === "ALL" || p.tradeType === fTrade)
-      && (fStatus === "ALL" || p.status === fStatus),
-  )
+  const kw = q.trim().toLowerCase()
+  const rows = data.filter((p) => {
+    if (fType !== "ALL" && p.realEstateType !== fType) return false
+    if (fTrade !== "ALL" && p.tradeType !== fTrade) return false
+    if (fStatus !== "ALL" && p.status !== fStatus) return false
+    if (kw && ![p.name, p.complexName, p.address, p.customerName, p.customerPhone].some((v) => String(v ?? "").toLowerCase().includes(kw))) return false
+    return true
+  })
   const allSelected = rows.length > 0 && rows.every((p) => sel.has(p.id))
   const someSelected = rows.some((p) => sel.has(p.id)) && !allSelected
   const toggleAll = (c: boolean) => setSel(c ? new Set(rows.map((p) => p.id)) : new Set())
@@ -81,6 +86,10 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
       <CardHeader className="border-b">
         <CardTitle>{VIEW_TITLE[view]}</CardTitle>
         <CardAction className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="매물명·단지·주소·고객 검색" className="w-52 pl-8" />
+          </div>
           <Select value={fType} onValueChange={(v) => { if (v != null) setFType(v) }}>
             <SelectTrigger className="h-8"><SelectValue>{fType === "ALL" ? "매물유형 전체" : PROPERTY_LABEL[fType] ?? fType}</SelectValue></SelectTrigger>
             <SelectContent>
