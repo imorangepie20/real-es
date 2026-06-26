@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,17 +40,17 @@ function todayYmd(): string {
   return ymd(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-export function CalendarView({
-  initialView,
-  initialDate,
-}: {
-  initialView?: { year: number; month: number } | null;
-  initialDate?: string | null;
-}) {
+export function CalendarView() {
   const router = useRouter();
+  // 초기 상태는 실제 URL(useSearchParams)에서 읽는다 — 뒤로가기 시 Router Cache와 무관하게 복원.
+  const searchParams = useSearchParams();
 
   const [view, setView] = useState(() => {
-    if (initialView) return initialView;
+    const y = Number(searchParams.get("y"));
+    const m = Number(searchParams.get("m"));
+    if (Number.isInteger(y) && y > 1900 && Number.isInteger(m) && m >= 0 && m <= 11) {
+      return { year: y, month: m };
+    }
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
@@ -60,7 +60,10 @@ export function CalendarView({
   const [enabled, setEnabled] = useState<Set<string>>(
     () => new Set([...CALENDAR_CATEGORIES.map((c) => c.value), PROPERTY_FILTER]),
   );
-  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate ?? null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => {
+    const d = searchParams.get("d");
+    return d && /^\d{8}$/.test(d) ? d : null;
+  });
 
   // 다이얼로그 상태. openSeq는 열 때마다 증가해 다이얼로그를 리마운트(초기값 갱신)한다.
   const [dialogOpen, setDialogOpen] = useState(false);
