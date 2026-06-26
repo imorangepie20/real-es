@@ -20,10 +20,11 @@ export async function GET(req: Request) {
 
   const where: { userId: string; isFavorite?: boolean; status?: string; realEstateType?: string; tradeType?: string } = { userId: user.id };
   if (view === "favorites") where.isFavorite = true;
+  if (view === "in-progress") where.status = "계약진행";
   if (view === "contracted") where.status = "계약완료";
   if (realEstateType) where.realEstateType = realEstateType;
   if (tradeType) where.tradeType = tradeType;
-  if (status && view !== "contracted") where.status = status;
+  if (status && view !== "contracted" && view !== "in-progress") where.status = status;
 
   const rows = await db.property.findMany({ where, orderBy: { createdAt: "desc" } });
   const wb = propertiesToWorkbook(rows as unknown as Record<string, unknown>[], fields);

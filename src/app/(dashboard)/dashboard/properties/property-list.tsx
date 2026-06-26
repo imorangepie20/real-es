@@ -22,7 +22,7 @@ import { startContract } from "./contract-actions"
 import { ExcelImportDialog } from "./excel-import-dialog"
 import { PropertyExportDialog } from "./property-export-dialog"
 
-const VIEW_TITLE: Record<PropertyView, string> = { all: "전체 매물", favorites: "관심 매물", contracted: "계약완료" }
+const VIEW_TITLE: Record<PropertyView, string> = { all: "전체 매물", favorites: "관심 매물", "in-progress": "계약진행", contracted: "계약완료" }
 const won = (v: string | number | null) => (v == null || v === "" ? "-" : (Number(v) / 10000).toLocaleString("ko-KR")) // 원 저장 → 만원 표시
 const ymd = (v: string | number | null) => { const s = v == null ? "" : String(v); return s.length === 8 ? `${s.slice(0, 4)}.${s.slice(4, 6)}.${s.slice(6, 8)}` : (s || "-") }
 
@@ -95,7 +95,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               {TRADE_OPTIONS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          {view !== "contracted" && (
+          {view !== "contracted" && view !== "in-progress" && (
             <Select value={fStatus} onValueChange={(v) => { if (v != null) setFStatus(v) }}>
               <SelectTrigger className="h-8"><SelectValue>{fStatus === "ALL" ? "상태 전체" : fStatus}</SelectValue></SelectTrigger>
               <SelectContent>
@@ -106,9 +106,11 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
           )}
           {sel.size > 0 && (
             <>
-              <Button size="sm" variant="outline" onClick={() => run(() => Promise.all([...sel].map((sid) => startContract(sid))), "계약진행으로 전환했습니다")} disabled={busy}>
-                <CircleCheck className="size-3.5" />계약진행
-              </Button>
+              {(view === "all" || view === "favorites") && (
+                <Button size="sm" variant="outline" onClick={() => run(() => Promise.all([...sel].map((sid) => startContract(sid))), "계약진행으로 전환했습니다")} disabled={busy}>
+                  <CircleCheck className="size-3.5" />계약진행
+                </Button>
+              )}
               <Button size="sm" variant="destructive" onClick={() => run(() => deleteProperties([...sel]), "삭제했습니다")} disabled={busy}>
                 <Trash2 className="size-3.5" />삭제 {sel.size}
               </Button>

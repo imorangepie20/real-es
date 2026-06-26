@@ -7,7 +7,7 @@ import {
   BookOpen, Bot, Image as ImageIcon, AudioLines, UserCircle, Rocket,
   Layers, Settings, Tag, ShieldCheck, Bell, TriangleAlert, Boxes,
   Component, Blocks, FlaskConical, Globe, Star,
-  ClipboardList, CircleCheck,
+  ClipboardList, CircleCheck, CircleDashed,
 } from "lucide-react";
 
 export type NavItem = { title: string; href: string; icon?: LucideIcon };
@@ -19,6 +19,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: "전체 매물", href: "/dashboard/properties", icon: ClipboardList },
       { title: "관심 매물", href: "/dashboard/properties/favorites", icon: Star },
+      { title: "계약진행", href: "/dashboard/properties/progress", icon: CircleDashed },
       { title: "계약완료", href: "/dashboard/properties/contracted", icon: CircleCheck },
       { title: "실거래가", href: "/dashboard/realprice", icon: TrendingUp },
       { title: "고객관리", href: "/dashboard/customers", icon: Users },

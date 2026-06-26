@@ -9,7 +9,7 @@ import { parseWorkbook } from "@/lib/properties/excel-read";
 import type { ParsedSheet } from "@/lib/properties/excel-import";
 import { toRow } from "./row-utils";
 
-export type PropertyView = "all" | "favorites" | "contracted";
+export type PropertyView = "all" | "favorites" | "in-progress" | "contracted";
 export type PropertyRow = { id: string; isFavorite: boolean } & Record<string, string | number | boolean | null>;
 
 export async function requireUser() {
@@ -42,6 +42,7 @@ export async function listProperties(view: PropertyView = "all"): Promise<Proper
   const user = await requireUser();
   const where: { userId: string; isFavorite?: boolean; status?: string } = { userId: user.id };
   if (view === "favorites") where.isFavorite = true;
+  if (view === "in-progress") where.status = "계약진행";
   if (view === "contracted") where.status = "계약완료";
   const rows = await db.property.findMany({ where, orderBy: { createdAt: "desc" } });
   // 고객 구분키 = 이름 + 전화(숫자만). 매물의 고객이 고객관리에 등록됐는지 판정(고객명 옆 미등록 표시용).
@@ -87,16 +88,46 @@ export async function togglePropertyFavorite(id: string, isFavorite: boolean): P
   revalidatePath("/dashboard/properties");
 }
 
+// 매물 거래유형 → 매물 소유자 측 고객유형(매물의 고객은 보통 그 매물을 내놓은 사람).
+// 매매=매도인, 전세/월세/단기임대=임대인, 거래유형 없음=단순방문.
+function customerTypesFromTrade(tradeType?: string | null): string[] {
+  if (tradeType === "A1") return ["매도인"];
+  if (tradeType === "B1" || tradeType === "B2" || tradeType === "B3") return ["임대인"];
+  return ["단순방문"];
+}
+
 export async function importProperties(rows: Record<string, unknown>[]): Promise<number> {
   const user = await requireUser();
+  // 고객 구분키 = 이름 + 전화(숫자만). 기존 고객 + 같은 파일 내 중복은 다시 만들지 않는다.
+  const custKey = (name?: string | null, phone?: string | null) => `${(name ?? "").trim()}|${String(phone ?? "").replace(/\D/g, "")}`;
+  const existing = await db.customer.findMany({ where: { userId: user.id }, select: { name: true, phone: true } });
+  const seen = new Set(existing.map((c) => custKey(c.name, c.phone)));
   let n = 0;
   for (const r of rows) {
     const data = toData(r);
     if (Object.keys(data).length === 0) continue;
-    await db.property.create({ data: { ...data, userId: user.id, source: "엑셀" } });
+    const p = await db.property.create({ data: { ...data, userId: user.id, source: "엑셀" } });
     n++;
+    // 고객명이 있으면 고객도 생성(매물 연결) — 유형은 거래유형으로 자동.
+    const name = (data.customerName as string | null)?.trim();
+    if (name) {
+      const key = custKey(name, data.customerPhone as string | null);
+      if (!seen.has(key)) {
+        seen.add(key);
+        await db.customer.create({
+          data: {
+            userId: user.id,
+            name,
+            phone: (data.customerPhone as string | null) || null,
+            types: customerTypesFromTrade(data.tradeType as string | null),
+            propertyId: p.id,
+          },
+        });
+      }
+    }
   }
   revalidatePath("/dashboard/properties");
+  revalidatePath("/dashboard/customers");
   return n;
 }
 
