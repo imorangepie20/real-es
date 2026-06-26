@@ -22,6 +22,7 @@ import {
 import { loadCalendar, type EventRow, type CalendarOption } from "./actions";
 import type { PropertyDateEvent } from "@/lib/calendar/property-events";
 import { EventDialog } from "./event-dialog";
+import { EventDetailDialog } from "./event-detail-dialog";
 
 type LoadResult = {
   events: EventRow[];
@@ -59,6 +60,11 @@ export function CalendarView() {
   const [editing, setEditing] = useState<EventRow | null>(null);
   const [dialogDate, setDialogDate] = useState<string | null>(null);
   const [openSeq, setOpenSeq] = useState(0);
+
+  // 상세보기 다이얼로그.
+  const [detailEvent, setDetailEvent] = useState<EventRow | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailSeq, setDetailSeq] = useState(0);
 
   // 순서가 어긋난 응답이 최신 응답을 덮어쓰지 않도록 요청 id로 가드.
   const requestRef = useRef(0);
@@ -118,11 +124,22 @@ export function CalendarView() {
     setDialogOpen(true);
   }
 
-  // 수기 일정 클릭 — 수정 다이얼로그.
-  function onSelectEvent(event: EventRow) {
-    setEditing(event);
+  // 수기 일정 클릭 — 상세보기 다이얼로그.
+  function openDetail(event: EventRow) {
+    setDetailEvent(event);
+    setDetailSeq((n) => n + 1);
+    setDetailOpen(true);
+  }
+  // 상세 → 수정 전환.
+  function editFromDetail() {
+    if (!detailEvent) return;
+    setDetailOpen(false);
+    setEditing(detailEvent);
     setOpenSeq((n) => n + 1);
     setDialogOpen(true);
+  }
+  function goProperty(propertyId: string) {
+    router.push(`/dashboard/properties/${propertyId}/edit`);
   }
 
   function eventsOn(cellYmd: string): EventRow[] {
@@ -236,10 +253,8 @@ export function CalendarView() {
                 date={selectedDate}
                 events={selectedEvents}
                 propertyDates={selectedPropertyDates}
-                onSelectEvent={onSelectEvent}
-                onSelectProperty={(propertyId) =>
-                  router.push(`/dashboard/properties/${propertyId}/edit`)
-                }
+                onSelectEvent={openDetail}
+                onSelectProperty={goProperty}
               />
             </>
           )}
@@ -276,12 +291,11 @@ export function CalendarView() {
               const overflow = total - shownManual.length - shownProp.length;
 
               return (
-                <button
+                <div
                   key={idx}
-                  type="button"
                   onClick={() => setSelectedDate(cellYmd)}
                   className={cn(
-                    "flex min-h-0 flex-col gap-0.5 border-r border-b p-1 text-left transition-colors hover:bg-muted/40",
+                    "flex min-h-0 cursor-pointer flex-col gap-0.5 border-r border-b p-1 text-left transition-colors hover:bg-muted/40",
                     (idx + 1) % 7 === 0 && "border-r-0",
                     idx >= 35 && "border-b-0",
                     !cell.isCurrentMonth && "bg-muted/20",
@@ -305,9 +319,11 @@ export function CalendarView() {
 
                   <div className="flex flex-col gap-0.5 overflow-hidden">
                     {shownManual.map((e) => (
-                      <div
+                      <button
                         key={e.id}
-                        className="flex items-center gap-1 truncate text-[11px] leading-tight"
+                        type="button"
+                        onClick={(ev) => { ev.stopPropagation(); openDetail(e); }}
+                        className="flex w-full items-center gap-1 truncate rounded-sm text-left text-[11px] leading-tight hover:bg-muted"
                         title={e.title}
                       >
                         <span
@@ -317,12 +333,14 @@ export function CalendarView() {
                           )}
                         />
                         <span className="truncate">{e.title}</span>
-                      </div>
+                      </button>
                     ))}
                     {shownProp.map((e) => (
-                      <div
+                      <button
                         key={`${e.propertyId}-${e.field}`}
-                        className="flex items-center gap-1 truncate text-[11px] leading-tight"
+                        type="button"
+                        onClick={(ev) => { ev.stopPropagation(); goProperty(e.propertyId); }}
+                        className="flex w-full items-center gap-1 truncate rounded-sm text-left text-[11px] leading-tight hover:bg-muted"
                         title={e.label}
                       >
                         <span
@@ -332,7 +350,7 @@ export function CalendarView() {
                           )}
                         />
                         <span className="truncate">{e.label}</span>
-                      </div>
+                      </button>
                     ))}
                     {overflow > 0 && (
                       <div className="px-0.5 text-[10px] font-medium text-muted-foreground">
@@ -340,7 +358,7 @@ export function CalendarView() {
                       </div>
                     )}
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -362,6 +380,19 @@ export function CalendarView() {
           }}
         />
       )}
+
+      <EventDetailDialog
+        key={`detail-${detailSeq}`}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        event={detailEvent}
+        onEdit={editFromDetail}
+        onChanged={() => {
+          setDetailOpen(false);
+          reload(view.year, view.month);
+        }}
+        onSelectProperty={goProperty}
+      />
     </div>
   );
 }
