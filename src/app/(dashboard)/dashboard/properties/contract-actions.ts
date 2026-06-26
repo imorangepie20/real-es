@@ -57,6 +57,21 @@ export async function toggleChecklistItem(id: string, itemId: string, checked: b
   revalidatePath(`/dashboard/properties/${id}/contract`);
 }
 
+// 서류 체크리스트 전체 체크/해제 — 해당 매물 유형의 모든 항목을 한 번에.
+export async function setAllChecklist(id: string, checked: boolean): Promise<void> {
+  const user = await requireUser();
+  const p = await db.property.findFirst({ where: { id, userId: user.id } });
+  if (!p) throw new Error("매물을 찾을 수 없습니다");
+  const g = (p as unknown as { realEstateType: string | null }).realEstateType ?? "";
+  const t = (p as unknown as { tradeType: string | null }).tradeType ?? "";
+  const items = resolveChecklist(g, t);
+  const next: Record<string, string> = checked
+    ? Object.fromEntries(items.map((i) => [i.id, new Date().toISOString()]))
+    : {};
+  await db.property.updateMany({ where: { id, userId: user.id }, data: { contractChecklist: next } });
+  revalidatePath(`/dashboard/properties/${id}/contract`);
+}
+
 export async function startContract(id: string): Promise<void> {
   const user = await requireUser();
   await db.property.updateMany({ where: { id, userId: user.id, status: "진행" }, data: { status: "계약진행" } });

@@ -14,7 +14,7 @@ import { PARTY_LABEL, PARTIES } from "@/lib/properties/contract-checklist";
 import { FIELD_BY_KEY, formMeta } from "@/lib/properties/fields";
 import { groupDigits, stripDigits, toDateInput, fromDateInput } from "@/lib/properties/format";
 import { updateProperty } from "../../actions";
-import { toggleChecklistItem, completeContract, type ContractData } from "../../contract-actions";
+import { toggleChecklistItem, setAllChecklist, completeContract, type ContractData } from "../../contract-actions";
 
 export function ContractClient({ id, data, forms }: { id: string; data: ContractData; forms: { id: string; label: string }[] }) {
   const router = useRouter();
@@ -32,6 +32,7 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
   const total = reqIds.length + data.requiredFields.length;
   const done = doneItems + doneFields;
   const complete = total > 0 && done === total;
+  const allChecked = data.checklist.length > 0 && data.checklist.every((i) => !!checked[i.id]);
 
   function onToggle(itemId: string, v: boolean) {
     if (readOnly) return;
@@ -39,6 +40,14 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
     if (v) next[itemId] = new Date().toISOString(); else delete next[itemId];
     setChecked(next);
     toggleChecklistItem(id, itemId, v).catch((e) => toast.error(e instanceof Error ? e.message : "저장 실패"));
+  }
+
+  function toggleAll(v: boolean) {
+    if (readOnly) return;
+    const next: Record<string, string> = {};
+    if (v) { const now = new Date().toISOString(); for (const i of data.checklist) next[i.id] = now; }
+    setChecked(next);
+    setAllChecklist(id, v).catch((e) => toast.error(e instanceof Error ? e.message : "저장 실패"));
   }
 
   async function onComplete() {
@@ -82,7 +91,14 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
 
       {/* ② 서류 체크리스트 */}
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold">서류 체크리스트</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold">서류 체크리스트</h3>
+          {!readOnly && data.checklist.length > 0 && (
+            <Button size="sm" variant="outline" onClick={() => toggleAll(!allChecked)} disabled={busy}>
+              {allChecked ? "전체 해제" : "전체 체크"}
+            </Button>
+          )}
+        </div>
         {groups.map((party) => {
           const items = data.checklist.filter((i) => i.party === party);
           if (!items.length) return null;
