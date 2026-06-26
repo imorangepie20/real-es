@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { formatTel } from "@/lib/properties/format"
 import { CUSTOMER_TYPES, GENDERS } from "@/lib/customers/types"
 import { createCustomer, updateCustomer, type CustomerRow } from "./actions"
+import { PostcodeSearch } from "./postcode-search"
 
 type Draft = { name: string; phone: string; propertyId: string; propertyLabel: string }
 
@@ -23,6 +24,7 @@ export function CustomerForm({ customer, draft }: { customer?: CustomerRow; draf
   const [name, setName] = useState(customer?.name ?? draft?.name ?? "")
   const [phone, setPhone] = useState(customer?.phone ?? draft?.phone ?? "")
   const [address, setAddress] = useState(customer?.address ?? "")
+  const [zipcode, setZipcode] = useState(customer?.zipcode ?? "")
   const [email, setEmail] = useState(customer?.email ?? "")
   const [gender, setGender] = useState(customer?.gender ?? "미지정")
   const [memo, setMemo] = useState(customer?.memo ?? "")
@@ -42,7 +44,7 @@ export function CustomerForm({ customer, draft }: { customer?: CustomerRow; draf
   async function save() {
     if (!name.trim()) { toast.error("이름을 입력하세요"); return }
     setSaving(true)
-    const input = { name, phone, address, email, gender, memo, types, propertyId }
+    const input = { name, zipcode, phone, address, email, gender, memo, types, propertyId }
     try {
       if (customer) await updateCustomer(customer.id, input)
       else await createCustomer(input)
@@ -111,8 +113,14 @@ export function CustomerForm({ customer, draft }: { customer?: CustomerRow; draf
               ))}
             </RadioGroup>
           </Field>
+          <Field label="우편번호" className="sm:col-span-2">
+            <div className="flex items-center gap-2">
+              <Input value={zipcode} readOnly placeholder="우편번호" className="w-32" />
+              <PostcodeSearch onComplete={({ zonecode, address: addr }) => { setZipcode(zonecode); setAddress(addr); }} />
+            </div>
+          </Field>
           <Field label="주소" className="sm:col-span-2">
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="고객 거주지 주소" />
+            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="도로명주소 + 상세주소(동/호)" />
           </Field>
           <Field label="메모" className="sm:col-span-2">
             <Textarea value={memo} onChange={(e) => setMemo(e.target.value)} rows={3} placeholder="상담 내용·특이사항" />
