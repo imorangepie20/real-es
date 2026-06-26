@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus, Star, Trash2, Pencil, CircleCheck } from "lucide-react"
+import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -161,6 +161,17 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                       const v = p[k]
                       if (f.type === "select") {
                         return <TableCell key={k}><SelectCell value={String(v ?? "")} label={display(f, v)} options={f.options ?? []} onSave={(nv) => patchRow(p.id, { [k]: nv })} /></TableCell>
+                      }
+                      if (k === "customerName") {
+                        const cname = String(v ?? "")
+                        return <TableCell key={k}>
+                          <div className="flex items-center gap-1">
+                            <EditCell value={v as string | number | null} display={display(f, v)} onSave={(nv) => patchRow(p.id, { [k]: nv })} />
+                            {cname && !p.customerRegistered && (
+                              <Link href={`/dashboard/customers/new?propertyId=${p.id}`} title="고객관리 미등록 — 클릭해 등록" aria-label="고객관리에 등록" className="shrink-0 text-amber-500 hover:text-amber-600"><UserPlus className="size-3.5" /></Link>
+                            )}
+                          </div>
+                        </TableCell>
                       }
                       const numeric = f.type === "money" || f.type === "number" || f.type === "area"
                       const editV = f.type === "money" && v != null ? Number(v) / 10000 : (v as string | number | null) // money는 만원으로 편집

@@ -44,7 +44,13 @@ export async function listProperties(view: PropertyView = "all"): Promise<Proper
   if (view === "favorites") where.isFavorite = true;
   if (view === "contracted") where.status = "계약완료";
   const rows = await db.property.findMany({ where, orderBy: { createdAt: "desc" } });
-  return rows.map((r) => toRow(r as unknown as Record<string, unknown>));
+  // 고객관리(Customer)에 연결(propertyId)된 매물 집합 — 고객명 옆 미등록 표시용.
+  const linked = await db.customer.findMany({
+    where: { userId: user.id, propertyId: { in: rows.map((r) => r.id) } },
+    select: { propertyId: true },
+  });
+  const registered = new Set(linked.map((c) => c.propertyId));
+  return rows.map((r) => ({ ...toRow(r as unknown as Record<string, unknown>), customerRegistered: registered.has(r.id) }));
 }
 
 export async function getProperty(id: string): Promise<PropertyRow | null> {
