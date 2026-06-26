@@ -44,13 +44,11 @@ export async function listProperties(view: PropertyView = "all"): Promise<Proper
   if (view === "favorites") where.isFavorite = true;
   if (view === "contracted") where.status = "계약완료";
   const rows = await db.property.findMany({ where, orderBy: { createdAt: "desc" } });
-  // 고객관리(Customer)에 연결(propertyId)된 매물 집합 — 고객명 옆 미등록 표시용.
-  const linked = await db.customer.findMany({
-    where: { userId: user.id, propertyId: { in: rows.map((r) => r.id) } },
-    select: { propertyId: true },
-  });
-  const registered = new Set(linked.map((c) => c.propertyId));
-  return rows.map((r) => ({ ...toRow(r as unknown as Record<string, unknown>), customerRegistered: registered.has(r.id) }));
+  // 고객 구분키 = 이름 + 전화(숫자만). 매물의 고객이 고객관리에 등록됐는지 판정(고객명 옆 미등록 표시용).
+  const custKey = (name?: string | null, phone?: string | null) => `${(name ?? "").trim()}|${String(phone ?? "").replace(/\D/g, "")}`;
+  const customers = await db.customer.findMany({ where: { userId: user.id }, select: { name: true, phone: true } });
+  const registered = new Set(customers.map((c) => custKey(c.name, c.phone)));
+  return rows.map((r) => ({ ...toRow(r as unknown as Record<string, unknown>), customerRegistered: registered.has(custKey(r.customerName, r.customerPhone)) }));
 }
 
 export async function getProperty(id: string): Promise<PropertyRow | null> {
