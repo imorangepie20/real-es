@@ -12,6 +12,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { cn } from "@/lib/utils"
 import { CUSTOMER_TYPES } from "@/lib/customers/types"
 import { deleteCustomer, type CustomerRow } from "./actions"
@@ -24,6 +25,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
   const [q, setQ] = useState("")
   const [type, setType] = useState("ALL")
   const [busy, setBusy] = useState<string | null>(null)
+  const [pending, setPending] = useState<CustomerRow | null>(null)
 
   const kw = q.trim().toLowerCase()
   const rows = data.filter(
@@ -32,13 +34,15 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
       (!kw || c.name.toLowerCase().includes(kw) || (c.phone ?? "").toLowerCase().includes(kw)),
   )
 
-  async function remove(c: CustomerRow) {
-    if (!confirm(`'${c.name}' 고객을 삭제할까요?`)) return
+  async function confirmRemove() {
+    const c = pending
+    if (!c) return
     setBusy(c.id)
     try {
       await deleteCustomer(c.id)
       setData((prev) => prev.filter((x) => x.id !== c.id))
       toast.success("삭제했습니다")
+      setPending(null)
     } catch {
       toast.error("삭제에 실패했습니다")
     } finally {
@@ -47,6 +51,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
   }
 
   return (
+    <>
     <Card className="gap-0">
       <CardHeader className="border-b">
         <CardTitle className="flex items-center gap-2"><Users className="size-4" /> 고객관리</CardTitle>
@@ -128,7 +133,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
                         >
                           <Pencil className="size-3.5" />
                         </Link>
-                        <Button size="icon" variant="ghost" onClick={() => remove(c)} disabled={busy === c.id} aria-label="삭제">
+                        <Button size="icon" variant="ghost" onClick={() => setPending(c)} disabled={busy === c.id} aria-label="삭제">
                           <Trash2 className="size-3.5" />
                         </Button>
                       </div>
@@ -141,5 +146,14 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
         )}
       </CardContent>
     </Card>
+    <ConfirmDialog
+      open={pending !== null}
+      onOpenChange={(o) => { if (!o) setPending(null) }}
+      title="고객 삭제"
+      description={pending ? `'${pending.name}' 고객을 삭제합니다. 되돌릴 수 없습니다.` : undefined}
+      busy={busy === pending?.id}
+      onConfirm={confirmRemove}
+    />
+    </>
   )
 }

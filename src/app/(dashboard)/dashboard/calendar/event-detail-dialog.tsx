@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { categoryStyle } from "@/lib/calendar/categories";
 import { deleteEvent, type EventRow } from "./actions";
@@ -39,10 +40,10 @@ export function EventDetailDialog({
   onSelectProperty,
 }: Props) {
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   async function remove() {
     if (!event) return;
-    if (!window.confirm("이 일정을 삭제할까요?")) return;
     setBusy(true);
     try {
       await deleteEvent(event.id);
@@ -98,7 +99,7 @@ export function EventDetailDialog({
             </dl>
 
             <DialogFooter className="sm:justify-between">
-              <Button variant="destructive" onClick={remove} disabled={busy}>
+              <Button variant="destructive" onClick={() => setConfirmOpen(true)} disabled={busy}>
                 <Trash2 className="size-3.5" />
                 삭제
               </Button>
@@ -112,6 +113,15 @@ export function EventDetailDialog({
                 </Button>
               </div>
             </DialogFooter>
+
+            <ConfirmDialog
+              open={confirmOpen}
+              onOpenChange={setConfirmOpen}
+              title="일정 삭제"
+              description="이 일정을 삭제합니다. 되돌릴 수 없습니다."
+              busy={busy}
+              onConfirm={remove}
+            />
           </>
         )}
       </DialogContent>

@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,6 +70,7 @@ export function EventDialog({
   const [customerId, setCustomerId] = useState(event?.customerId ?? "");
   const [memo, setMemo] = useState(event?.memo ?? "");
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   async function save() {
     const ymd = inputToYmd(date);
@@ -104,7 +106,6 @@ export function EventDialog({
 
   async function remove() {
     if (!event) return;
-    if (!window.confirm("이 일정을 삭제할까요?")) return;
     setSaving(true);
     try {
       await deleteEvent(event.id);
@@ -233,7 +234,7 @@ export function EventDialog({
 
         <DialogFooter className="sm:justify-between">
           {event ? (
-            <Button variant="destructive" onClick={remove} disabled={saving}>
+            <Button variant="destructive" onClick={() => setConfirmOpen(true)} disabled={saving}>
               <Trash2 className="size-3.5" />
               삭제
             </Button>
@@ -254,6 +255,15 @@ export function EventDialog({
             </Button>
           </div>
         </DialogFooter>
+
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title="일정 삭제"
+          description="이 일정을 삭제합니다. 되돌릴 수 없습니다."
+          busy={saving}
+          onConfirm={remove}
+        />
       </DialogContent>
     </Dialog>
   );
