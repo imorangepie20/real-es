@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
@@ -21,6 +21,7 @@ import {
 } from "@/lib/calendar/categories";
 import { loadCalendar, type EventRow, type CalendarOption } from "./actions";
 import type { PropertyDateEvent } from "@/lib/calendar/property-events";
+import { EventDialog } from "./event-dialog";
 
 type LoadResult = {
   events: EventRow[];
@@ -53,22 +54,32 @@ export function CalendarView() {
   );
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  // 다이얼로그 상태. openSeq는 열 때마다 증가해 다이얼로그를 리마운트(초기값 갱신)한다.
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<EventRow | null>(null);
+  const [dialogDate, setDialogDate] = useState<string | null>(null);
+  const [openSeq, setOpenSeq] = useState(0);
+
   // 순서가 어긋난 응답이 최신 응답을 덮어쓰지 않도록 요청 id로 가드.
   const requestRef = useRef(0);
 
-  useEffect(() => {
+  // 현재 view 기준 재로딩. 월 이동·저장/삭제 후 모두 이 경로를 공유한다.
+  const reload = useCallback((year: number, month: number) => {
     const reqId = ++requestRef.current;
-    const requested = { year: view.year, month: view.month };
-    loadCalendar(requested.year, requested.month)
+    loadCalendar(year, month)
       .then((result) => {
         if (requestRef.current !== reqId) return;
         setData(result);
-        setDataView(requested);
+        setDataView({ year, month });
       })
       .catch(() => {
         // 오래된 응답이면 무시; 그 외엔 데이터 없는 상태 유지.
       });
-  }, [view.year, view.month]);
+  }, []);
+
+  useEffect(() => {
+    reload(view.year, view.month);
+  }, [view.year, view.month, reload]);
 
   const loading =
     !dataView || dataView.year !== view.year || dataView.month !== view.month;
@@ -99,15 +110,19 @@ export function CalendarView() {
     });
   }
 
-  // Task 6에서 추가 다이얼로그 연결 — 현재는 동작 없음.
+  // 일정 추가 — 선택 날짜(없으면 오늘) 기준으로 신규 다이얼로그.
   function openAdd() {
-    // TODO(Task 6): 일정 추가 다이얼로그 열기
+    setEditing(null);
+    setDialogDate(selectedDate ?? today);
+    setOpenSeq((n) => n + 1);
+    setDialogOpen(true);
   }
 
-  // Task 6에서 수정 다이얼로그 연결 — 현재는 동작 없음.
+  // 수기 일정 클릭 — 수정 다이얼로그.
   function onSelectEvent(event: EventRow) {
-    // TODO(Task 6): 수기 일정 수정 다이얼로그 열기
-    void event;
+    setEditing(event);
+    setOpenSeq((n) => n + 1);
+    setDialogOpen(true);
   }
 
   function eventsOn(cellYmd: string): EventRow[] {
@@ -331,6 +346,22 @@ export function CalendarView() {
           </div>
         </div>
       </div>
+
+      {data && (
+        <EventDialog
+          key={openSeq}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          event={editing ?? undefined}
+          defaultDate={dialogDate ?? undefined}
+          properties={data.properties}
+          customers={data.customers}
+          onSaved={() => {
+            setDialogOpen(false);
+            reload(view.year, view.month);
+          }}
+        />
+      )}
     </div>
   );
 }
