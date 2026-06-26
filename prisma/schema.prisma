@@ -27,6 +27,7 @@ model User {
   favorites    Favorite[]
   properties   Property[]
   customers    Customer[]
+  events       Event[]
 }
 
 model Session {
@@ -152,6 +153,7 @@ model Property {
   contractChecklist Json? // 계약진행 체크리스트
 
   customers Customer[]
+  events    Event[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,10 +207,30 @@ model Customer {
   email      String?
   gender     String? // 남 | 여 | 미지정
   memo       String?
+  events     Event[]
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
   @@index([userId])
+}
+
+model Event {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  date       String    // YYYYMMDD
+  startTime  String?   // "HH:MM" 또는 null=종일
+  category   String    @default("기타") // 미팅 | 임장 | 계약 | 기타
+  memo       String?
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId, date])
 }
