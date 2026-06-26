@@ -202,6 +202,7 @@ model Customer {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   types      String[]  @default(["단순방문"]) // 매도인·매수인·임대인·임차인(다중) | 단순방문(단독)
   name       String
+  zipcode    String?
   phone      String?
   address    String?
   email      String?

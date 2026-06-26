@@ -6,11 +6,11 @@ import { db } from "@/lib/db";
 import { normalizeCustomerTypes, GENDERS } from "@/lib/customers/types";
 
 export type CustomerInput = {
-  name: string; phone?: string | null; address?: string | null; email?: string | null;
+  name: string; zipcode?: string | null; phone?: string | null; address?: string | null; email?: string | null;
   gender?: string | null; memo?: string | null; types?: string[]; propertyId?: string | null;
 };
 export type CustomerRow = {
-  id: string; types: string[]; name: string; phone: string | null; address: string | null;
+  id: string; types: string[]; name: string; zipcode: string | null; phone: string | null; address: string | null;
   email: string | null; gender: string | null; memo: string | null;
   propertyId: string | null; propertyName: string | null; updatedAt: string;
 };
@@ -27,6 +27,7 @@ const cleanGender = (g?: string | null): string | null =>
 function toData(input: CustomerInput) {
   return {
     name: (input.name ?? "").trim(),
+    zipcode: input.zipcode?.trim() || null,
     phone: input.phone?.trim() || null,
     address: input.address?.trim() || null,
     email: input.email?.trim() || null,
@@ -43,11 +44,11 @@ async function ownedPropertyId(userId: string, propertyId?: string | null): Prom
 }
 
 const toRow = (r: {
-  id: string; types: string[]; name: string; phone: string | null; address: string | null;
+  id: string; types: string[]; name: string; zipcode: string | null; phone: string | null; address: string | null;
   email: string | null; gender: string | null; memo: string | null; propertyId: string | null;
   updatedAt: Date; property?: { name: string | null; complexName: string | null } | null;
 }): CustomerRow => ({
-  id: r.id, types: r.types, name: r.name, phone: r.phone, address: r.address, email: r.email,
+  id: r.id, types: r.types, name: r.name, zipcode: r.zipcode, phone: r.phone, address: r.address, email: r.email,
   gender: r.gender, memo: r.memo, propertyId: r.propertyId,
   propertyName: r.property?.name ?? r.property?.complexName ?? null,
   updatedAt: r.updatedAt.toISOString().slice(0, 10),
