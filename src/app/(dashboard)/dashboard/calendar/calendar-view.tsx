@@ -40,10 +40,17 @@ function todayYmd(): string {
   return ymd(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-export function CalendarView() {
+export function CalendarView({
+  initialView,
+  initialDate,
+}: {
+  initialView?: { year: number; month: number } | null;
+  initialDate?: string | null;
+}) {
   const router = useRouter();
 
   const [view, setView] = useState(() => {
+    if (initialView) return initialView;
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
@@ -53,7 +60,7 @@ export function CalendarView() {
   const [enabled, setEnabled] = useState<Set<string>>(
     () => new Set([...CALENDAR_CATEGORIES.map((c) => c.value), PROPERTY_FILTER]),
   );
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate ?? null);
 
   // 다이얼로그 상태. openSeq는 열 때마다 증가해 다이얼로그를 리마운트(초기값 갱신)한다.
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -86,6 +93,17 @@ export function CalendarView() {
   useEffect(() => {
     reload(view.year, view.month);
   }, [view.year, view.month, reload]);
+
+  // 캘린더 상태(연·월·선택일)를 URL에 반영 — 매물로 이동 후 뒤로가기 시 보던 달·선택일이 복원되도록.
+  // history.replaceState는 리렌더·서버 재요청 없이 주소만 바꾼다(페이지 전체 갱신 아님). 뒤로가기 시
+  // 서버 page가 그 URL의 searchParams로 1회 재실행되어 초기값을 복원한다.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("y", String(view.year));
+    params.set("m", String(view.month));
+    if (selectedDate) params.set("d", selectedDate);
+    window.history.replaceState(null, "", `/dashboard/calendar?${params.toString()}`);
+  }, [view.year, view.month, selectedDate]);
 
   const loading =
     !dataView || dataView.year !== view.year || dataView.month !== view.month;
