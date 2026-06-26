@@ -29,7 +29,7 @@ const ymd = (v: string | number | null) => { const s = v == null ? "" : String(v
 function display(field: PropertyField, value: string | number | boolean | null) {
   if (value == null || value === "") return "-"
   switch (field.type) {
-    case "money": return won(value as string)
+    case "money": return `${won(value as string)}만원`
     case "date": return ymd(value as string)
     case "select": return field.options?.find((o) => o.value === value)?.label ?? String(value)
     case "bool": return value ? "예" : "아니오"
