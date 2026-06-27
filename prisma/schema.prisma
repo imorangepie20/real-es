@@ -10,6 +10,7 @@ datasource db {
 model Agency {
   id        String   @id @default(cuid())
   name      String
+  zipcode   String?  // 중개사무소 우편번호
   address   String?  // 중개사무소 주소
   phone     String?  // 중개사무소 전화번호
   createdAt DateTime @default(now())

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 import { formatTel } from "@/lib/properties/format"
 import { CUSTOMER_TYPES, GENDERS } from "@/lib/customers/types"
 import { createCustomer, updateCustomer, type CustomerRow } from "./actions"
-import { PostcodeSearch } from "./postcode-search"
+import { PostcodeSearch } from "@/components/postcode-search"
 
 type Draft = { name: string; phone: string; propertyId: string; propertyLabel: string }
 
