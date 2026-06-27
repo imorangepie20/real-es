@@ -92,7 +92,7 @@ export default function RegisterPage() {
           <Checkbox id="agree" checked={agreed} onCheckedChange={(c) => setAgreed(c)} className="mt-0.5" />
           <input type="hidden" name="agree" value={agreed ? "on" : ""} />
           <Label htmlFor="agree" className="text-sm font-normal leading-snug text-muted-foreground">
-            <span className="font-medium text-foreground">이용약관</span> 및 <span className="font-medium text-foreground">개인정보 수집·이용</span>에 동의합니다. (필수)
+            <Link href="/terms" target="_blank" className="font-medium text-foreground underline underline-offset-2">이용약관</Link> 및 <Link href="/privacy" target="_blank" className="font-medium text-foreground underline underline-offset-2">개인정보 수집·이용</Link>에 동의합니다. (필수)
           </Label>
         </div>
 
