@@ -3,11 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus, Search, X } from "lucide-react"
+import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus, Search, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -27,6 +27,7 @@ import { ExcelImportDialog } from "./excel-import-dialog"
 import { PropertyExportDialog } from "./property-export-dialog"
 
 const VIEW_TITLE: Record<PropertyView, string> = { all: "전체 매물", favorites: "관심 매물", "in-progress": "계약진행", contracted: "계약완료" }
+const PAGE_SIZE = 50
 const won = (v: string | number | null) => (v == null || v === "" ? "-" : (Number(v) / 10000).toLocaleString("ko-KR")) // 원 저장 → 만원 표시
 const ymd = (v: string | number | null) => { const s = v == null ? "" : String(v); return s.length === 8 ? `${s.slice(0, 4)}.${s.slice(4, 6)}.${s.slice(6, 8)}` : (s || "-") }
 
@@ -54,6 +55,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
   const [fStatus, setFStatus] = useState("ALL")
   const [q, setQ] = useState("")
   const [fColor, setFColor] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
   const kw = q.trim().toLowerCase()
   const rows = data.filter((p) => {
@@ -64,9 +66,12 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
     if (kw && ![p.name, p.complexName, p.address, p.customerName, p.customerPhone].some((v) => String(v ?? "").toLowerCase().includes(kw))) return false
     return true
   })
-  const allSelected = rows.length > 0 && rows.every((p) => sel.has(p.id))
-  const someSelected = rows.some((p) => sel.has(p.id)) && !allSelected
-  const toggleAll = (c: boolean) => setSel(c ? new Set(rows.map((p) => p.id)) : new Set())
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
+  const current = Math.min(page, pageCount - 1)
+  const paged = rows.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE)
+  const allSelected = paged.length > 0 && paged.every((p) => sel.has(p.id))
+  const someSelected = paged.some((p) => sel.has(p.id)) && !allSelected
+  const toggleAll = (c: boolean) => setSel(c ? new Set(paged.map((p) => p.id)) : new Set())
   const toggleOne = (id: string, c: boolean) => setSel((prev) => { const next = new Set(prev); if (c) next.add(id); else next.delete(id); return next })
 
   function patchRow(id: string, patch: Partial<PropertyRow>) {
@@ -100,7 +105,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               <div className="flex items-center gap-1.5" role="group" aria-label="색상 필터">
                 {COLOR_TAGS.map((c) => (
                   <button key={c.value} type="button" title={`${c.label} 필터`} aria-pressed={fColor === c.value}
-                    onClick={() => setFColor(fColor === c.value ? null : c.value)}
+                    onClick={() => { setFColor(fColor === c.value ? null : c.value); setPage(0) }}
                     className={cn("size-4 rounded-full transition", c.dot, fColor === c.value ? "ring-2 ring-foreground/50 ring-offset-1" : "opacity-50 hover:opacity-100")} />
                 ))}
               </div>
@@ -109,16 +114,16 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
           <div className="flex flex-wrap items-center gap-2">
           <div className="relative max-sm:flex-1">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="매물명·단지·주소·고객 검색" className="w-full pl-8 sm:w-52" />
+            <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(0) }} placeholder="매물명·단지·주소·고객 검색" className="w-full pl-8 sm:w-52" />
           </div>
-          <Select value={fType} onValueChange={(v) => { if (v != null) setFType(v) }}>
+          <Select value={fType} onValueChange={(v) => { if (v != null) { setFType(v); setPage(0) } }}>
             <SelectTrigger className="h-8"><SelectValue>{fType === "ALL" ? "매물유형 전체" : PROPERTY_LABEL[fType] ?? fType}</SelectValue></SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">매물유형 전체</SelectItem>
               {PROPERTY_OPTIONS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={fTrade} onValueChange={(v) => { if (v != null) setFTrade(v) }}>
+          <Select value={fTrade} onValueChange={(v) => { if (v != null) { setFTrade(v); setPage(0) } }}>
             <SelectTrigger className="h-8"><SelectValue>{fTrade === "ALL" ? "거래유형 전체" : TRADE_LABEL[fTrade] ?? fTrade}</SelectValue></SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">거래유형 전체</SelectItem>
@@ -126,7 +131,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
             </SelectContent>
           </Select>
           {view !== "contracted" && view !== "in-progress" && (
-            <Select value={fStatus} onValueChange={(v) => { if (v != null) setFStatus(v) }}>
+            <Select value={fStatus} onValueChange={(v) => { if (v != null) { setFStatus(v); setPage(0) } }}>
               <SelectTrigger className="h-8"><SelectValue>{fStatus === "ALL" ? "상태 전체" : fStatus}</SelectValue></SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">상태 전체</SelectItem>
@@ -181,11 +186,11 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((p, i) => (
+                {paged.map((p, i) => (
                   <TableRow key={p.id} data-state={sel.has(p.id) ? "selected" : undefined}
                     className={cn(view === "all" && p.colorTag ? COLOR_TAG_MAP[p.colorTag as string]?.row : undefined)}>
                     <TableCell><Checkbox checked={sel.has(p.id)} onCheckedChange={(c) => toggleOne(p.id, c)} aria-label="선택" /></TableCell>
-                    <TableCell className="text-right text-muted-foreground tabular-nums">{rows.length - i}</TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">{rows.length - (current * PAGE_SIZE + i)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
                         <button type="button" onClick={() => toggleFav(p)} aria-label="관심" className="text-muted-foreground hover:text-foreground">
@@ -230,7 +235,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
           </div>
 
           <div className="flex flex-col gap-2 p-3 lg:hidden">
-            {rows.map((p) => {
+            {paged.map((p) => {
               const rowColor = view === "all" && p.colorTag ? COLOR_TAG_MAP[p.colorTag as string]?.row : undefined
               const cname = String(p.customerName ?? "")
               return (
@@ -280,6 +285,20 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
           </>
         )}
       </CardContent>
+      {pageCount > 1 && (
+        <CardFooter className="justify-between border-t">
+          <span className="text-sm text-muted-foreground">총 {rows.length}개</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setPage(current - 1)} disabled={current === 0}>
+              <ChevronLeft className="size-3.5" />이전
+            </Button>
+            <span className="text-sm tabular-nums text-muted-foreground">{current + 1} / {pageCount}</span>
+            <Button size="sm" variant="outline" onClick={() => setPage(current + 1)} disabled={current >= pageCount - 1}>
+              다음<ChevronRight className="size-3.5" />
+            </Button>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   )
 }
