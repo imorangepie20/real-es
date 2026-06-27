@@ -7,7 +7,7 @@ import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -54,23 +54,25 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
     <>
     <Card className="gap-0">
       <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2"><Users className="size-4" /> 고객관리</CardTitle>
-        <CardAction className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="이름·전화 검색" className="w-44 pl-8" />
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <CardTitle className="flex items-center gap-2"><Users className="size-4" /> 고객관리</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative max-sm:flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="이름·전화 검색" className="w-full pl-8 sm:w-44" />
+            </div>
+            <Select value={type} onValueChange={(v) => { if (v != null) setType(v) }}>
+              <SelectTrigger className="w-32"><SelectValue>{type === "ALL" ? "전체 유형" : type}</SelectValue></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">전체 유형</SelectItem>
+                {CUSTOMER_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Link href="/dashboard/customers/new" className={cn(buttonVariants({ size: "sm" }))}>
+              <Plus className="size-3.5" />새 고객
+            </Link>
           </div>
-          <Select value={type} onValueChange={(v) => { if (v != null) setType(v) }}>
-            <SelectTrigger className="w-32"><SelectValue>{type === "ALL" ? "전체 유형" : type}</SelectValue></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">전체 유형</SelectItem>
-              {CUSTOMER_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Link href="/dashboard/customers/new" className={cn(buttonVariants({ size: "sm" }))}>
-            <Plus className="size-3.5" />새 고객
-          </Link>
-        </CardAction>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {rows.length === 0 ? (
@@ -86,7 +88,8 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="hidden overflow-x-auto lg:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -143,6 +146,35 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
               </TableBody>
             </Table>
           </div>
+
+          <div className="flex flex-col gap-2 p-3 lg:hidden">
+            {rows.map((c) => (
+              <div key={c.id} className="flex flex-col gap-2 rounded-lg border p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-medium">{c.name}</div>
+                    <div className="tabular-nums text-sm text-muted-foreground">{c.phone || "-"}</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Link href={`/dashboard/customers/${c.id}`} className={cn(buttonVariants({ size: "icon", variant: "ghost" }))} aria-label="수정"><Pencil className="size-3.5" /></Link>
+                    <Button size="icon" variant="ghost" onClick={() => setPending(c)} disabled={busy === c.id} aria-label="삭제"><Trash2 className="size-3.5" /></Button>
+                  </div>
+                </div>
+                {c.types.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {c.types.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  </div>
+                )}
+                {c.address && <div className="text-sm text-muted-foreground">{c.address}</div>}
+                {c.parties.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {c.parties.map((pp) => <Badge key={`${pp.propertyId}-${pp.role}`} variant="outline" className="font-normal">{pp.role}·{pp.propertyLabel}</Badge>)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          </>
         )}
       </CardContent>
     </Card>

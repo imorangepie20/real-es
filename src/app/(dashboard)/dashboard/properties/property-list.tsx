@@ -7,7 +7,8 @@ import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus, Search, X } from "lu
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
@@ -92,20 +93,23 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
   return (
     <Card className="gap-0">
       <CardHeader className="border-b">
-        <CardTitle>{VIEW_TITLE[view]}</CardTitle>
-        {view === "all" && (
-          <div className="flex items-center gap-1.5" role="group" aria-label="색상 필터">
-            {COLOR_TAGS.map((c) => (
-              <button key={c.value} type="button" title={`${c.label} 필터`} aria-pressed={fColor === c.value}
-                onClick={() => setFColor(fColor === c.value ? null : c.value)}
-                className={cn("size-4 rounded-full transition", c.dot, fColor === c.value ? "ring-2 ring-foreground/50 ring-offset-1" : "opacity-50 hover:opacity-100")} />
-            ))}
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex flex-col gap-1.5">
+            <CardTitle>{VIEW_TITLE[view]}</CardTitle>
+            {view === "all" && (
+              <div className="flex items-center gap-1.5" role="group" aria-label="색상 필터">
+                {COLOR_TAGS.map((c) => (
+                  <button key={c.value} type="button" title={`${c.label} 필터`} aria-pressed={fColor === c.value}
+                    onClick={() => setFColor(fColor === c.value ? null : c.value)}
+                    className={cn("size-4 rounded-full transition", c.dot, fColor === c.value ? "ring-2 ring-foreground/50 ring-offset-1" : "opacity-50 hover:opacity-100")} />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-        <CardAction className="flex flex-wrap items-center gap-2">
-          <div className="relative">
+          <div className="flex flex-wrap items-center gap-2">
+          <div className="relative max-sm:flex-1">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="매물명·단지·주소·고객 검색" className="w-52 pl-8" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="매물명·단지·주소·고객 검색" className="w-full pl-8 sm:w-52" />
           </div>
           <Select value={fType} onValueChange={(v) => { if (v != null) setFType(v) }}>
             <SelectTrigger className="h-8"><SelectValue>{fType === "ALL" ? "매물유형 전체" : PROPERTY_LABEL[fType] ?? fType}</SelectValue></SelectTrigger>
@@ -150,7 +154,8 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
             </Button>
           )}
           <span className="text-sm text-muted-foreground">{rows.length}개</span>
-        </CardAction>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {rows.length === 0 ? (
@@ -162,7 +167,8 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="hidden overflow-x-auto lg:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -222,6 +228,56 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               </TableBody>
             </Table>
           </div>
+
+          <div className="flex flex-col gap-2 p-3 lg:hidden">
+            {rows.map((p) => {
+              const rowColor = view === "all" && p.colorTag ? COLOR_TAG_MAP[p.colorTag as string]?.row : undefined
+              const cname = String(p.customerName ?? "")
+              return (
+                <div key={p.id} className={cn("flex flex-col gap-2 rounded-lg border p-3", rowColor, sel.has(p.id) && "ring-2 ring-primary")}>
+                  <div className="flex items-start gap-2">
+                    <Checkbox checked={sel.has(p.id)} onCheckedChange={(c) => toggleOne(p.id, c)} aria-label="선택" className="mt-1" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{String(p.name || p.complexName || "(이름 없음)")}</div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                        {p.name && p.complexName ? <span className="truncate">{String(p.complexName)}</span> : null}
+                        {p.realEstateType ? <span>{PROPERTY_LABEL[String(p.realEstateType)] ?? String(p.realEstateType)}</span> : null}
+                        {p.tradeType ? <span>{TRADE_LABEL[String(p.tradeType)] ?? String(p.tradeType)}</span> : null}
+                        {p.areaExclusive ? <span>{display(FIELD_BY_KEY.areaExclusive, p.areaExclusive)}</span> : null}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button type="button" onClick={() => toggleFav(p)} aria-label="관심" className="text-muted-foreground hover:text-foreground">
+                        <Star className={cn("size-4", p.isFavorite && "fill-amber-400 text-amber-400")} />
+                      </button>
+                      {view === "all" && <ColorSwatch value={p.colorTag as string | null} onChange={(c) => setColor(p, c)} />}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{String(p.status ?? "진행")}</Badge>
+                      <span className="text-sm font-medium tabular-nums">{display(FIELD_BY_KEY.price, p.price)}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      {(p.status === "계약진행" || p.status === "계약완료") && (
+                        <Link href={`/dashboard/properties/${p.id}/contract`} className="text-primary underline">계약</Link>
+                      )}
+                      <Link href={`/dashboard/properties/${p.id}/edit`} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><Pencil className="size-3.5" />수정</Link>
+                    </div>
+                  </div>
+                  {cname && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      고객: <span className="text-foreground">{cname}</span>
+                      {!p.customerRegistered && (
+                        <Link href={`/dashboard/customers/new?propertyId=${p.id}`} title="고객관리 미등록 — 클릭해 등록" aria-label="고객관리에 등록" className="text-amber-500 hover:text-amber-600"><UserPlus className="size-3.5" /></Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          </>
         )}
       </CardContent>
     </Card>

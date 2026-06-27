@@ -117,7 +117,7 @@ export function RealpriceMap({
           </>
         )}
       </div>
-      <div className="h-[40rem]">
+      <div className="h-[24rem] sm:h-[32rem] lg:h-[40rem]">
         <KakaoMap
           appKey={appKey}
           clusters={drillDong ? [] : clusters}

@@ -222,9 +222,9 @@ export function CalendarView() {
       </div>
 
       {/* ── 본문 ── */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* ── 좌측 사이드바: 유형 필터 ── */}
-        <aside className="flex w-56 flex-shrink-0 flex-col gap-4 overflow-y-auto border-r p-4">
+      <div className="flex min-h-0 flex-1 flex-col-reverse overflow-hidden lg:flex-row">
+        {/* ── 사이드바: 유형 필터 + 선택일 (모바일에선 달력 아래로) ── */}
+        <aside className="flex w-full flex-shrink-0 flex-col gap-4 overflow-y-auto border-t p-4 max-lg:max-h-56 lg:w-56 lg:border-t-0 lg:border-r">
           <div>
             <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
               일정 유형

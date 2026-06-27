@@ -327,7 +327,8 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
                 </EmptyHeader>
               </Empty>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+              <div className="hidden overflow-x-auto lg:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -361,6 +362,30 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
                   </TableBody>
                 </Table>
               </div>
+
+              <div className="flex flex-col gap-2 p-3 lg:hidden">
+                {paged.map((r, j) => (
+                  <div key={`m-${r.name}-${r.umdNm}-${r.dealDate}-${current * PAGE_SIZE + j}`} className="flex flex-col gap-1.5 rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate font-medium">{r.name || "-"}</div>
+                        <div className="text-xs tabular-nums text-muted-foreground">{r.umdNm || "-"} · {ymd(r.dealDate)}</div>
+                      </div>
+                      <div className="shrink-0 text-right text-sm font-medium tabular-nums">
+                        {queried.uiKind === "월세"
+                          ? `${won억(r.deposit)} / ${((r.monthlyRent ?? 0) / 10000).toLocaleString("ko-KR")}만`
+                          : won억(priceOf(r))}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums text-muted-foreground">
+                      <span>면적 {r.area != null ? r.area.toLocaleString("ko-KR") : "-"}㎡</span>
+                      <span>{r.floor ?? "-"}층</span>
+                      <span>{r.buildYear ?? "-"}년</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              </>
             )}
           </CardContent>
           {!loading && sorted.length > 0 && (
