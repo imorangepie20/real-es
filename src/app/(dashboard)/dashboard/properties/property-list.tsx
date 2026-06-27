@@ -93,6 +93,15 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
     <Card className="gap-0">
       <CardHeader className="border-b">
         <CardTitle>{VIEW_TITLE[view]}</CardTitle>
+        {view === "all" && (
+          <div className="flex items-center gap-1" role="group" aria-label="색상 필터">
+            {COLOR_TAGS.map((c) => (
+              <button key={c.value} type="button" title={`${c.label} 필터`} aria-pressed={fColor === c.value}
+                onClick={() => setFColor(fColor === c.value ? null : c.value)}
+                className={cn("size-2 rounded-full transition", c.dot, fColor === c.value ? "ring-2 ring-foreground/50 ring-offset-1" : "opacity-50 hover:opacity-100")} />
+            ))}
+          </div>
+        )}
         <CardAction className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -120,15 +129,6 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                 {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
-          )}
-          {view === "all" && (
-            <div className="flex items-center gap-1.5" role="group" aria-label="색상 필터">
-              {COLOR_TAGS.map((c) => (
-                <button key={c.value} type="button" title={`${c.label} 필터`} aria-pressed={fColor === c.value}
-                  onClick={() => setFColor(fColor === c.value ? null : c.value)}
-                  className={cn("size-4 rounded-full transition", c.dot, fColor === c.value ? "ring-2 ring-foreground/50 ring-offset-1" : "opacity-50 hover:opacity-100")} />
-              ))}
-            </div>
           )}
           {sel.size > 0 && (
             <>
