@@ -6,11 +6,9 @@ import { Eye, EyeOff } from "lucide-react"
 
 import { loginAction, type AuthState } from "../actions"
 import { AuthCard } from "@/components/auth/auth-card"
-import { SocialButtons } from "@/components/auth/social-buttons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 
 const initialState: AuthState = { error: null }
 
@@ -20,32 +18,32 @@ export default function LoginPage() {
 
   return (
     <AuthCard
-      title="Welcome back"
+      title="로그인"
       footer={
         <span className="text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          계정이 없으신가요?{" "}
           <Link href="/register" className="text-foreground underline-offset-4 hover:underline font-medium">
-            Sign up
+            회원가입
           </Link>
         </span>
       }
     >
       <form action={formAction} className="flex flex-col gap-4">
-        {/* Email */}
+        {/* 이메일 */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" placeholder="m@example.com" autoComplete="email" />
+          <Label htmlFor="email">이메일</Label>
+          <Input id="email" name="email" type="email" placeholder="m@example.com" autoComplete="email" required />
         </div>
 
-        {/* Password */}
+        {/* 비밀번호 */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">비밀번호</Label>
             <Link
               href="/forgot-password"
               className="text-xs text-muted-foreground underline-offset-4 hover:underline"
             >
-              Forgot password?
+              비밀번호 찾기
             </Link>
           </div>
           <div className="relative">
@@ -55,12 +53,13 @@ export default function LoginPage() {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               className="pr-9"
+              required
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -70,17 +69,8 @@ export default function LoginPage() {
         {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
         <Button type="submit" disabled={pending} className="w-full mt-1">
-          {pending ? "처리 중..." : "Sign in"}
+          {pending ? "처리 중..." : "로그인"}
         </Button>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-1">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground shrink-0">Or continue with</span>
-          <Separator className="flex-1" />
-        </div>
-
-        <SocialButtons />
       </form>
     </AuthCard>
   )

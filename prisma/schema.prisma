@@ -10,6 +10,8 @@ datasource db {
 model Agency {
   id        String   @id @default(cuid())
   name      String
+  address   String?  // 중개사무소 주소
+  phone     String?  // 중개사무소 전화번호
   createdAt DateTime @default(now())
   users     User[]
 }
@@ -21,6 +23,7 @@ model User {
   email        String    @unique
   passwordHash String
   name         String?
+  phone        String?   // 개인 전화번호
   role         String    @default("member")
   createdAt    DateTime  @default(now())
   sessions     Session[]

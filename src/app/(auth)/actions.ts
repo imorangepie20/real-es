@@ -14,7 +14,10 @@ const DASHBOARD = "/dashboard/real-estate";
 
 const signupSchema = z.object({
   agencyName: z.string().min(1, "상호명을 입력하세요"),
-  name: z.string().trim().optional(),
+  agencyAddress: z.string().trim().optional(),
+  agencyPhone: z.string().trim().optional(),
+  name: z.string().trim().min(1, "이름을 입력하세요"),
+  phone: z.string().trim().optional(),
   email: z.email("올바른 이메일을 입력하세요"),
   password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다"),
 });
@@ -22,14 +25,17 @@ const signupSchema = z.object({
 export async function signupAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = signupSchema.safeParse({
     agencyName: formData.get("agencyName"),
-    name: formData.get("name") || undefined,
+    agencyAddress: formData.get("agencyAddress") || undefined,
+    agencyPhone: formData.get("agencyPhone") || undefined,
+    name: formData.get("name"),
+    phone: formData.get("phone") || undefined,
     email: formData.get("email"),
     password: formData.get("password"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
   }
-  const { agencyName, name, email, password } = parsed.data;
+  const { agencyName, agencyAddress, agencyPhone, name, phone, email, password } = parsed.data;
 
   if (await db.user.findUnique({ where: { email } })) {
     return { error: "이미 가입된 이메일입니다" };
@@ -37,9 +43,9 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
 
   const passwordHash = await hashPassword(password);
   const user = await db.$transaction(async (tx) => {
-    const agency = await tx.agency.create({ data: { name: agencyName } });
+    const agency = await tx.agency.create({ data: { name: agencyName, address: agencyAddress ?? null, phone: agencyPhone ?? null } });
     return tx.user.create({
-      data: { agencyId: agency.id, email, passwordHash, name: name ?? null, role: "admin" },
+      data: { agencyId: agency.id, email, passwordHash, name, phone: phone ?? null, role: "admin" },
     });
   });
 
