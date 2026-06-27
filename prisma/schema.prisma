@@ -114,6 +114,7 @@ model Property {
   status         String  @default("진행") // 진행 | 계약진행 | 계약완료
   isFavorite     Boolean @default(false)
   source         String  @default("수기") // 수기 | 엑셀 | 네이버
+  colorTag       String? // 관리자 색상 태그: purple | blue | orange | gray
 
   siteArea      Float?
   areaExclusive Float?

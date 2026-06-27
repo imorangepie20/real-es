@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus, Search } from "lucide-react"
+import { Plus, Star, Trash2, Pencil, CircleCheck, UserPlus, Search, X } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -12,13 +12,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { EditCell, SelectCell } from "@/components/data-grid/editable-cell"
 import { FIELD_BY_KEY, LIST_COLUMNS, STATUS_OPTIONS, type PropertyField } from "@/lib/properties/fields"
 import { TRADE_LABEL, TRADE_OPTIONS } from "@/lib/naver/trade-types"
 import { PROPERTY_LABEL, PROPERTY_OPTIONS } from "@/lib/naver/property-types"
-import { deleteProperties, togglePropertyFavorite, updateProperty, type PropertyRow, type PropertyView } from "./actions"
+import { COLOR_TAGS, COLOR_TAG_MAP } from "@/lib/properties/color-tags"
+import { deleteProperties, togglePropertyFavorite, updateProperty, setPropertyColor, type PropertyRow, type PropertyView } from "./actions"
 import { startContract } from "./contract-actions"
 import { ExcelImportDialog } from "./excel-import-dialog"
 import { PropertyExportDialog } from "./property-export-dialog"
@@ -50,12 +52,14 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
   const [fTrade, setFTrade] = useState("ALL")
   const [fStatus, setFStatus] = useState("ALL")
   const [q, setQ] = useState("")
+  const [fColor, setFColor] = useState<string | null>(null)
 
   const kw = q.trim().toLowerCase()
   const rows = data.filter((p) => {
     if (fType !== "ALL" && p.realEstateType !== fType) return false
     if (fTrade !== "ALL" && p.tradeType !== fTrade) return false
     if (fStatus !== "ALL" && p.status !== fStatus) return false
+    if (view === "all" && fColor && p.colorTag !== fColor) return false
     if (kw && ![p.name, p.complexName, p.address, p.customerName, p.customerPhone].some((v) => String(v ?? "").toLowerCase().includes(kw))) return false
     return true
   })
@@ -72,6 +76,10 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
     const next = !p.isFavorite
     setData((prev) => prev.map((r) => (r.id === p.id ? { ...r, isFavorite: next } as PropertyRow : r)))
     togglePropertyFavorite(p.id, next).then(() => router.refresh()).catch((e) => toast.error(e instanceof Error ? e.message : "저장 실패"))
+  }
+  function setColor(p: PropertyRow, colorTag: string | null) {
+    setData((prev) => prev.map((r) => (r.id === p.id ? { ...r, colorTag } as PropertyRow : r)))
+    setPropertyColor(p.id, colorTag).catch((e) => toast.error(e instanceof Error ? e.message : "저장 실패"))
   }
   async function run(fn: () => Promise<unknown>, ok: string) {
     if (!sel.size) return
@@ -113,6 +121,15 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               </SelectContent>
             </Select>
           )}
+          {view === "all" && (
+            <div className="flex items-center gap-1.5" role="group" aria-label="색상 필터">
+              {COLOR_TAGS.map((c) => (
+                <button key={c.value} type="button" title={`${c.label} 필터`} aria-pressed={fColor === c.value}
+                  onClick={() => setFColor(fColor === c.value ? null : c.value)}
+                  className={cn("size-4 rounded-full transition", c.dot, fColor === c.value ? "ring-2 ring-foreground/50 ring-offset-1" : "opacity-50 hover:opacity-100")} />
+              ))}
+            </div>
+          )}
           {sel.size > 0 && (
             <>
               {(view === "all" || view === "favorites") && (
@@ -151,7 +168,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={allSelected} indeterminate={someSelected} onCheckedChange={(c) => toggleAll(c)} aria-label="전체 선택" /></TableHead>
                   <TableHead className="w-12 text-right">#</TableHead>
-                  <TableHead className="w-10" aria-label="관심" />
+                  <TableHead className={view === "all" ? "w-16" : "w-10"} aria-label="관심" />
                   {LIST_COLUMNS.map((k) => <TableHead key={k}>{FIELD_BY_KEY[k].label}</TableHead>)}
                   <TableHead className="w-12" aria-label="계약" />
                   <TableHead className="w-10" aria-label="수정" />
@@ -159,13 +176,17 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
               </TableHeader>
               <TableBody>
                 {rows.map((p, i) => (
-                  <TableRow key={p.id} data-state={sel.has(p.id) ? "selected" : undefined}>
+                  <TableRow key={p.id} data-state={sel.has(p.id) ? "selected" : undefined}
+                    className={cn(view === "all" && p.colorTag ? COLOR_TAG_MAP[p.colorTag as string]?.row : undefined)}>
                     <TableCell><Checkbox checked={sel.has(p.id)} onCheckedChange={(c) => toggleOne(p.id, c)} aria-label="선택" /></TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">{rows.length - i}</TableCell>
                     <TableCell>
-                      <button type="button" onClick={() => toggleFav(p)} aria-label="관심" className="text-muted-foreground hover:text-foreground">
-                        <Star className={cn("size-4", p.isFavorite && "fill-amber-400 text-amber-400")} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button type="button" onClick={() => toggleFav(p)} aria-label="관심" className="text-muted-foreground hover:text-foreground">
+                          <Star className={cn("size-4", p.isFavorite && "fill-amber-400 text-amber-400")} />
+                        </button>
+                        {view === "all" && <ColorSwatch value={p.colorTag as string | null} onChange={(c) => setColor(p, c)} />}
+                      </div>
                     </TableCell>
                     {LIST_COLUMNS.map((k) => {
                       const f = FIELD_BY_KEY[k]
@@ -204,5 +225,46 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
         )}
       </CardContent>
     </Card>
+  )
+}
+
+// 행 색상 태그 스와치 — 클릭 시 팝오버로 4색 선택/해제. (전체 매물 메뉴 전용)
+function ColorSwatch({ value, onChange }: { value: string | null; onChange: (c: string | null) => void }) {
+  const [open, setOpen] = useState(false)
+  const cur = value ? COLOR_TAG_MAP[value] : null
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            aria-label="색상 태그"
+            className={cn(
+              "size-3.5 shrink-0 rounded-full border transition",
+              cur ? cn(cur.dot, "border-transparent") : "border-dashed border-muted-foreground/50 hover:border-foreground",
+            )}
+          />
+        }
+      />
+      <PopoverContent align="start" sideOffset={6} className="w-auto flex-row items-center gap-1.5 p-1.5">
+        {COLOR_TAGS.map((c) => (
+          <button
+            key={c.value}
+            type="button"
+            title={c.label}
+            onClick={() => { onChange(c.value); setOpen(false) }}
+            className={cn("size-5 rounded-full ring-foreground/40 ring-offset-1 ring-offset-popover transition hover:ring-2", c.dot, value === c.value && "ring-2")}
+          />
+        ))}
+        <button
+          type="button"
+          title="없음"
+          onClick={() => { onChange(null); setOpen(false) }}
+          className="flex size-5 items-center justify-center rounded-full border border-dashed text-muted-foreground transition hover:bg-muted"
+        >
+          <X className="size-3" />
+        </button>
+      </PopoverContent>
+    </Popover>
   )
 }

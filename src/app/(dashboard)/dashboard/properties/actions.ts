@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { db } from "@/lib/db";
 import { PROPERTY_FIELDS, FIELD_BY_KEY } from "@/lib/properties/fields";
 import { ownerRoleFromTrade } from "@/lib/properties/party-role";
+import { COLOR_TAG_VALUES } from "@/lib/properties/color-tags";
 import { parseWorkbook } from "@/lib/properties/excel-read";
 import type { ParsedSheet } from "@/lib/properties/excel-import";
 import { toRow } from "./row-utils";
@@ -50,7 +51,7 @@ export async function listProperties(view: PropertyView = "all"): Promise<Proper
   const custKey = (name?: string | null, phone?: string | null) => `${(name ?? "").trim()}|${String(phone ?? "").replace(/\D/g, "")}`;
   const customers = await db.customer.findMany({ where: { userId: user.id }, select: { name: true, phone: true } });
   const registered = new Set(customers.map((c) => custKey(c.name, c.phone)));
-  return rows.map((r) => ({ ...toRow(r as unknown as Record<string, unknown>), customerRegistered: registered.has(custKey(r.customerName, r.customerPhone)) }));
+  return rows.map((r) => ({ ...toRow(r as unknown as Record<string, unknown>), customerRegistered: registered.has(custKey(r.customerName, r.customerPhone)), colorTag: r.colorTag ?? null }));
 }
 
 export async function getProperty(id: string): Promise<PropertyRow | null> {
@@ -86,6 +87,14 @@ export async function deleteProperties(ids: string[]): Promise<number> {
 export async function togglePropertyFavorite(id: string, isFavorite: boolean): Promise<void> {
   const user = await requireUser();
   await db.property.updateMany({ where: { id, userId: user.id }, data: { isFavorite } });
+  revalidatePath("/dashboard/properties");
+}
+
+// 관리자 색상 태그(특성) 지정/해제 — 전체 매물 메뉴 전용. colorTag=null이면 해제.
+export async function setPropertyColor(id: string, colorTag: string | null): Promise<void> {
+  const user = await requireUser();
+  const value = colorTag && (COLOR_TAG_VALUES as readonly string[]).includes(colorTag) ? colorTag : null;
+  await db.property.updateMany({ where: { id, userId: user.id }, data: { colorTag: value } });
   revalidatePath("/dashboard/properties");
 }
 
