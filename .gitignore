@@ -37,3 +37,6 @@ next-env.d.ts
 
 # secret (template registry token — never commit)
 SDTPL.txt
+
+# Obsidian vault config (docs/를 볼트로 열면 생성됨 — 설정은 커밋 제외)
+.obsidian/
