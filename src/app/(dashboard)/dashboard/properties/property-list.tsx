@@ -11,6 +11,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { EmptyIllustration } from "@/components/empty-illustration"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -166,7 +167,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
         {rows.length === 0 ? (
           <Empty className="border-0 py-10">
             <EmptyHeader>
-              <EmptyMedia variant="icon"><Star /></EmptyMedia>
+              <EmptyMedia><EmptyIllustration /></EmptyMedia>
               <EmptyTitle>매물이 없습니다</EmptyTitle>
               <EmptyDescription>{'"새 매물"로 직접 등록하거나 "엑셀 입력"으로 한 번에 추가하세요. 셀을 더블클릭하면 바로 수정됩니다.'}</EmptyDescription>
             </EmptyHeader>

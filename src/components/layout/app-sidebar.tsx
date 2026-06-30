@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Command } from "lucide-react";
+import { Logo } from "@/components/logo";
 import { navGroups } from "@/lib/nav";
 import {
   Sidebar,
@@ -23,9 +23,9 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1.5">
           <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Command className="size-4" />
+            <Logo className="size-4" />
           </div>
-          <span className="font-semibold group-data-[collapsible=icon]:hidden">Shadcn UI Kit</span>
+          <span className="font-semibold group-data-[collapsible=icon]:hidden">real-es</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
