@@ -25,7 +25,7 @@ export function AppSidebar() {
           <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Logo className="size-4" />
           </div>
-          <span className="font-semibold group-data-[collapsible=icon]:hidden">real-es</span>
+          <span className="font-semibold group-data-[collapsible=icon]:hidden">RESM</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

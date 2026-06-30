@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 
-// real-es 브랜드 심볼 — 하우스. stroke=currentColor라 사이드바 chip(text-primary-foreground)·파비콘 등 어디서나 색을 상속한다.
+// RESM 브랜드 심볼 — 하우스. stroke=currentColor라 사이드바 chip(text-primary-foreground)·파비콘 등 어디서나 색을 상속한다.
 export function Logo({ className }: { className?: string }) {
   return (
     <svg
