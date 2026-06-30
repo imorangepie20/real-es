@@ -66,7 +66,7 @@ export function CommandPalette() {
                 <CommandGroup key={group.label} heading={group.label}>
                   {group.items.map((item) => (
                     <CommandItem
-                      key={item.href}
+                      key={item.title}
                       value={`${group.label} ${item.title}`}
                       onSelect={() => {
                         setOpen(false);

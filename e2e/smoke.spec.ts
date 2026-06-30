@@ -17,12 +17,13 @@ test("dark mode applies the dark class", async ({ page }) => {
 test("command palette opens and navigates", async ({ page }) => {
   await page.goto("/dashboard/default");
   await page.keyboard.press("Meta+k");
-  await page.getByPlaceholder("Type a page name…").fill("CRM");
-  await page.getByRole("option", { name: /CRM/ }).click();
-  await expect(page).toHaveURL(/\/dashboard\/crm/);
+  await page.getByPlaceholder("Type a page name…").fill("고객 목록");
+  await page.getByRole("option", { name: /고객 목록/ }).click();
+  await expect(page).toHaveURL(/\/dashboard\/customers/);
 });
 
-for (const item of allNavItems) {
+// 빈 링크("#")는 라우트가 없으므로 렌더 검증에서 제외한다.
+for (const item of allNavItems.filter((i) => i.href.startsWith("/"))) {
   test(`renders ${item.href} without error`, async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
