@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { assertSuperAdmin } from "@/lib/auth/admin";
+import { cleanEnvValue } from "./clean-value";
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────────
 
@@ -116,12 +117,12 @@ export async function updateConfigs(
           where: { key: parsed.data.key },
           create: {
             key: parsed.data.key,
-            value: parsed.data.value,
+            value: cleanEnvValue(parsed.data.value),
             category: DEFAULT_CONFIGS.find((d) => d.key === parsed.data.key)?.category || "site",
             updatedAtBy: currentUser.id,
           },
           update: {
-            value: parsed.data.value,
+            value: cleanEnvValue(parsed.data.value),
             updatedAtBy: currentUser.id,
           },
         });
