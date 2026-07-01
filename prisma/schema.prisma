@@ -257,3 +257,15 @@ model Event {
 
   @@index([userId, date])
 }
+
+// 시스템 설정 (슈퍼 어드민 전용)
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique  // "siteName" | "contactEmail" | "kakaoMapKey" ...
+  value       String            // 설정값
+  category    String            // "site" | "api"
+  updatedAt   DateTime @updatedAt
+  updatedAtBy String?           // 수정한 User.id
+
+  @@index([category])
+}

@@ -54,10 +54,13 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
   }
 
   const passwordHash = await hashPassword(password);
+  const userCount = await db.user.count();
+  const isFirstUser = userCount === 0;
+
   const user = await db.$transaction(async (tx) => {
     const agency = await tx.agency.create({ data: { name: agencyName, zipcode: agencyZipcode ?? null, address: agencyAddress ?? null, phone: agencyPhone ?? null } });
     return tx.user.create({
-      data: { agencyId: agency.id, email, passwordHash, name, phone: phone ?? null, role: "admin" },
+      data: { agencyId: agency.id, email, passwordHash, name, phone: phone ?? null, role: isFirstUser ? "superadmin" : "member" },
     });
   });
 

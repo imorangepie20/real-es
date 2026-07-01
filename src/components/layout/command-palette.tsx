@@ -23,6 +23,7 @@ import {
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -35,6 +36,31 @@ export function CommandPalette() {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  useEffect(() => {
+    async function fetchUserRole() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setUserRole(data.role);
+        }
+      } catch {
+        // 실패 시 silent 처리
+      }
+    }
+    fetchUserRole();
+  }, []);
+
+  // 설정 메뉴는 superadmin만 표시
+  const filteredNavGroups = navGroups.map((group) => {
+    if (group.label === "설정") {
+      if (userRole !== "superadmin") {
+        return null; // 설정 그룹 숨김
+      }
+    }
+    return group;
+  }).filter((g): g is Exclude<typeof g, null> => g !== null);
 
   return (
     <>
@@ -59,10 +85,10 @@ export function CommandPalette() {
             <DialogDescription>Search for a page to navigate to.</DialogDescription>
           </DialogHeader>
           <Command>
-            <CommandInput placeholder="Type a page name…" />
+            <CommandInput placeholder="페이지 이름 검색…" />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              {navGroups.map((group) => (
+              <CommandEmpty>결과가 없습니다.</CommandEmpty>
+              {filteredNavGroups.map((group) => (
                 <CommandGroup key={group.label} heading={group.label}>
                   {group.items.map((item) => (
                     <CommandItem

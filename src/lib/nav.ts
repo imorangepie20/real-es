@@ -45,11 +45,9 @@ export const navGroups: NavGroup[] = [
   {
     label: "설정",
     items: [
-      // 미구현 — 빈 링크 (페이지 준비되면 href 연결)
-      { title: "회원 관리", href: "#", icon: UserCog },
-      { title: "환경 설정", href: "/settings", icon: Settings },
-      // 미구현 — 빈 링크
-      { title: "권한 관리", href: "#", icon: ShieldCheck },
+      { title: "회원 관리", href: "/dashboard/settings/members", icon: UserCog },
+      { title: "환경 설정", href: "/dashboard/settings/environment", icon: Settings },
+      { title: "권한 관리", href: "/dashboard/settings/permissions", icon: ShieldCheck },
     ],
   },
 ];
