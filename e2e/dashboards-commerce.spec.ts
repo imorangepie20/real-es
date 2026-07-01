@@ -2,15 +2,15 @@ import { test, expect } from "@playwright/test";
 
 const dashboards = [
   {
-    href: "/dashboard/ecommerce",
+    href: "/ecommerce",
     marks: ["Recent Orders", "Customer Reviews", "Sales by Location"],
   },
   {
-    href: "/dashboard/sales",
+    href: "/sales",
     marks: ["Track Order Status", "Best Selling Product", "On Progress"],
   },
   {
-    href: "/dashboard/crm",
+    href: "/crm",
     marks: ["Sales Pipeline", "Leads by Source", "Your target is incomplete"],
   },
 ];

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { loadRealPrice } from "@/app/(dashboard)/dashboard/realprice/actions";
+import { loadRealPrice } from "@/app/(dashboard)/realprice/actions";
 import { REALPRICE_PROPERTY_TYPES } from "@/lib/realprice/endpoints";
 import type { RealTradeKind, RealTxRecord } from "@/lib/realprice/types";
 

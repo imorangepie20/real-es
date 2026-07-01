@@ -344,7 +344,7 @@ export function OnboardingPage() {
             Back
           </Button>
           {isLast ? (
-            <Button onClick={() => (window.location.href = "/dashboard")}>
+            <Button onClick={() => (window.location.href = "/real-estate")}>
               Go to Dashboard
             </Button>
           ) : (

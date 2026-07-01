@@ -2,19 +2,19 @@ import { test, expect } from "@playwright/test";
 
 const dashboards = [
   {
-    href: "/dashboard/project-management",
+    href: "/project-management",
     marks: ["Recent Projects", "Achievement by Year", "Reminders"],
   },
   {
-    href: "/dashboard/analytics",
+    href: "/analytics",
     marks: ["Sales by Countries", "Traffic Sources", "Monthly Campaign State"],
   },
   {
-    href: "/dashboard/file-manager",
+    href: "/file-manager",
     marks: ["Recently Uploaded Files", "Storage Space Used", "Monthly File Transfer"],
   },
   {
-    href: "/dashboard/academy",
+    href: "/academy",
     marks: ["Leaderboard", "Learning Path", "Popular Courses"],
   },
 ];

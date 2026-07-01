@@ -159,7 +159,7 @@ export async function createMember(data: {
       },
     });
 
-    revalidatePath("/dashboard/settings/members");
+    revalidatePath("/settings/members");
     return { success: true, member };
   } catch (_error) {
     return { error: "회원 생성에 실패했습니다" };
@@ -198,7 +198,7 @@ export async function updateMember(
       data: parsed.data,
     });
 
-    revalidatePath("/dashboard/settings/members");
+    revalidatePath("/settings/members");
     return { success: true, updated };
   } catch (error) {
     return { error: "회원 수정에 실패했습니다" };
@@ -260,7 +260,7 @@ export async function deleteMember(id: string) {
       where: { id },
     });
 
-    revalidatePath("/dashboard/settings/members");
+    revalidatePath("/settings/members");
     return { success: true };
   } catch (error) {
     return { error: "회원 삭제에 실패했습니다" };

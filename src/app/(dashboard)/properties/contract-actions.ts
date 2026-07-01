@@ -54,7 +54,7 @@ export async function toggleChecklistItem(id: string, itemId: string, checked: b
   if (checked) cur[itemId] = new Date().toISOString();
   else delete cur[itemId];
   await db.property.updateMany({ where: { id, userId: user.id }, data: { contractChecklist: cur } });
-  revalidatePath(`/dashboard/properties/${id}/contract`);
+  revalidatePath(`/properties/${id}/contract`);
 }
 
 // 서류 체크리스트 전체 체크/해제 — 해당 매물 유형의 모든 항목을 한 번에.
@@ -69,13 +69,13 @@ export async function setAllChecklist(id: string, checked: boolean): Promise<voi
     ? Object.fromEntries(items.map((i) => [i.id, new Date().toISOString()]))
     : {};
   await db.property.updateMany({ where: { id, userId: user.id }, data: { contractChecklist: next } });
-  revalidatePath(`/dashboard/properties/${id}/contract`);
+  revalidatePath(`/properties/${id}/contract`);
 }
 
 export async function startContract(id: string): Promise<void> {
   const user = await requireUser();
   await db.property.updateMany({ where: { id, userId: user.id, status: "진행" }, data: { status: "계약진행" } });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
 }
 
 export async function completeContract(id: string): Promise<void> {
@@ -92,5 +92,5 @@ export async function completeContract(id: string): Promise<void> {
   );
   if (!prog.complete) throw new Error("필수 항목·데이터가 모두 충족되지 않았습니다");
   await db.property.updateMany({ where: { id, userId: user.id }, data: { status: "계약완료" } });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
 }

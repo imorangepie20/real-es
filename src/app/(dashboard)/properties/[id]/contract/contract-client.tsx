@@ -52,7 +52,7 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
 
   async function onComplete() {
     setBusy(true);
-    try { await completeContract(id); toast.success("계약완료로 전환했습니다"); router.push("/dashboard/properties"); }
+    try { await completeContract(id); toast.success("계약완료로 전환했습니다"); router.push("/properties"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "완료 처리 실패"); }
     finally { setBusy(false); }
   }
@@ -122,7 +122,7 @@ export function ContractClient({ id, data, forms }: { id: string; data: Contract
         <h3 className="text-sm font-semibold">양식 인쇄</h3>
         <div className="flex flex-wrap gap-2">
           {forms.map((f) => (
-            <Button key={f.id} size="sm" variant="outline" render={<Link href={`/dashboard/properties/${id}/contract/print/${f.id}`} target="_blank" />}>
+            <Button key={f.id} size="sm" variant="outline" render={<Link href={`/properties/${id}/contract/print/${f.id}`} target="_blank" />}>
               <Printer className="size-3.5" />{f.label}
             </Button>
           ))}

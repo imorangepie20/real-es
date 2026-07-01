@@ -28,12 +28,12 @@ export default function Error404Page() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/default" className={buttonVariants()}>
+        <Link href="/default" className={buttonVariants()}>
           <Home className="size-3.5" />
           Go home
         </Link>
         <Link
-          href="/dashboard/default"
+          href="/default"
           className={buttonVariants({ variant: "outline" })}
         >
           Go back

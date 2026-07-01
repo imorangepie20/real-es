@@ -68,7 +68,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
                 {CUSTOMER_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Link href="/dashboard/customers/new" className={cn(buttonVariants({ size: "sm" }))}>
+            <Link href="/customers/new" className={cn(buttonVariants({ size: "sm" }))}>
               <Plus className="size-3.5" />새 고객
             </Link>
           </div>
@@ -130,7 +130,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Link
-                          href={`/dashboard/customers/${c.id}`}
+                          href={`/customers/${c.id}`}
                           className={cn(buttonVariants({ size: "icon", variant: "ghost" }))}
                           aria-label="수정"
                         >
@@ -156,7 +156,7 @@ export function CustomerList({ initial }: { initial: CustomerRow[] }) {
                     <div className="tabular-nums text-sm text-muted-foreground">{c.phone || "-"}</div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
-                    <Link href={`/dashboard/customers/${c.id}`} className={cn(buttonVariants({ size: "icon", variant: "ghost" }))} aria-label="수정"><Pencil className="size-3.5" /></Link>
+                    <Link href={`/customers/${c.id}`} className={cn(buttonVariants({ size: "icon", variant: "ghost" }))} aria-label="수정"><Pencil className="size-3.5" /></Link>
                     <Button size="icon" variant="ghost" onClick={() => setPending(c)} disabled={busy === c.id} aria-label="삭제"><Trash2 className="size-3.5" /></Button>
                   </div>
                 </div>

@@ -26,7 +26,7 @@ const EXAMPLES: Example[] = [
   {
     title: "Default Dashboard",
     description: "Overview with KPIs, charts, and recent activity.",
-    href: "/dashboard/default",
+    href: "/default",
     tag: "Dashboard",
     tagVariant: "default",
     previewFrom: "from-violet-500/20",
@@ -35,7 +35,7 @@ const EXAMPLES: Example[] = [
   {
     title: "E-commerce",
     description: "Sales metrics, product tables, and revenue trends.",
-    href: "/dashboard/ecommerce",
+    href: "/ecommerce",
     tag: "E-commerce",
     tagVariant: "destructive",
     previewFrom: "from-emerald-500/20",
@@ -44,7 +44,7 @@ const EXAMPLES: Example[] = [
   {
     title: "CRM",
     description: "Customer pipeline, contacts, and deal tracking.",
-    href: "/dashboard/crm",
+    href: "/crm",
     tag: "Dashboard",
     tagVariant: "default",
     previewFrom: "from-blue-500/20",

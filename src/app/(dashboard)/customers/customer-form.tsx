@@ -50,7 +50,7 @@ export function CustomerForm({ customer, draft }: { customer?: CustomerRow; draf
       if (customer) await updateCustomer(customer.id, input)
       else await createCustomer(input)
       toast.success(customer ? "수정했습니다" : "등록했습니다")
-      router.push("/dashboard/customers")
+      router.push("/customers")
       router.refresh()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "저장에 실패했습니다")
@@ -142,7 +142,7 @@ export function CustomerForm({ customer, draft }: { customer?: CustomerRow; draf
         </div>
       </CardContent>
       <CardFooter className="justify-end gap-2 border-t">
-        <Button variant="outline" onClick={() => router.push("/dashboard/customers")}>
+        <Button variant="outline" onClick={() => router.push("/customers")}>
           <ArrowLeft className="size-3.5" />취소
         </Button>
         <Button onClick={save} disabled={saving}>

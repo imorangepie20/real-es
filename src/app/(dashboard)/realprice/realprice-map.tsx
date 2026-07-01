@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import type { RealTxRecord } from "@/lib/realprice/types"
-import { KakaoMap, type MapCluster, type MapMarker } from "@/app/(dashboard)/dashboard/naver/kakao-map"
+import { KakaoMap, type MapCluster, type MapMarker } from "@/app/(dashboard)/naver/kakao-map"
 import { loadComplexPoints } from "./actions"
 
 type Dong = { umdNm: string; count: number; avg: number | null; lat: number | null; lng: number | null }

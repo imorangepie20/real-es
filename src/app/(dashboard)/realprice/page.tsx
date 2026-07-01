@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getApiKey } from "@/lib/config/keys";
-import { getSidos } from "@/app/(dashboard)/dashboard/naver/actions";
+import { getSidos } from "@/app/(dashboard)/naver/actions";
 import { RealpriceView } from "./realprice-view";
 
 export default async function RealpricePage() {

@@ -220,7 +220,7 @@ export default function MembersPage() {
               <DropdownMenuLabel>{u.name || "미입력"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => router.push(`/dashboard/settings/members/${u.id}`)}
+                onClick={() => router.push(`/settings/members/${u.id}`)}
               >
                 수정
               </DropdownMenuItem>
@@ -285,7 +285,7 @@ export default function MembersPage() {
             사용자 계정을 관리하고 역할을 설정합니다.
           </p>
         </div>
-        <Button onClick={() => router.push("/dashboard/settings/members/new")}>
+        <Button onClick={() => router.push("/settings/members/new")}>
           <Plus className="size-4" />
           회원 추가
         </Button>

@@ -16,7 +16,7 @@ export default async function SettingsLayout({
   try {
     await assertSuperAdmin(currentUser.id);
   } catch {
-    redirect("/dashboard");
+    redirect("/real-estate");
   }
 
   return (

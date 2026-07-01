@@ -155,7 +155,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
           {view === "all" && <ExcelImportDialog />}
           <PropertyExportDialog view={view} fType={fType} fTrade={fTrade} fStatus={fStatus} />
           {view === "all" && (
-            <Button size="sm" render={<Link href="/dashboard/properties/new" />}>
+            <Button size="sm" render={<Link href="/properties/new" />}>
               <Plus className="size-3.5" />새 매물
             </Button>
           )}
@@ -212,7 +212,7 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                           <div className="flex items-center gap-1">
                             <EditCell value={v as string | number | null} display={display(f, v)} onSave={(nv) => patchRow(p.id, { [k]: nv })} />
                             {cname && !p.customerRegistered && (
-                              <Link href={`/dashboard/customers/new?propertyId=${p.id}`} title="고객관리 미등록 — 클릭해 등록" aria-label="고객관리에 등록" className="shrink-0 text-amber-500 hover:text-amber-600"><UserPlus className="size-3.5" /></Link>
+                              <Link href={`/customers/new?propertyId=${p.id}`} title="고객관리 미등록 — 클릭해 등록" aria-label="고객관리에 등록" className="shrink-0 text-amber-500 hover:text-amber-600"><UserPlus className="size-3.5" /></Link>
                             )}
                           </div>
                         </TableCell>
@@ -223,11 +223,11 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                     })}
                     <TableCell>
                       {(p.status === "계약진행" || p.status === "계약완료") && (
-                        <Link href={`/dashboard/properties/${p.id}/contract`} className="text-xs text-primary underline">계약</Link>
+                        <Link href={`/properties/${p.id}/contract`} className="text-xs text-primary underline">계약</Link>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Link href={`/dashboard/properties/${p.id}/edit`} aria-label="수정" className="text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></Link>
+                      <Link href={`/properties/${p.id}/edit`} aria-label="수정" className="text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></Link>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -266,16 +266,16 @@ export function PropertyList({ rows: initial, view }: { rows: PropertyRow[]; vie
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       {(p.status === "계약진행" || p.status === "계약완료") && (
-                        <Link href={`/dashboard/properties/${p.id}/contract`} className="text-primary underline">계약</Link>
+                        <Link href={`/properties/${p.id}/contract`} className="text-primary underline">계약</Link>
                       )}
-                      <Link href={`/dashboard/properties/${p.id}/edit`} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><Pencil className="size-3.5" />수정</Link>
+                      <Link href={`/properties/${p.id}/edit`} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><Pencil className="size-3.5" />수정</Link>
                     </div>
                   </div>
                   {cname && (
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       고객: <span className="text-foreground">{cname}</span>
                       {!p.customerRegistered && (
-                        <Link href={`/dashboard/customers/new?propertyId=${p.id}`} title="고객관리 미등록 — 클릭해 등록" aria-label="고객관리에 등록" className="text-amber-500 hover:text-amber-600"><UserPlus className="size-3.5" /></Link>
+                        <Link href={`/customers/new?propertyId=${p.id}`} title="고객관리 미등록 — 클릭해 등록" aria-label="고객관리에 등록" className="text-amber-500 hover:text-amber-600"><UserPlus className="size-3.5" /></Link>
                       )}
                     </div>
                   )}

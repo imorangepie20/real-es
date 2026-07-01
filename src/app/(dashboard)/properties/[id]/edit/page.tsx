@@ -19,7 +19,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">매물 수정</h1>
-        <Link href={`/dashboard/customers/new?propertyId=${id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>
+        <Link href={`/customers/new?propertyId=${id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>
           <UserPlus className="size-3.5" />고객으로 등록
         </Link>
       </div>

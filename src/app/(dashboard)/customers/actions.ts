@@ -108,9 +108,9 @@ export async function createCustomer(input: CustomerInput): Promise<string> {
       create: { propertyId, customerId: c.id, role },
       update: {},
     });
-    revalidatePath(`/dashboard/properties/${propertyId}/edit`);
+    revalidatePath(`/properties/${propertyId}/edit`);
   }
-  revalidatePath("/dashboard/customers");
+  revalidatePath("/customers");
   return c.id;
 }
 
@@ -120,13 +120,13 @@ export async function updateCustomer(id: string, input: CustomerInput): Promise<
   if (!data.name) throw new Error("이름은 필수입니다");
   const propertyId = await ownedPropertyId(user.id, input.propertyId);
   await db.customer.updateMany({ where: { id, userId: user.id }, data: { ...data, propertyId } });
-  revalidatePath("/dashboard/customers");
+  revalidatePath("/customers");
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
   const user = await requireUser();
   await db.customer.deleteMany({ where: { id, userId: user.id } });
-  revalidatePath("/dashboard/customers");
+  revalidatePath("/customers");
 }
 
 // 매물에서 추출: 매물(userId 스코프)의 고객명·전화로 신규 폼 초기값.

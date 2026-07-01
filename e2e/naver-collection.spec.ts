@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("매물 수집 페이지가 열리고 동 선택 UI가 보인다", async ({ page }) => {
-  await page.goto("/dashboard/naver");
+  await page.goto("/naver");
   await expect(page.getByRole("heading", { name: "매물 수집" })).toBeVisible();
   await expect(page.getByRole("combobox").first()).toBeVisible();
 });

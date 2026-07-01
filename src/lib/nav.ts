@@ -11,43 +11,43 @@ export const navGroups: NavGroup[] = [
   {
     label: "매물 관리",
     items: [
-      { title: "전체 매물", href: "/dashboard/properties", icon: ClipboardList },
-      { title: "관심 매물", href: "/dashboard/properties/favorites", icon: Star },
-      { title: "계약 진행", href: "/dashboard/properties/progress", icon: CircleDashed },
-      { title: "계약 완료", href: "/dashboard/properties/contracted", icon: CircleCheck },
+      { title: "전체 매물", href: "/properties", icon: ClipboardList },
+      { title: "관심 매물", href: "/properties/favorites", icon: Star },
+      { title: "계약 진행", href: "/properties/progress", icon: CircleDashed },
+      { title: "계약 완료", href: "/properties/contracted", icon: CircleCheck },
     ],
   },
   {
     label: "국토부 실거래가",
     items: [
-      { title: "실거래가 조회 및 통계", href: "/dashboard/realprice", icon: TrendingUp },
+      { title: "실거래가 조회 및 통계", href: "/realprice", icon: TrendingUp },
     ],
   },
   {
     label: "네이버 부동산",
     items: [
-      { title: "매물 검색", href: "/dashboard/naver", icon: Search },
-      { title: "관심 매물", href: "/dashboard/naver/favorites", icon: Star },
+      { title: "매물 검색", href: "/naver", icon: Search },
+      { title: "관심 매물", href: "/naver/favorites", icon: Star },
     ],
   },
   {
     label: "고객 관리",
     items: [
-      { title: "고객 목록", href: "/dashboard/customers", icon: Users },
+      { title: "고객 목록", href: "/customers", icon: Users },
     ],
   },
   {
     label: "일정",
     items: [
-      { title: "일정 관리", href: "/dashboard/calendar", icon: Calendar },
+      { title: "일정 관리", href: "/calendar", icon: Calendar },
     ],
   },
   {
     label: "설정",
     items: [
-      { title: "회원 관리", href: "/dashboard/settings/members", icon: UserCog },
-      { title: "환경 설정", href: "/dashboard/settings/environment", icon: Settings },
-      { title: "권한 관리", href: "/dashboard/settings/permissions", icon: ShieldCheck },
+      { title: "회원 관리", href: "/settings/members", icon: UserCog },
+      { title: "환경 설정", href: "/settings/environment", icon: Settings },
+      { title: "권한 관리", href: "/settings/permissions", icon: ShieldCheck },
     ],
   },
 ];

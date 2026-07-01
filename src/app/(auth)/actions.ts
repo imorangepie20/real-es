@@ -10,7 +10,7 @@ import { createSession, invalidateSession } from "@/lib/auth/session";
 
 export type AuthState = { error: string | null };
 
-const DASHBOARD = "/dashboard/real-estate";
+const DASHBOARD = "/real-estate";
 
 const signupSchema = z.object({
   agencyName: z.string().min(1, "상호명을 입력하세요"),

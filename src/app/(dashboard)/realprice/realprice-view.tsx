@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils"
 import { REALPRICE_PROPERTY_TYPES } from "@/lib/realprice/endpoints"
 import type { RealTxRecord } from "@/lib/realprice/types"
-import type { Region } from "@/app/(dashboard)/dashboard/naver/actions"
+import type { Region } from "@/app/(dashboard)/naver/actions"
 import { loadRealPrice } from "./actions"
 import { RealpriceMap } from "./realprice-map"
 import { RegionPicker } from "./region-picker"

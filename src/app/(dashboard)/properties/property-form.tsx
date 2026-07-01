@@ -44,7 +44,7 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
       }
       if (property) { await updateProperty(property.id, payload); toast.success("수정했습니다") }
       else { await createProperty(payload); toast.success("등록했습니다") }
-      router.push("/dashboard/properties")
+      router.push("/properties")
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "저장 실패")

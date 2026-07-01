@@ -105,7 +105,7 @@ export function CalendarView() {
     params.set("y", String(view.year));
     params.set("m", String(view.month));
     if (selectedDate) params.set("d", selectedDate);
-    window.history.replaceState(null, "", `/dashboard/calendar?${params.toString()}`);
+    window.history.replaceState(null, "", `/calendar?${params.toString()}`);
   }, [view.year, view.month, selectedDate]);
 
   const loading =
@@ -160,7 +160,7 @@ export function CalendarView() {
     setDialogOpen(true);
   }
   function goProperty(propertyId: string) {
-    router.push(`/dashboard/properties/${propertyId}/edit`);
+    router.push(`/properties/${propertyId}/edit`);
   }
 
   function eventsOn(cellYmd: string): EventRow[] {

@@ -2,15 +2,15 @@ import { test, expect } from "@playwright/test";
 
 const dashboards = [
   {
-    href: "/dashboard/payment",
+    href: "/payment",
     marks: ["Exchange Rates", "Convert Currencies", "Transactions"],
   },
   {
-    href: "/dashboard/crypto",
+    href: "/crypto",
     marks: ["Recent Activities", "Trade", "Wallets"],
   },
   {
-    href: "/dashboard/finance",
+    href: "/finance",
     marks: ["Income Sources", "Saving Goal", "Expense Summary"],
   },
 ];

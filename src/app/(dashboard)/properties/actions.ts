@@ -65,7 +65,7 @@ export async function createProperty(input: Record<string, unknown>): Promise<st
   const data = toData(input);
   if (data.status == null) delete data.status; // status는 NOT NULL DEFAULT '진행' — 빈 값이면 생략해 기본값 적용
   const p = await db.property.create({ data: { ...data, userId: user.id, source: (data.source as string) || "수기" } });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
   return p.id;
 }
 
@@ -74,20 +74,20 @@ export async function updateProperty(id: string, patch: Record<string, unknown>)
   const data = toData(patch);
   if ("status" in data && data.status == null) delete data.status; // status는 NOT NULL — 빈 값으로 덮어쓰지 않음
   await db.property.updateMany({ where: { id, userId: user.id }, data });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
 }
 
 export async function deleteProperties(ids: string[]): Promise<number> {
   const user = await requireUser();
   const res = await db.property.deleteMany({ where: { id: { in: ids }, userId: user.id } });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
   return res.count;
 }
 
 export async function togglePropertyFavorite(id: string, isFavorite: boolean): Promise<void> {
   const user = await requireUser();
   await db.property.updateMany({ where: { id, userId: user.id }, data: { isFavorite } });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
 }
 
 // 관리자 색상 태그(특성) 지정/해제 — 전체 매물 메뉴 전용. colorTag=null이면 해제.
@@ -95,7 +95,7 @@ export async function setPropertyColor(id: string, colorTag: string | null): Pro
   const user = await requireUser();
   const value = colorTag && (COLOR_TAG_VALUES as readonly string[]).includes(colorTag) ? colorTag : null;
   await db.property.updateMany({ where: { id, userId: user.id }, data: { colorTag: value } });
-  revalidatePath("/dashboard/properties");
+  revalidatePath("/properties");
 }
 
 export async function importProperties(rows: Record<string, unknown>[]): Promise<number> {
@@ -126,8 +126,8 @@ export async function importProperties(rows: Record<string, unknown>[]): Promise
       await db.propertyParty.create({ data: { propertyId: p.id, customerId, role } });
     }
   }
-  revalidatePath("/dashboard/properties");
-  revalidatePath("/dashboard/customers");
+  revalidatePath("/properties");
+  revalidatePath("/customers");
   return n;
 }
 

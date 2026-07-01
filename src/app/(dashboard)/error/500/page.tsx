@@ -30,12 +30,12 @@ export default function Error500Page() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/default" className={buttonVariants()}>
+        <Link href="/default" className={buttonVariants()}>
           <RefreshCw className="size-3.5" />
           Try again
         </Link>
         <Link
-          href="/dashboard/default"
+          href="/default"
           className={buttonVariants({ variant: "outline" })}
         >
           <Home className="size-3.5" />

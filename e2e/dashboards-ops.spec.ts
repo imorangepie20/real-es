@@ -2,15 +2,15 @@ import { test, expect } from "@playwright/test";
 
 const dashboards = [
   {
-    href: "/dashboard/hotel",
+    href: "/hotel",
     marks: ["Booking List", "Campaign Overview", "Recent Activities"],
   },
   {
-    href: "/dashboard/hospital",
+    href: "/hospital",
     marks: ["Top Treatment", "Upcoming Appointments", "Patients by Department"],
   },
   {
-    href: "/dashboard/real-estate",
+    href: "/real-estate",
     marks: ["The Somerset", "Sales Analytics", "Property Overview"],
   },
 ];

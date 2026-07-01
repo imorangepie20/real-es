@@ -105,4 +105,5 @@ real-es/
 - 사이트 표시명 RESM: 사이드바 워드마크·브라우저 탭 title·푸터의 표시명을 **RESM**으로 통일(도메인 `resm.approid.team`과 정합). 레포/프로젝트명은 `real-es` 유지 — 표시명만 변경.
 - 설정 메뉴 회원 관리 완성: 신규(`/members/new`)·수정(`/members/[id]`) 페이지 — 소속(Agency) 선택·역할 라디오·**비밀번호 초기화 다이얼로그**(새 비번 입력). 목록에 **소속 필터** 추가, 삭제 확인을 네이티브 `confirm`에서 템플릿 `ConfirmDialog`로 교체.
 - 환경 설정 API 키 DB 연동: 환경설정에서 저장한 키를 **DB 우선·`.env` 폴백**(`lib/config/keys.ts`)으로 네이버·실거래 지도/수집이 참조 → 재배포 없이 키 변경 즉시 반영.
+- URL `/dashboard` prefix 제거: 템플릿 유산의 `/dashboard/*` 경로를 `/properties`·`/naver`·`/settings/members` 등으로 평탄화(폴더 이동 + 코드·e2e 경로 갱신). 설정 메뉴 404(nav href↔실제 URL 불일치)도 해소.
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)

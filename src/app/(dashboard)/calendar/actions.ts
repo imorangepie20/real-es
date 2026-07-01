@@ -84,7 +84,7 @@ export async function createEvent(input: EventInput): Promise<string> {
   const propertyId = await ownedId("property", user.id, input.propertyId);
   const customerId = await ownedId("customer", user.id, input.customerId);
   const e = await db.event.create({ data: { ...data, userId: user.id, propertyId, customerId } });
-  revalidatePath("/dashboard/calendar");
+  revalidatePath("/calendar");
   return e.id;
 }
 
@@ -95,11 +95,11 @@ export async function updateEvent(id: string, input: EventInput): Promise<void> 
   const propertyId = await ownedId("property", user.id, input.propertyId);
   const customerId = await ownedId("customer", user.id, input.customerId);
   await db.event.updateMany({ where: { id, userId: user.id }, data: { ...data, propertyId, customerId } });
-  revalidatePath("/dashboard/calendar");
+  revalidatePath("/calendar");
 }
 
 export async function deleteEvent(id: string): Promise<void> {
   const user = await requireUser();
   await db.event.deleteMany({ where: { id, userId: user.id } });
-  revalidatePath("/dashboard/calendar");
+  revalidatePath("/calendar");
 }

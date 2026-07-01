@@ -55,7 +55,7 @@ export function MemberForm({
       try {
         const res = await updateMember(member!.id, { name, phone, role: role as "member" | "superadmin" })
         if (res.error) toast.error(res.error)
-        else { toast.success("수정했습니다"); router.push("/dashboard/settings/members"); router.refresh() }
+        else { toast.success("수정했습니다"); router.push("/settings/members"); router.refresh() }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "저장에 실패했습니다")
       } finally { setSaving(false) }
@@ -68,7 +68,7 @@ export function MemberForm({
       try {
         const res = await createMember({ agencyId, email, password, name, phone, role: role as "member" | "superadmin" })
         if (res.error) toast.error(res.error)
-        else { toast.success("등록했습니다"); router.push("/dashboard/settings/members"); router.refresh() }
+        else { toast.success("등록했습니다"); router.push("/settings/members"); router.refresh() }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "저장에 실패했습니다")
       } finally { setSaving(false) }
@@ -149,7 +149,7 @@ export function MemberForm({
           )}
         </CardContent>
         <CardFooter className="justify-end gap-2 border-t">
-          <Button variant="outline" onClick={() => router.push("/dashboard/settings/members")}>
+          <Button variant="outline" onClick={() => router.push("/settings/members")}>
             <ArrowLeft className="size-3.5" />취소
           </Button>
           <Button onClick={save} disabled={saving}>

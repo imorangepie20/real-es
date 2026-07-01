@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
-import { getSigungus, type Region } from "@/app/(dashboard)/dashboard/naver/actions"
+import { getSigungus, type Region } from "@/app/(dashboard)/naver/actions"
 
 // 실거래 API는 시군구(LAWD_CD 5자리) 단위 — naver RegionPicker를 미러링하되 시군구에서 멈추고
 // onPick으로 lawdCd(시군구 code)와 표시명을 넘긴다.

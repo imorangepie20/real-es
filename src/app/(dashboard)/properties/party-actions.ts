@@ -49,8 +49,8 @@ export async function addParty(propertyId: string, role: string, name: string, p
     create: { propertyId, customerId, role },
     update: {},
   });
-  revalidatePath(`/dashboard/properties/${propertyId}/edit`);
-  revalidatePath("/dashboard/customers");
+  revalidatePath(`/properties/${propertyId}/edit`);
+  revalidatePath("/customers");
 }
 
 export async function removeParty(partyId: string): Promise<void> {
@@ -61,6 +61,6 @@ export async function removeParty(partyId: string): Promise<void> {
   });
   if (!party) throw new Error("당사자를 찾을 수 없습니다");
   await db.propertyParty.delete({ where: { id: party.id } });
-  revalidatePath(`/dashboard/properties/${party.propertyId}/edit`);
-  revalidatePath("/dashboard/customers");
+  revalidatePath(`/properties/${party.propertyId}/edit`);
+  revalidatePath("/customers");
 }

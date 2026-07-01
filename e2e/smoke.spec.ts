@@ -7,7 +7,7 @@ test("home redirects to default dashboard", async ({ page }) => {
 });
 
 test("dark mode applies the dark class", async ({ page }) => {
-  await page.goto("/dashboard/default");
+  await page.goto("/default");
   await page.getByLabel("Toggle theme").click();
   await expect(page.getByRole("menu")).toBeVisible();
   await page.getByRole("menuitem", { name: "Dark" }).click();
@@ -15,7 +15,7 @@ test("dark mode applies the dark class", async ({ page }) => {
 });
 
 test("command palette opens and navigates", async ({ page }) => {
-  await page.goto("/dashboard/default");
+  await page.goto("/default");
   await page.keyboard.press("Meta+k");
   await page.getByPlaceholder("Type a page name…").fill("고객 목록");
   await page.getByRole("option", { name: /고객 목록/ }).click();

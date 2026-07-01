@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Default dashboard", () => {
-  test.beforeEach(async ({ page }) => { await page.goto("/dashboard/default"); });
+  test.beforeEach(async ({ page }) => { await page.goto("/default"); });
 
   test("renders all seven widgets", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();

@@ -6,19 +6,19 @@ const settingsSections = [
   {
     title: "회원 관리",
     description: "사용자 계정을 생성, 수정, 삭제하고 역할을 관리합니다.",
-    href: "/dashboard/settings/members",
+    href: "/settings/members",
     icon: Users,
   },
   {
     title: "환경 설정",
     description: "사이트 기본 정보와 API 키를 관리합니다.",
-    href: "/dashboard/settings/environment",
+    href: "/settings/environment",
     icon: Settings,
   },
   {
     title: "권한 관리",
     description: "역할별 권한을 설정합니다. (준비 중)",
-    href: "/dashboard/settings/permissions",
+    href: "/settings/permissions",
     icon: Shield,
   },
 ];

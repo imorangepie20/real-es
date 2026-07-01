@@ -128,7 +128,7 @@ export async function updateConfigs(
       }
     });
 
-    revalidatePath("/dashboard/settings/environment");
+    revalidatePath("/settings/environment");
     return { success: true };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "설정 업데이트에 실패했습니다";
