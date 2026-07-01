@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -44,8 +39,9 @@ import {
 import { EmptyIllustration } from "@/components/empty-illustration";
 import {
   listMembers,
-  type MemberRow,
+  listAgencies,
   deleteMember,
+  type MemberRow,
 } from "@/lib/members/members-actions";
 import { formatTel } from "@/lib/properties/format";
 import { toast } from "sonner";
@@ -57,163 +53,6 @@ const roleClass: Record<string, string> = {
   member: "bg-secondary text-secondary-foreground",
 };
 
-// ─── Column definitions ───────────────────────────────────────────────────────
-
-const columns: ColumnDef<MemberRow>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        indeterminate={
-          table.getIsSomePageRowsSelected() &&
-          !table.getIsAllPageRowsSelected()
-        }
-        onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(v) => row.toggleSelected(!!v)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    size: 40,
-  },
-  {
-    id: "user",
-    accessorFn: (row) => `${row.name || ""} ${row.email}`,
-    header: "사용자",
-    cell: ({ row }) => {
-      const u = row.original;
-      const initials = u.name
-        ? u.name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2)
-        : u.email[0].toUpperCase();
-
-      return (
-        <div className="flex items-center gap-2.5">
-          <Avatar size="sm">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <div className="grid leading-tight">
-            <span className="font-medium">{u.name || "미입력"}</span>
-            <span className="text-xs text-muted-foreground">{u.email}</span>
-          </div>
-        </div>
-      );
-    },
-    filterFn: (row, _id, filterValue: string) => {
-      const v = filterValue.toLowerCase();
-      return (
-        (row.original.name || "").toLowerCase().includes(v) ||
-        row.original.email.toLowerCase().includes(v)
-      );
-    },
-  },
-  {
-    accessorKey: "agencyName",
-    header: "소속",
-    cell: ({ row }) => {
-      const agencyName = row.getValue("agencyName") as string;
-      return <span className="text-sm">{agencyName}</span>;
-    },
-  },
-  {
-    accessorKey: "phone",
-    header: "연락처",
-    cell: ({ row }) => {
-      const phone = row.getValue("phone") as string | null;
-      return <span className="text-sm text-muted-foreground">{phone ? formatTel(phone) : "-"}</span>;
-    },
-  },
-  {
-    accessorKey: "role",
-    header: "역할",
-    cell: ({ row }) => {
-      const role = row.getValue<string>("role");
-      const label = role === "superadmin" ? "슈퍼어드민" : "사용자";
-      return (
-        <Badge className={cn("border-transparent", roleClass[role] || roleClass.member)}>
-          {label}
-        </Badge>
-      );
-    },
-    filterFn: (row, _id, filterValue: string) =>
-      filterValue === "all" || row.original.role === filterValue,
-  },
-  {
-    accessorKey: "createdAt",
-    header: "가입일",
-    cell: ({ row }) => {
-      const date = row.getValue<Date>("createdAt");
-      return (
-        <span className="text-sm text-muted-foreground">
-          {new Date(date).toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }).replace(/\./g, ".")}
-        </span>
-      );
-    },
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => {
-      const u = row.original;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" size="icon" aria-label="작업 메뉴">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{u.name || "미입력"}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => window.location.href = `/dashboard/settings/members/${u.id}`}>
-              수정
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => handleDelete(u.id, u.email || "")}
-            >
-              삭제
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-    enableSorting: false,
-    size: 48,
-  },
-];
-
-// ─── Helpers ────────────────────────────────────────────────────────────────────
-
-async function handleDelete(id: string, email: string) {
-  if (!confirm(`정말 ${email} 계정을 삭제하시겠습니까?`)) return;
-
-  const result = await deleteMember(id);
-  if (result.error) {
-    toast.error(result.error);
-  } else {
-    toast.success("계정이 삭제되었습니다.");
-    window.location.reload();
-  }
-}
-
 // ─── Root ───────────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 10;
@@ -221,20 +60,25 @@ const PAGE_SIZE = 10;
 export default function MembersPage() {
   const router = useRouter();
   const [members, setMembers] = useState<MemberRow[]>([]);
+  const [agencies, setAgencies] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [globalFilter, setGlobalFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [agencyFilter, setAgencyFilter] = useState<string>("all");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [pending, setPending] = useState<MemberRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  // 데이터 로드
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
-        const data = await listMembers();
+        const [data, ag] = await Promise.all([listMembers(), listAgencies()]);
         setMembers(data);
+        setAgencies(ag);
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "회원 목록을 불러오는데 실패했습니다.";
+        const message =
+          error instanceof Error ? error.message : "회원 목록을 불러오는데 실패했습니다.";
         toast.error(message);
       } finally {
         setLoading(false);
@@ -251,9 +95,147 @@ export default function MembersPage() {
         (m.name || "").toLowerCase().includes(q) ||
         m.email.toLowerCase().includes(q);
       const matchesRole = roleFilter === "all" || m.role === roleFilter;
-      return matchesSearch && matchesRole;
+      const matchesAgency = agencyFilter === "all" || m.agencyId === agencyFilter;
+      return matchesSearch && matchesRole && matchesAgency;
     });
-  }, [globalFilter, roleFilter, members]);
+  }, [globalFilter, roleFilter, agencyFilter, members]);
+
+  const columns = useMemo<ColumnDef<MemberRow>[]>(() => [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          indeterminate={
+            table.getIsSomePageRowsSelected() &&
+            !table.getIsAllPageRowsSelected()
+          }
+          onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
+          aria-label="전체 선택"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(v) => row.toggleSelected(!!v)}
+          aria-label="행 선택"
+        />
+      ),
+      enableSorting: false,
+      size: 40,
+    },
+    {
+      id: "user",
+      accessorFn: (row) => `${row.name || ""} ${row.email}`,
+      header: "사용자",
+      cell: ({ row }) => {
+        const u = row.original;
+        const initials = u.name
+          ? u.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)
+          : u.email[0].toUpperCase();
+
+        return (
+          <div className="flex items-center gap-2.5">
+            <Avatar size="sm">
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+            <div className="grid leading-tight">
+              <span className="font-medium">{u.name || "미입력"}</span>
+              <span className="text-xs text-muted-foreground">{u.email}</span>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "agencyName",
+      header: "소속",
+      cell: ({ row }) => (
+        <span className="text-sm">{row.getValue("agencyName")}</span>
+      ),
+    },
+    {
+      accessorKey: "phone",
+      header: "연락처",
+      cell: ({ row }) => {
+        const phone = row.getValue<string | null>("phone");
+        return (
+          <span className="text-sm text-muted-foreground">
+            {phone ? formatTel(phone) : "-"}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "role",
+      header: "역할",
+      cell: ({ row }) => {
+        const role = row.getValue<string>("role");
+        const label = role === "superadmin" ? "슈퍼어드민" : "사용자";
+        return (
+          <Badge className={cn("border-transparent", roleClass[role] || roleClass.member)}>
+            {label}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: "가입일",
+      cell: ({ row }) => {
+        const date = row.getValue<Date>("createdAt");
+        return (
+          <span className="text-sm text-muted-foreground">
+            {new Date(date).toLocaleDateString("ko-KR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "",
+      enableSorting: false,
+      size: 48,
+      cell: ({ row }) => {
+        const u = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" aria-label="작업 메뉴">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{u.name || "미입력"}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => router.push(`/dashboard/settings/members/${u.id}`)}
+              >
+                수정
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => setPending(u)}
+              >
+                삭제
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ], [router]);
 
   const table = useReactTable({
     data: filteredData,
@@ -265,6 +247,25 @@ export default function MembersPage() {
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: PAGE_SIZE } },
   });
+
+  async function confirmDelete() {
+    if (!pending) return;
+    setDeleting(true);
+    try {
+      const result = await deleteMember(pending.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("계정이 삭제되었습니다.");
+        setMembers((prev) => prev.filter((m) => m.id !== pending.id));
+        setPending(null);
+      }
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "삭제에 실패했습니다.");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -313,6 +314,19 @@ export default function MembersPage() {
             </Button>
           ))}
         </div>
+        <NativeSelect
+          className="h-8 w-40"
+          value={agencyFilter}
+          onChange={(e) => setAgencyFilter(e.target.value)}
+          aria-label="소속 필터"
+        >
+          <NativeSelectOption value="all">소속 전체</NativeSelectOption>
+          {agencies.map((a) => (
+            <NativeSelectOption key={a.id} value={a.id}>
+              {a.name}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
       </div>
 
       {/* Table */}
@@ -320,7 +334,9 @@ export default function MembersPage() {
         <div className="flex flex-col items-center justify-center py-12">
           <EmptyIllustration className="size-16 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground mt-4">
-            {globalFilter || roleFilter !== "all" ? "검색 결과가 없습니다." : "회원이 없습니다."}
+            {globalFilter || roleFilter !== "all" || agencyFilter !== "all"
+              ? "검색 결과가 없습니다."
+              : "회원이 없습니다."}
           </p>
         </div>
       ) : (
@@ -394,6 +410,15 @@ export default function MembersPage() {
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={pending !== null}
+        onOpenChange={(o) => { if (!o) setPending(null); }}
+        title="회원 삭제"
+        description={pending ? `'${pending.email}' 계정을 삭제합니다. 되돌릴 수 없습니다.` : undefined}
+        busy={deleting}
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }

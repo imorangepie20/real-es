@@ -95,6 +95,32 @@ export async function listMembers(filters?: {
 }
 
 /**
+ * 회원 단일 조회 (superadmin만)
+ */
+export async function getMember(id: string): Promise<MemberRow | null> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("로그인이 필요합니다");
+  await assertSuperAdmin(currentUser.id);
+
+  const m = await db.user.findUnique({
+    where: { id },
+    include: { agency: { select: { name: true } } },
+  });
+  if (!m) return null;
+
+  return {
+    id: m.id,
+    name: m.name,
+    email: m.email,
+    agencyId: m.agencyId,
+    agencyName: m.agency.name,
+    role: m.role,
+    phone: m.phone,
+    createdAt: m.createdAt,
+  };
+}
+
+/**
  * 회원 생성 (superadmin만)
  */
 export async function createMember(data: {

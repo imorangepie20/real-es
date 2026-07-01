@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getApiKey } from "@/lib/config/keys";
 
 type VWorldResp = { response?: { status?: string; result?: { point?: { x: string; y: string } } } };
 
@@ -8,7 +9,7 @@ export async function geocode(query: string): Promise<{ lat: number; lng: number
   const cached = await db.geocodeCache.findUnique({ where: { query } });
   if (cached) return cached.lat != null && cached.lng != null ? { lat: cached.lat, lng: cached.lng } : null;
 
-  const key = process.env.VWORLD_API_KEY ?? "";
+  const key = await getApiKey("vworldKey", "VWORLD_API_KEY");
   let lat: number | null = null, lng: number | null = null;
   for (const type of ["parcel", "road"] as const) {
     try {

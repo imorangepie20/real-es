@@ -23,7 +23,6 @@ import { SelectionDetail } from "./selection-detail"
 import { StatsPanel } from "./stats-panel"
 
 const PAGE_SIZE = 20
-const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? ""
 
 // UI 거래유형: 매매 / 전세 / 월세. 서버 kind: 매매→sale, 전세·월세→rent.
 type UiKind = "매매" | "전세" | "월세"
@@ -49,7 +48,7 @@ const ymd = (v: string) => (v && v.length === 8 ? `${v.slice(0, 4)}.${v.slice(4,
 type SortKey = "name" | "umdNm" | "area" | "price" | "floor" | "buildYear" | "dealDate"
 type LoadResult = Awaited<ReturnType<typeof loadRealPrice>>
 
-export function RealpriceView({ sidos }: { sidos: Region[] }) {
+export function RealpriceView({ sidos, kakaoKey }: { sidos: Region[]; kakaoKey: string }) {
   const [uiKind, setUiKind] = useState<UiKind>("매매")
   const [propertyType, setPropertyType] = useState("apt")
   const [lawdCd, setLawdCd] = useState("")
@@ -256,7 +255,7 @@ export function RealpriceView({ sidos }: { sidos: Region[] }) {
           <CardContent>
             <RealpriceMap
               key={`${queried.lawdCd}|${queried.uiKind}|${queried.propertyType}|${queried.months}`}
-              appKey={KAKAO_KEY}
+              appKey={kakaoKey}
               cityDivision={queried.regionName}
               byDong={data.byDong}
               records={records}

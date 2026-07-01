@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getApiKey } from "@/lib/config/keys";
 import { endpointFor, operationUrl } from "./endpoints";
 import { parseResponse, normalizeItems } from "./normalize";
 import type { RealTradeKind, RealTxRecord } from "./types";
@@ -38,7 +39,7 @@ async function fetchMonth(lawdCd: string, dealYmd: string, propertyType: string,
     return cached.records as unknown as RealTxRecord[];
   }
   // serviceKey는 정규화 후 raw로 부착(searchParams.set은 재인코딩하므로 쓰지 않음). 나머지 파라미터만 인코딩.
-  const key = encodeServiceKey(process.env.PUBLIC_DATA_API_KEY ?? "");
+  const key = encodeServiceKey(await getApiKey("publicDataApiKey", "PUBLIC_DATA_API_KEY"));
   const rest = new URLSearchParams({ LAWD_CD: lawdCd, DEAL_YMD: dealYmd, numOfRows: "1000" });
   const pageUrl = (p: number) => `${operationUrl(ep.service)}?serviceKey=${key}&${rest.toString()}&pageNo=${p}`;
   const label = `${ep.service} ${dealYmd}`;

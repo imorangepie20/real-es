@@ -156,7 +156,7 @@ export default function EnvironmentPage() {
           <CardHeader>
             <CardTitle>API 키</CardTitle>
             <CardDescription>
-              외부 서비스 연동을 위한 API 키를 설정합니다.
+              외부 서비스 연동을 위한 API 키. DB에 저장된 값을 우선 사용하고 비어 있으면 <code className="rounded bg-muted px-1">.env</code> 값을 따릅니다(저장 후 지도·실거래에 즉시 반영).
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
