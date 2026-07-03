@@ -1,12 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { clearSessionCookie, getSessionToken, setSessionCookie } from "@/lib/auth/cookies";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, invalidateSession } from "@/lib/auth/session";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { notifySuperAdmins } from "@/lib/notifications/notify";
 
 export type AuthState = { error: string | null };
@@ -104,4 +106,38 @@ export async function logoutAction(): Promise<void> {
   if (token) await invalidateSession(token);
   await clearSessionCookie();
   redirect("/login");
+}
+
+// ─── 본인 프로필 수정 (로그인 사용자) ────────────────────────────────────────────
+
+export type ProfileState = { error: string | null };
+
+export async function updateProfile(input: { name: string; phone: string }): Promise<ProfileState> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "로그인이 필요합니다" };
+  const name = input.name.trim();
+  if (!name) return { error: "이름을 입력하세요" };
+  await db.user.update({
+    where: { id: user.id },
+    data: { name, phone: input.phone.trim() || null },
+  });
+  revalidatePath("/profile");
+  return { error: null };
+}
+
+export async function changePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<ProfileState> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "로그인이 필요합니다" };
+  if (input.newPassword.length < 8) return { error: "새 비밀번호는 8자 이상이어야 합니다" };
+
+  const fresh = await db.user.findUnique({ where: { id: user.id } });
+  if (!fresh || !(await verifyPassword(input.currentPassword, fresh.passwordHash))) {
+    return { error: "현재 비밀번호가 올바르지 않습니다" };
+  }
+  const passwordHash = await hashPassword(input.newPassword);
+  await db.user.update({ where: { id: user.id }, data: { passwordHash } });
+  return { error: null };
 }
