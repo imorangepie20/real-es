@@ -1,7 +1,8 @@
 import type { User } from "@prisma/client";
 
 import { db } from "@/lib/db";
-import type { RealTxRecord } from "@/lib/realprice/types";
+import type { RealStats, RealTxRecord } from "@/lib/realprice/types";
+import { computeStats } from "@/lib/realprice/stats";
 
 export type HomeData = {
   user: { name: string | null; email: string; address: string | null };
@@ -22,7 +23,7 @@ export type HomeData = {
   }[];
   customerCount: number;
   region: { lawdCd: string; naverCode: string | null } | null;
-  realpriceSummary: { count: number; avgPrice: number | null } | null;
+  realpriceSummary: { stats: RealStats; recent: RealTxRecord[] } | null;
   naverSummary: { articleCount: number } | null;
 };
 
@@ -67,28 +68,23 @@ export async function getHomeData(user: User): Promise<HomeData> {
   ]);
 
   // 주소 기반 요약 — 캐시만(라이브 수집 X).
-  let realpriceSummary: { count: number; avgPrice: number | null } | null = null;
+  let realpriceSummary: { stats: RealStats; recent: RealTxRecord[] } | null = null;
   let naverSummary: { articleCount: number } | null = null;
 
   if (user.homeLawdCd) {
     const caches = await db.realTxCache.findMany({
-      where: { lawdCd: user.homeLawdCd, dealYmd: { gte: ymMonthsAgo(3) } },
+      where: { lawdCd: user.homeLawdCd, kind: "sale", dealYmd: { gte: ymMonthsAgo(6) } },
       select: { records: true },
     });
-    let count = 0;
-    let sum = 0;
-    for (const c of caches) {
-      const records = c.records as unknown as RealTxRecord[];
-      for (const r of records) {
-        if (r.isCanceled) continue;
-        const p = r.kind === "sale" ? r.dealAmount : r.deposit;
-        if (p != null) {
-          count++;
-          sum += p;
-        }
-      }
+    const records = caches.flatMap((c) => c.records as unknown as RealTxRecord[]);
+    const filtered = records.filter((r) => !r.isCanceled);
+    if (filtered.length > 0) {
+      const stats = computeStats(filtered);
+      const recent = [...filtered]
+        .sort((a, b) => b.dealDate.localeCompare(a.dealDate))
+        .slice(0, 8);
+      realpriceSummary = { stats, recent };
     }
-    realpriceSummary = { count, avgPrice: count ? Math.round(sum / count) : null };
   }
 
   if (user.homeNaverCode) {
