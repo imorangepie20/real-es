@@ -25,6 +25,9 @@ model User {
   passwordHash String
   name         String?
   phone        String?   // 개인 전화번호
+  address      String?   // 본인 주소(도로명)
+  homeLawdCd   String?   // 본인 주소 → 매핑된 시군구 코드(5자리, 실거래 API용)
+  homeNaverCode String?  // 본인 주소 → 매핑된 법정동 코드(10자리, 네이버 수집용)
   role         String    @default("member")
   createdAt    DateTime  @default(now())
   sessions     Session[]

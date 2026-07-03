@@ -37,3 +37,30 @@ export async function geocode(query: string): Promise<{ lat: number; lng: number
   });
   return lat != null && lng != null ? { lat, lng } : null;
 }
+
+/** 주소(도로명) → VWorld geocode → LegalDivision EMD 최근접 매칭 → { lawdCd, naverCode }.
+ *  본인 주소 기반 홈 요약용. geocode 실패 또는 EMD 매칭 실패 시 null. */
+export async function findEmdByAddr(
+  addr: string,
+): Promise<{ lawdCd: string; naverCode: string } | null> {
+  const trimmed = addr.trim();
+  if (!trimmed) return null;
+  const geo = await geocode(trimmed);
+  if (!geo) return null;
+
+  const emds = await db.legalDivision.findMany({
+    where: { level: "EMD", lat: { not: null }, lng: { not: null } },
+    select: { sigunguCode: true, naverCode: true, lat: true, lng: true },
+  });
+  let best: { sigunguCode: string | null; naverCode: string | null } | null = null;
+  let bestD = Infinity;
+  for (const e of emds) {
+    const d = (e.lat! - geo.lat) ** 2 + (e.lng! - geo.lng) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      best = e;
+    }
+  }
+  if (!best || !best.sigunguCode || !best.naverCode) return null;
+  return { lawdCd: best.sigunguCode, naverCode: best.naverCode };
+}

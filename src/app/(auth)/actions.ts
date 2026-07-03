@@ -10,6 +10,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, invalidateSession } from "@/lib/auth/session";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { notifySuperAdmins } from "@/lib/notifications/notify";
+import { findEmdByAddr } from "@/lib/realprice/geocode";
 
 export type AuthState = { error: string | null };
 
@@ -112,16 +113,43 @@ export async function logoutAction(): Promise<void> {
 
 export type ProfileState = { error: string | null };
 
-export async function updateProfile(input: { name: string; phone: string }): Promise<ProfileState> {
+export async function updateProfile(input: {
+  name: string;
+  phone: string;
+  address: string;
+}): Promise<ProfileState> {
   const user = await getCurrentUser();
   if (!user) return { error: "로그인이 필요합니다" };
   const name = input.name.trim();
+  const address = input.address.trim();
   if (!name) return { error: "이름을 입력하세요" };
+
+  // 주소가 변경됐으면 VWorld geocode → 법정동 매핑 갱신(실패 시 null — 홈 요약에서 생략).
+  let homeLawdCd: string | null = user.homeLawdCd;
+  let homeNaverCode: string | null = user.homeNaverCode;
+  if (address !== (user.address ?? "")) {
+    if (address) {
+      const mapped = await findEmdByAddr(address);
+      homeLawdCd = mapped?.lawdCd ?? null;
+      homeNaverCode = mapped?.naverCode ?? null;
+    } else {
+      homeLawdCd = null;
+      homeNaverCode = null;
+    }
+  }
+
   await db.user.update({
     where: { id: user.id },
-    data: { name, phone: input.phone.trim() || null },
+    data: {
+      name,
+      phone: input.phone.trim() || null,
+      address: address || null,
+      homeLawdCd,
+      homeNaverCode,
+    },
   });
   revalidatePath("/profile");
+  revalidatePath("/real-estate");
   return { error: null };
 }
 

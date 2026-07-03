@@ -10,15 +10,17 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatTel } from "@/lib/properties/format";
+import { PostcodeSearch } from "@/components/postcode-search";
 import { updateProfile, changePassword } from "@/app/(auth)/actions";
 
 export function ProfileForm({
   user,
 }: {
-  user: { name: string | null; phone: string | null; email: string };
+  user: { name: string | null; phone: string | null; email: string; address: string | null };
 }) {
   const [name, setName] = useState(user.name ?? "");
   const [phone, setPhone] = useState(user.phone ?? "");
+  const [address, setAddress] = useState(user.address ?? "");
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [current, setCurrent] = useState("");
@@ -33,7 +35,7 @@ export function ProfileForm({
     }
     setSavingProfile(true);
     try {
-      const res = await updateProfile({ name, phone });
+      const res = await updateProfile({ name, phone, address });
       if (res.error) toast.error(res.error);
       else toast.success("프로필을 저장했습니다");
     } catch (e) {
@@ -100,6 +102,14 @@ export function ProfileForm({
               placeholder="010-0000-0000"
             />
           </Field>
+          <Field label="주소" description="본인 주소를 기준으로 홈에서 실거래·네이버 매물 요약을 보여드립니다.">
+            <div className="flex items-center gap-2">
+              <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="도로명 주소" />
+              <PostcodeSearch
+                onComplete={({ address: addr }) => setAddress(addr)}
+              />
+            </div>
+          </Field>
         </CardContent>
         <CardFooter className="justify-end gap-2 border-t">
           <Button onClick={saveProfile} disabled={savingProfile}>
@@ -138,11 +148,13 @@ export function ProfileForm({
 function Field({
   label,
   required,
+  description,
   className,
   children,
 }: {
   label: string;
   required?: boolean;
+  description?: string;
   className?: string;
   children: ReactNode;
 }) {
@@ -153,6 +165,7 @@ function Field({
         {required && <span className="text-destructive"> *</span>}
       </Label>
       {children}
+      {description && <p className="text-xs text-muted-foreground">{description}</p>}
     </div>
   );
 }

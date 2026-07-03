@@ -7,7 +7,7 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
   return (
     <div className="flex flex-col gap-4">
-      <ProfileForm user={{ name: user.name, phone: user.phone, email: user.email }} />
+      <ProfileForm user={{ name: user.name, phone: user.phone, email: user.email, address: user.address }} />
     </div>
   );
 }
