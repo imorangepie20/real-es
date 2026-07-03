@@ -1,5 +1,11 @@
-import { NotificationsPage } from "@/components/pages/notifications/notifications-page";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { listNotifications } from "@/lib/notifications/actions";
+import { NotificationsView } from "./notifications-view";
 
-export default function PNotificationsPage() {
-  return <NotificationsPage />;
+export default async function NotificationsPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const items = await listNotifications();
+  return <NotificationsView initial={items} />;
 }

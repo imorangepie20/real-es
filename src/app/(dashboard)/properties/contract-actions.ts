@@ -12,6 +12,7 @@ import {
 } from "@/lib/properties/contract-checklist";
 import { requireUser, type PropertyRow } from "./actions";
 import { toRow } from "./row-utils";
+import { notifySuperAdmins } from "@/lib/notifications/notify";
 
 export type ContractData = {
   property: PropertyRow;
@@ -74,8 +75,13 @@ export async function setAllChecklist(id: string, checked: boolean): Promise<voi
 
 export async function startContract(id: string): Promise<void> {
   const user = await requireUser();
-  await db.property.updateMany({ where: { id, userId: user.id, status: "진행" }, data: { status: "계약진행" } });
+  const p = await db.property.findFirst({ where: { id, userId: user.id }, select: { name: true, complexName: true } });
+  const res = await db.property.updateMany({ where: { id, userId: user.id, status: "진행" }, data: { status: "계약진행" } });
   revalidatePath("/properties");
+  if (res.count > 0) {
+    const label = (p?.name ?? p?.complexName ?? "매물") as string;
+    await notifySuperAdmins("contract", `매물 계약진행: ${label}`, undefined, `/properties/${id}/edit`);
+  }
 }
 
 export async function completeContract(id: string): Promise<void> {
@@ -93,4 +99,6 @@ export async function completeContract(id: string): Promise<void> {
   if (!prog.complete) throw new Error("필수 항목·데이터가 모두 충족되지 않았습니다");
   await db.property.updateMany({ where: { id, userId: user.id }, data: { status: "계약완료" } });
   revalidatePath("/properties");
+  const label = (property.name ?? property.complexName ?? "매물") as string;
+  await notifySuperAdmins("contract", `매물 계약완료: ${label}`, undefined, `/properties/${id}/edit`);
 }

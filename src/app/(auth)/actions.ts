@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { clearSessionCookie, getSessionToken, setSessionCookie } from "@/lib/auth/cookies";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, invalidateSession } from "@/lib/auth/session";
+import { notifySuperAdmins } from "@/lib/notifications/notify";
 
 export type AuthState = { error: string | null };
 
@@ -66,6 +67,10 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
 
   const { token, expiresAt } = await createSession(user.id);
   await setSessionCookie(token, expiresAt);
+  // 첫 가입자(자동 superadmin)는 제외 — 본인 외 알릴 대상이 없음.
+  if (!isFirstUser) {
+    await notifySuperAdmins("member", `새 회원 가입: ${name}`, `${email} · ${agencyName}`, "/settings/members");
+  }
   redirect(DASHBOARD);
 }
 

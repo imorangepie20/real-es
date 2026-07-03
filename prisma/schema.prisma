@@ -32,6 +32,7 @@ model User {
   properties   Property[]
   customers    Customer[]
   events       Event[]
+  notifications Notification[]
 }
 
 model Session {
@@ -268,4 +269,19 @@ model SystemConfig {
   updatedAtBy String?           // 수정한 User.id
 
   @@index([category])
+}
+
+// 슈퍼어드민 알림 (시스템 이벤트 → 슈퍼어드민 수신). userId = 각 superadmin.
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // member | contract | property
+  title       String
+  description String?
+  link        String?  // 클릭 시 이동 경로(예: /properties/[id]/edit)
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, read])
 }

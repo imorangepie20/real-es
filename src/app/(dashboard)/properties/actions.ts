@@ -10,6 +10,7 @@ import { COLOR_TAG_VALUES } from "@/lib/properties/color-tags";
 import { parseWorkbook } from "@/lib/properties/excel-read";
 import type { ParsedSheet } from "@/lib/properties/excel-import";
 import { toRow } from "./row-utils";
+import { notifySuperAdmins } from "@/lib/notifications/notify";
 
 export type PropertyView = "all" | "favorites" | "in-progress" | "contracted";
 export type PropertyRow = { id: string; isFavorite: boolean } & Record<string, string | number | boolean | null>;
@@ -66,6 +67,8 @@ export async function createProperty(input: Record<string, unknown>): Promise<st
   if (data.status == null) delete data.status; // status는 NOT NULL DEFAULT '진행' — 빈 값이면 생략해 기본값 적용
   const p = await db.property.create({ data: { ...data, userId: user.id, source: (data.source as string) || "수기" } });
   revalidatePath("/properties");
+  const label = (p.name ?? p.complexName ?? "매물") as string;
+  await notifySuperAdmins("property", `새 매물 등록: ${label}`, `${user.name ?? user.email}님이 등록`, `/properties/${p.id}/edit`);
   return p.id;
 }
 
@@ -128,6 +131,9 @@ export async function importProperties(rows: Record<string, unknown>[]): Promise
   }
   revalidatePath("/properties");
   revalidatePath("/customers");
+  if (n > 0) {
+    await notifySuperAdmins("property", `엑셀 매물 ${n}건 일괄 등록`, `${user.name ?? user.email}님이 등록`, "/properties");
+  }
   return n;
 }
 

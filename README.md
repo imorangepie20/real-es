@@ -107,4 +107,5 @@ real-es/
 - 환경 설정 API 키 DB 연동: 환경설정에서 저장한 키를 **DB 우선·`.env` 폴백**(`lib/config/keys.ts`)으로 네이버·실거래 지도/수집이 참조 → 재배포 없이 키 변경 즉시 반영.
 - URL `/dashboard` prefix 제거: 템플릿 유산의 `/dashboard/*` 경로를 `/properties`·`/naver`·`/settings/members` 등으로 평탄화(폴더 이동 + 코드·e2e 경로 갱신). 설정 메뉴 404(nav href↔실제 URL 불일치)도 해소.
 - 환경설정 API 키 정제: 환경설정에 `.env` 라인 전체(`KEY=value`)를 넣는 실수 방지·교정 — 저장·조회 시 `KEY=` 접두사 제거(`lib/config/clean-value.ts`). 기존 잘못된 DB 값 정정 → 실거래 카카오 지도 표시 복구.
+- 슈퍼어드민 알림 센터: 시스템 이벤트(새 회원 가입·매물 계약 상태 변경·새 매물 등록)를 `Notification` 모델에 기록 → 슈퍼어드민에게 헤더 벨(안 읽은 뱃지·드롭다운)·`/notifications` 페이지(목록·읽음 처리)로 알림.
 - (작업 단위가 끝날 때마다 사용자 가시 효과를 한두 줄로 누적 기록한다. 절차는 [CLAUDE.md](CLAUDE.md) §5 참고.)
