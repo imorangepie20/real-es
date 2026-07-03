@@ -49,12 +49,16 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
+        <Link
+          href="/real-estate"
+          aria-label="홈"
+          className="flex items-center gap-2 px-2 py-1.5 transition-colors hover:bg-accent"
+        >
           <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Logo className="size-4" />
           </div>
           <span className="font-semibold group-data-[collapsible=icon]:hidden">RESM</span>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         {filteredNavGroups.map((group) => (
