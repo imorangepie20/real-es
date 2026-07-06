@@ -71,13 +71,17 @@ function AmountRow({ label, amount, note }: { label: string; amount?: string; no
 }
 
 function SaleAmount({ p }: { p: P }) {
+  const hasInterim2 = Boolean(p.interim2Amount || p.interim2Date);
   return (
     <table className="w-full border-collapse border border-black">
       <tbody>
         <AmountRow label="매매대금" amount={won(p.price)} note="아래 지불방법에 따라 지불한다." />
-        <AmountRow label="계약금" note="계약 체결 시 지불하고 영수함." />
-        <AmountRow label="중도금" note={<>지불일&nbsp;<Fill value={ymd(p.interim1Date)} w="55%" /></>} />
-        <AmountRow label="잔 금" note={<>지불일&nbsp;<Fill value={ymd(p.balanceDate)} w="55%" /></>} />
+        <AmountRow label="계약금" amount={won(p.downPayment)} note="계약 체결 시 지불하고 영수함." />
+        <AmountRow label={hasInterim2 ? "중도금(1차)" : "중도금"} amount={won(p.interim1Amount)} note={<>지불일&nbsp;<Fill value={ymd(p.interim1Date)} w="55%" /></>} />
+        {hasInterim2 ? (
+          <AmountRow label="중도금(2차)" amount={won(p.interim2Amount)} note={<>지불일&nbsp;<Fill value={ymd(p.interim2Date)} w="55%" /></>} />
+        ) : null}
+        <AmountRow label="잔 금" amount={won(p.balanceAmount)} note={<>지불일&nbsp;<Fill value={ymd(p.balanceDate)} w="55%" /></>} />
       </tbody>
     </table>
   );
@@ -88,8 +92,8 @@ function LeaseAmount({ p, monthly }: { p: P; monthly: boolean }) {
     <table className="w-full border-collapse border border-black">
       <tbody>
         <AmountRow label="보증금" amount={won(p.price)} note="아래 지불방법에 따라 지불한다." />
-        <AmountRow label="계약금" note="계약 체결 시 지불하고 영수함." />
-        <AmountRow label="잔 금" note={<>지불일&nbsp;<Fill value={ymd(p.balanceDate)} w="55%" /></>} />
+        <AmountRow label="계약금" amount={won(p.downPayment)} note="계약 체결 시 지불하고 영수함." />
+        <AmountRow label="잔 금" amount={won(p.balanceAmount)} note={<>지불일&nbsp;<Fill value={ymd(p.balanceDate)} w="55%" /></>} />
         {monthly ? (
           <AmountRow label="차임(월세)" amount={won(p.rentPrice)} note="매월 말일 지불(후불)." />
         ) : null}
@@ -189,7 +193,7 @@ function LeaseContract({ p }: { p: P }) {
   const monthly = t === "B2";
   const arts: [string, string][] = [
     ["목적", "위 부동산의 임대차에 관하여 임대인과 임차인은 합의에 의하여 보증금 및 차임을 위와 같이 지불하기로 한다."],
-    ["존속기간", "임대인은 위 부동산을 임대차 목적대로 사용·수익할 수 있는 상태로 인도하며, 임대차 기간은 인도일로부터 ___ 까지로 한다."],
+    ["존속기간", `임대인은 위 부동산을 임대차 목적대로 사용·수익할 수 있는 상태로 인도하며, 임대차 기간은 인도일로부터 ${p.leaseEndDate ? ymd(p.leaseEndDate) : "___"} 까지로 한다.`],
     ["용도변경 및 전대 등", "임차인은 임대인의 동의 없이 위 부동산의 용도나 구조를 변경하거나 전대·임차권 양도 또는 담보제공을 하지 못하며, 임대차 목적 이외의 용도로 사용할 수 없다."],
     ["계약의 해지", "임차인의 차임 연체액이 2기의 차임액에 달하거나 제3조를 위반하였을 때 임대인은 즉시 본 계약을 해지할 수 있다."],
     ["계약의 종료", "임대차계약이 종료된 경우 임차인은 위 부동산을 원상으로 회복하여 임대인에게 반환하고, 임대인은 보증금을 임차인에게 반환한다."],

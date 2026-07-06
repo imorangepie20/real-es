@@ -33,4 +33,16 @@ describe("FORM_BY_ID 슬롯", () => {
     const slots = FORM_BY_ID.sale_contract.slots;
     expect(slots.some((s) => s.sourceKey === undefined)).toBe(true);
   });
+  it("매매계약서 계약금·중도금·잔금 자동기입 슬롯", () => {
+    const keys = FORM_BY_ID.sale_contract.slots.map((s) => s.sourceKey);
+    expect(keys).toContain("downPayment");
+    expect(keys).toContain("interim1Amount");
+    expect(keys).toContain("balanceAmount");
+  });
+  it("임대차계약서 계약금·잔금·만기일 슬롯", () => {
+    const keys = FORM_BY_ID.lease_contract.slots.map((s) => s.sourceKey);
+    expect(keys).toContain("downPayment");
+    expect(keys).toContain("balanceAmount");
+    expect(keys).toContain("leaseEndDate");
+  });
 });

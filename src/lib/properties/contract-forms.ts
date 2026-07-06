@@ -43,8 +43,9 @@ export const CONTRACT_FORMS: ContractForm[] = [
     slots: [
       ...PROPERTY_SLOTS,
       { slot: "매매대금", sourceKey: "price" },
-      { slot: "계약금(수기)" },
-      { slot: "잔금(수기)" },
+      { slot: "계약금", sourceKey: "downPayment" },
+      { slot: "중도금", sourceKey: "interim1Amount" },
+      { slot: "잔금", sourceKey: "balanceAmount" },
       ...SCHEDULE_SLOTS,
       ...PARTY_SLOTS,
     ],
@@ -56,6 +57,9 @@ export const CONTRACT_FORMS: ContractForm[] = [
     slots: [
       ...PROPERTY_SLOTS,
       { slot: "보증금", sourceKey: "price" },
+      { slot: "계약금", sourceKey: "downPayment" },
+      { slot: "잔금", sourceKey: "balanceAmount" },
+      { slot: "만기일", sourceKey: "leaseEndDate" },
       { slot: "월세", sourceKey: "rentPrice" },
       ...SCHEDULE_SLOTS,
       ...PARTY_SLOTS,
