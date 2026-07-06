@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
+import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
@@ -79,9 +79,9 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
                   })}
                 </div>
                 {group === "일정" && mismatch ? (
-                  <p className="text-sm text-muted-foreground">
+                  <FieldDescription>
                     대금 합계 {groupDigits(String(mismatch.sum))}만원 — 가격 {groupDigits(String(mismatch.price))}만원과 다릅니다.
-                  </p>
+                  </FieldDescription>
                 ) : null}
               </FieldSet>
             )
