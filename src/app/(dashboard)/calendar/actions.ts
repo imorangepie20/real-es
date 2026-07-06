@@ -66,7 +66,7 @@ export async function loadCalendar(year: number, month: number): Promise<{
     select: {
       id: true, name: true, complexName: true,
       contractHopeDate: true, contractDate: true, interim1Date: true, interim2Date: true,
-      balanceDate: true, moveInHopeDate: true, moveInDate: true,
+      balanceDate: true, moveInHopeDate: true, moveInDate: true, leaseEndDate: true,
     },
   });
   const propertyDates = propertyCalendarEvents(props).filter((e) => e.date.startsWith(prefix));

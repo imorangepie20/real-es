@@ -10,6 +10,7 @@ export const PROPERTY_DATE_FIELDS: { key: string; label: string }[] = [
   { key: "balanceDate", label: "잔금일" },
   { key: "moveInHopeDate", label: "입주희망일" },
   { key: "moveInDate", label: "입주일" },
+  { key: "leaseEndDate", label: "만기일" },
 ];
 
 export function propertyCalendarEvents(properties: PropForEvents[]): PropertyDateEvent[] {

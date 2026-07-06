@@ -18,8 +18,9 @@ describe("propertyCalendarEvents", () => {
     const e = events.find((x) => x.propertyId === "p2")!;
     expect(e.label).toBe("래미안 입주일");
   });
-  it("PROPERTY_DATE_FIELDS 7종(사용승인일 제외)", () => {
-    expect(PROPERTY_DATE_FIELDS).toHaveLength(7);
+  it("PROPERTY_DATE_FIELDS 8종(사용승인일 제외, 만기일 포함)", () => {
+    expect(PROPERTY_DATE_FIELDS).toHaveLength(8);
+    expect(PROPERTY_DATE_FIELDS.map((f) => f.key)).toContain("leaseEndDate");
     expect(PROPERTY_DATE_FIELDS.map((f) => f.key)).not.toContain("approvalDate");
   });
 });
