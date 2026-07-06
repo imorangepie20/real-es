@@ -14,9 +14,10 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea"
 import { FORM_GROUPS, PROPERTY_FIELDS, SPAN_CLASS, formMeta, type PropertyField } from "@/lib/properties/fields"
 import { fromDateInput, groupDigits, stripDigits, formatTel, toDateInput } from "@/lib/properties/format"
+import { paymentMismatch } from "@/lib/properties/payment-sum"
 import { createProperty, updateProperty, type PropertyRow } from "./actions"
 
-const RENTAL = new Set(["B1", "B2"]) // 전세·월세 → price를 "보증금"으로
+const RENTAL = new Set(["B1", "B2", "B3"]) // 전세·월세·단기임대 → price를 "보증금"으로
 
 export function PropertyForm({ property }: { property?: PropertyRow }) {
   const router = useRouter()
@@ -32,6 +33,7 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
   const set = (k: string, v: string) => setValues((p) => ({ ...p, [k]: v }))
 
   const isRental = RENTAL.has(values.tradeType)
+  const mismatch = values.tradeType === "A1" ? paymentMismatch(values) : null
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -57,7 +59,9 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
         <CardHeader><CardTitle>{property ? "매물 수정" : "매물 등록"}</CardTitle></CardHeader>
         <CardContent className="flex flex-col gap-6">
           {FORM_GROUPS.map((group) => {
-            const fields = PROPERTY_FIELDS.filter((f) => f.group === group && !formMeta(f).formHidden)
+            const fields = PROPERTY_FIELDS.filter((f) =>
+              f.group === group && !formMeta(f).formHidden &&
+              (!f.trades || !values.tradeType || f.trades.includes(values.tradeType)))
             if (fields.length === 0) return null
             return (
               <FieldSet key={group}>
@@ -74,6 +78,11 @@ export function PropertyForm({ property }: { property?: PropertyRow }) {
                     )
                   })}
                 </div>
+                {group === "일정" && mismatch ? (
+                  <p className="text-sm text-muted-foreground">
+                    대금 합계 {groupDigits(String(mismatch.sum))}만원 — 가격 {groupDigits(String(mismatch.price))}만원과 다릅니다.
+                  </p>
+                ) : null}
               </FieldSet>
             )
           })}
