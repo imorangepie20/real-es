@@ -155,6 +155,11 @@ model Property {
   interim1Date     String?
   interim2Date     String?
   balanceDate      String?
+  downPayment      BigInt? // 계약금(원)
+  interim1Amount   BigInt? // 중도금1(원)
+  interim2Amount   BigInt? // 중도금2(원)
+  balanceAmount    BigInt? // 잔금(원)
+  leaseEndDate     String? // 임대차 만기일(YYYYMMDD)
 
   note String?
   memo String?
