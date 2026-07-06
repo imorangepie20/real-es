@@ -4,7 +4,7 @@ import { TRADE_OPTIONS } from "@/lib/naver/trade-types";
 
 export type FieldType = "text" | "number" | "money" | "area" | "select" | "date" | "bool";
 export type FieldOption = { value: string; label: string };
-export type PropertyField = { key: string; label: string; group: string; type: FieldType; options?: FieldOption[] };
+export type PropertyField = { key: string; label: string; group: string; type: FieldType; options?: FieldOption[]; trades?: string[] };
 
 export const STATUS_OPTIONS: FieldOption[] = [
   { value: "진행", label: "진행" },
@@ -49,14 +49,19 @@ export const PROPERTY_FIELDS: PropertyField[] = [
   { key: "partnerPhone", label: "관련부동산전화", group: "관련부동산", type: "text" },
   { key: "partnerManager", label: "관련부동산담당", group: "관련부동산", type: "text" },
   { key: "manager", label: "담당자", group: "관련부동산", type: "text" },
-  // 일정
+  // 일정 — 실거래 흐름 순서: 협의(희망) → 계약 → 중도금(매매만) → 잔금 → 입주·기간
   { key: "contractHopeDate", label: "계약희망일", group: "일정", type: "date" },
-  { key: "contractDate", label: "계약일", group: "일정", type: "date" },
   { key: "moveInHopeDate", label: "입주희망일", group: "일정", type: "date" },
-  { key: "moveInDate", label: "입주일", group: "일정", type: "date" },
-  { key: "interim1Date", label: "중도금1", group: "일정", type: "date" },
-  { key: "interim2Date", label: "중도금2", group: "일정", type: "date" },
+  { key: "contractDate", label: "계약일", group: "일정", type: "date" },
+  { key: "downPayment", label: "계약금", group: "일정", type: "money" },
+  { key: "interim1Amount", label: "중도금1", group: "일정", type: "money", trades: ["A1"] },
+  { key: "interim1Date", label: "중도금1일", group: "일정", type: "date", trades: ["A1"] },
+  { key: "interim2Amount", label: "중도금2", group: "일정", type: "money", trades: ["A1"] },
+  { key: "interim2Date", label: "중도금2일", group: "일정", type: "date", trades: ["A1"] },
+  { key: "balanceAmount", label: "잔금", group: "일정", type: "money" },
   { key: "balanceDate", label: "잔금일", group: "일정", type: "date" },
+  { key: "moveInDate", label: "입주일", group: "일정", type: "date" },
+  { key: "leaseEndDate", label: "만기일", group: "일정", type: "date", trades: ["B1", "B2", "B3"] },
   // 메모
   { key: "note", label: "특이사항", group: "메모", type: "text" },
   { key: "memo", label: "메모", group: "메모", type: "text" },
