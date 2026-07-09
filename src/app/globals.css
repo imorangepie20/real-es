@@ -128,3 +128,8 @@
     @apply font-sans;
   }
 }
+
+/* 맥 WebKit 웹뷰에서 명조체 폴백 방지 - 강제 적용 */
+html {
+  font-family: var(--font-geist-sans), var(--font-noto-sans-kr), -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Pretendard", sans-serif !important;
+}
