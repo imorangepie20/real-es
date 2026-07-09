@@ -7,10 +7,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Safari 호환성 - @theme 밖에서 폰트 변수 직접 정의 */
+:root {
+  --font-sans: var(--font-geist-sans), "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* --font-sans는 상단 :root에서 정의 (Safari 호환성) */
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
