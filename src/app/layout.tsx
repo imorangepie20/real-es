@@ -8,7 +8,6 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
-  subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
   display: "swap",
 });
