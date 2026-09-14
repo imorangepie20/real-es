@@ -9,6 +9,7 @@ import { clearSessionCookie, getSessionToken, setSessionCookie } from "@/lib/aut
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, invalidateSession } from "@/lib/auth/session";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { createSignupUser } from "@/lib/auth/create-signup-user";
 import { notifySuperAdmins } from "@/lib/notifications/notify";
 import { findEmdByAddr } from "@/lib/realprice/geocode";
 
@@ -58,15 +59,21 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
   }
 
   const passwordHash = await hashPassword(password);
-  const userCount = await db.user.count();
-  const isFirstUser = userCount === 0;
-
-  const user = await db.$transaction(async (tx) => {
-    const agency = await tx.agency.create({ data: { name: agencyName, zipcode: agencyZipcode ?? null, address: agencyAddress ?? null, phone: agencyPhone ?? null } });
-    return tx.user.create({
-      data: { agencyId: agency.id, email, passwordHash, name, phone: phone ?? null, role: isFirstUser ? "superadmin" : "member" },
-    });
-  });
+  const { user, isFirstUser } = await db.$transaction((tx) =>
+    createSignupUser(
+      tx,
+      {
+        agencyName,
+        agencyZipcode: agencyZipcode ?? null,
+        agencyAddress: agencyAddress ?? null,
+        agencyPhone: agencyPhone ?? null,
+        name,
+        phone: phone ?? null,
+        email,
+      },
+      passwordHash,
+    ),
+  );
 
   const { token, expiresAt } = await createSession(user.id);
   await setSessionCookie(token, expiresAt);

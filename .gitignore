@@ -2,6 +2,9 @@
 .env
 .env.*
 !.env.example
+!infra/secrets/*.env.example
+infra/secrets/*.env
+infra/runtime/*
 
 # deps / build
 node_modules/

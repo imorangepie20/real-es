@@ -1,0 +1,114 @@
+x-logging: &default-logging
+  driver: local
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+    restart: unless-stopped
+    env_file:
+      - ./secrets/database.env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${REAL_ES_MIGRATION_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - backend
+    logging: *default-logging
+
+  app:
+    image: real-es-app:${APP_VERSION:-local}
+    build:
+      context: ..
+      target: runtime
+    restart: unless-stopped
+    env_file:
+      - ./secrets/app.env
+    ports:
+      - "127.0.0.1:3103:3103"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+    ipc: host
+    user: pwuser
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3103/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - frontend
+      - backend
+    logging: *default-logging
+
+  tunnel:
+    image: cloudflare/cloudflared@sha256:b269e8abd07a5bf6f3f4be65d5050b2174eca89c56a0241a8ff32a16aec454e4
+    profiles:
+      - tunnel
+    restart: unless-stopped
+    env_file:
+      - ./secrets/tunnel.env
+    command: tunnel --no-autoupdate run
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend
+    logging: *default-logging
+
+  migrate:
+    image: real-es-tools:${APP_VERSION:-local}
+    build:
+      context: ..
+      target: tools
+    profiles:
+      - tools
+    env_file:
+      - ./secrets/migration.env
+    command: ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    logging: *default-logging
+
+  seed-legal-divisions:
+    image: real-es-tools:${APP_VERSION:-local}
+    build:
+      context: ..
+      target: tools
+    profiles:
+      - tools
+    env_file:
+      - ./secrets/app.env
+    command: ["node", "scripts/seed-legal-divisions.mjs"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+      - egress
+    logging: *default-logging
+
+networks:
+  frontend:
+    name: real-es-frontend
+  backend:
+    name: real-es-backend
+    internal: true
+  egress:
+    name: real-es-egress
+
+volumes:
+  postgres-data:
+    name: real-es-postgres-data

@@ -40,6 +40,9 @@ real-es/
 
 ## 현재 반영 상태
 
+- Windows 개발 환경에 전용 `real_es` DB와 비-superuser `real_es_migrator`/최소 권한 `real_es_app` 역할, 충돌 방지 프로비저닝·migration 명령을 구성했다.
+- Zorin용 독립 Docker Compose 배포 구성을 추가하고 `127.0.0.1:3103`, 잠긴 DB bootstrap 역할, 전용 PostgreSQL volume, Playwright Chromium runtime, 전용 Cloudflare Tunnel 계약을 로컬 통합 검증했다. 첫 운영자는 Tunnel 공개 전에 만들며 동시 가입에도 `superadmin`은 한 명만 생성된다. 실제 Zorin·외부 연결은 배포 비밀값 입력과 승인된 commit/push 후 진행한다.
+
 - 개발 하네스 초기 셋업: `CLAUDE.md`, `.claude/`(Stop hook + 플러그인), `README.md`·`docs/PROJECT_GUIDE.md` 컨벤션 골격, `.gitignore` 구성 (my-forever-music 룰 기준)
 - 디자인 템플릿(SDTPL_ADM) 베이스 인입: 템플릿 소스(`src/`·설정·`e2e/`) 복사 → `pnpm install` → 프로덕션 빌드·서버 기동 검증 통과. real-es 자체 하네스(`CLAUDE.md`·`.claude/`·`docs/`)는 보존, 템플릿 secret(`SDTPL.txt`)은 제외. 전 라우트 정상(`/dashboard/real-estate`·`/login` 200).
 - 백엔드 단계 0(DB 연결): 앱 포트 3001(3000은 my-forever-music 점유). 새 컨테이너 없이 기존 `mrms-pg`(pg16, 호스트 5433)에 `real_es` DB 추가. Prisma 6으로 `Agency` 모델 + 첫 마이그레이션, `src/lib/db.ts` 싱글톤 클라이언트. `GET /api/health`가 DB ping으로 연결을 검증(e2e `e2e/health.spec.ts` 통과) → **DB에 연결되는 앱** 확보.

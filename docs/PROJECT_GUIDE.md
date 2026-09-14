@@ -45,6 +45,8 @@ real-es 프로젝트의 공통 방향 가이드. 새 세션은 추측으로 구�
 
 ## 8. 현재 참고 상태
 
+- **배포 구성 준비 완료**: Windows 전용 `real_es` DB 프로비저닝과 Zorin 독립 Compose 스택을 추가했다. 앱은 `127.0.0.1:3103`, 잠긴 bootstrap·비-superuser migrator·최소 권한 app 역할, 전용 PostgreSQL volume, Playwright Chromium, 전용 Cloudflare Tunnel을 사용하며 로컬 DB/migration/health/동시 가입 통합 검증까지 완료했다. 첫 운영자는 Tunnel 공개 전에 생성하고, 외부 가입은 이후 즉시 이용 가능한 `member`로 유지한다. 실제 Zorin 배포와 `resm.approid.team` 연결은 비밀값 입력 및 승인된 commit/push 후 진행한다.
+
 - **스택 확정**: `SDTPL_ADM`(shadcn UI Kit 클론) 템플릿을 베이스로 인입 완료 — Next.js 16 + React 19 + Tailwind v4 + shadcn/ui(Base UI) + pnpm. 빌드·기동 검증 통과. 백엔드(PostgreSQL/Prisma)·네이버 매물 수집은 단계 0~3로 적용 완료, Tauri 데스크탑만 예정.
 - **메뉴 단일 소스**: `src/lib/nav.ts` 한 곳이 사이드바 + ⌘K 팔레트를 구동 — 스펙(§제품)의 메뉴 구조를 여기에 매핑한다.
 - **데이터 출처**: 네이버 수집(Complex/Article)은 **DB 실데이터**로 `/dashboard/naver`에 표시. 템플릿 대시보드(`/dashboard/*`)는 아직 mock(`src/lib/data.ts`) — 해당 화면을 실데이터로 붙일 때 교체한다.

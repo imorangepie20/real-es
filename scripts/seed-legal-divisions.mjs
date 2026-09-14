@@ -86,6 +86,7 @@ async function main() {
 
   // 3) 읍면동 (시군구별 attrFilter)
   let emdTotal = 0, done = 0;
+  const failedRegions = [];
   for (const f of siggs) {
     const sig = f.properties.sig_cd;
     await sleep(120);
@@ -94,6 +95,7 @@ async function main() {
       emds = await fetchAll("LT_C_ADEMD_INFO", { attrFilter: `emd_cd:like:${sig}` });
     } catch (e) {
       console.log(`  ! ${sig} ${f.properties.sig_kor_nm} 실패: ${e.message}`);
+      failedRegions.push(sig);
       continue;
     }
     for (const e of emds) {
@@ -106,6 +108,9 @@ async function main() {
     }
     emdTotal += emds.length;
     if (++done % 30 === 0) console.log(`  ...읍면동 진행 ${done}/${siggs.length} 시군구, 누적 ${emdTotal}`);
+  }
+  if (failedRegions.length > 0) {
+    throw new Error(`법정동 적재 실패 시군구 ${failedRegions.length}개: ${failedRegions.join(", ")}`);
   }
   console.log(`[읍면동] ${emdTotal}`);
   console.log(`완료 (${Math.round((Date.now() - t0) / 1000)}s)`);

@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "eslint",
+    "db:provision": "node scripts/provision-local-db.mjs",
+    "db:migrate": "node scripts/run-local-migration.mjs",
+    "db:seed:legal": "node --env-file=.env scripts/seed-legal-divisions.mjs",
     "collect": "tsx scripts/collect.ts",
     "test:unit": "vitest run",
     "test:e2e": "playwright test"
@@ -57,5 +60,6 @@
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.9"
-  }
+  },
+  "packageManager": "pnpm@10.34.5+sha512.a4ee05f2f73658255bd6a89859c065a45c28a57daefae2c893a168ee2b73168c37b91e83e57ea67654ad03f03031746430e8bce38e362e042605fb8abc80192e"
 }
